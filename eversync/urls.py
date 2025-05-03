@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("index/", include("eversyncc.urls")),
+    path("", include("eversyncc.urls")),
+    path("accounts/", include("django.contrib.auth.urls")),
     ]
