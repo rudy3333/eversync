@@ -26,7 +26,8 @@
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
                         
-                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;"
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
                         </form>
                     </div>
