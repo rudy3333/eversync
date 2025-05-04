@@ -7,8 +7,9 @@ from django.contrib.auth import logout
 
 
 def logout_view(request):
+    request.session.flush()
     logout(request)
-    return redirect('index')
+    return redirect('login')
 
 def register(request):
     if request.method == "POST":
