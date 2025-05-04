@@ -9,6 +9,8 @@ def logout_view(request):
     logout(request)
     return redirect('index')
 
+def register(request):
+    return render(request, "register.html")
 
 @login_required
 def index(request):
