@@ -3,11 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>register</title>
+    <title>Eversync - Register</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'register-style.css' %}" "></head>
 </head>
 <body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/" class="logo">eversync</a>
+        </div>
+    </div>
     
-<h2>placeholder</h2>
+    <div class="container">
+        <div class="register-box">
+            <h2>Create Your Eversync Account</h2>
+            
+            {% if form.errors %}
+                <div class="error-message">
+                    Please correct the errors below.
+                </div>
+            {% endif %}
 
+            <form method="post" class="form-with-validation" action="/register/">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    {{ form.username.label_tag }}
+                    {{ form.username }}
+                </div>
+                <div class="form-group">
+                    {{ form.password1.label_tag }}
+                    {{ form.password1 }}
+                </div>
+                <div class="form-group">
+                    {{ form.password2.label_tag }}
+                    {{ form.password2 }}
+                </div>
+            
+                <input type="submit" value="Register" class="register-button">
+                
+                <div class="divider"></div>
+
+                <p>Already have an account? <a href="{% url 'login' %}" class="login-link">Log In</a></p>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
