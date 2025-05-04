@@ -52,7 +52,12 @@
                 <input type="submit" value="Log In" class="login-button">
                 <input type="hidden" name="next" value="{{ next }}">
 
-                <a href="{% url 'register' %}" class="create-account" style="display: inline-block; text-align: center; text-decoration: none; width: 100%; padding: 12px; box-sizing: border-box;">Register</a>            <div class="divider"></div>                
+                <div class="divider"></div>
+
+                <p style="text-align: center;">
+                    Don't have an account?
+                    <a href="{% url 'register' %}" class="create-account" style="margin-left: 4px;">Register</a>
+                </p>                
         </div>
     </div>
 </body>
