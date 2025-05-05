@@ -1,9 +1,15 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 # Create your views here.
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
+from .forms import UsernameChangeForm
+from django.contrib import messages
+
+
+
 
 
 def logout_view(request):
@@ -29,3 +35,20 @@ def index(request):
 def manage(request):
     return render(request, "manage.html")
 
+@login_required
+def change_username(request):
+    if request.method == 'POST':
+        form = UsernameChangeForm(request.POST)
+        if form.is_valid():
+            new_username = form.cleaned_data['new_username']
+            user = request.user
+            user.username = new_username
+            user.save()
+            messages.success(request, "Username updated successfully!")
+            return redirect('manage')  # Redirect back to the manage account page
+        else:
+            messages.error(request, "Error: Username couldn't be updated.")
+    else:
+        form = UsernameChangeForm()
+
+    return render(request, 'manage.html', {'form': form})

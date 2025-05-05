@@ -42,6 +42,16 @@
             <h1>manage your eversync account</h1>
             <p>You are logged in as {{ user.username }}</p>
         </div>
+
+        <!-- Change Username Section -->
+        <div class="welcome-box">
+            <h2>Change Username</h2>
+            <form method="post" action="{% url 'change_username' %}">
+                {% csrf_token %}
+                <label for="new_username">New Username:</label><br>
+                <input type="text" id="new_username" name="new_username" required style="margin-top: 5px; margin-bottom: 10px; padding: 8px; border-radius: 4px; width: 100%;"><br>
+                <button type="submit" style="background-color: #4CAF50; color: white; border: 1px solid #4CAF50; padding: 8px 16px; border-radius: 4px; cursor: pointer; width: auto; font-size: 14px;">Update Username</button>
+            </form>
         </div>
     </div>
 
