@@ -25,3 +25,7 @@ def register(request):
 def index(request):
     return render(request, "index.html")
 
+@login_required
+def manage(request):
+    return render(request, "manage.html")
+

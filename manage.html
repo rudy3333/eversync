@@ -21,7 +21,6 @@
                         Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
                     </button>
                     <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px;">
-                        
                         <form action="{% url 'manage' %}" method="post" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
@@ -40,31 +39,12 @@
     
     <div class="container">
         <div class="welcome-box">
-            <h1>Welcome to Eversync</h1>
+            <h1>manage your eversync account</h1>
             <p>You are logged in as {{ user.username }}</p>
         </div>
-        
-        <div class="content-box">
-            <h2>Your Dashboard</h2>
-
-            <div class="button-container">
-                <div class="service-button mail">
-                  <i class="fas fa-envelope"></i>
-                  mail
-                </div>
-                <div class="service-button calendar">
-                  <i class="fas fa-calendar-alt"></i>
-                  calendar
-                </div>
-                <div class="service-button cloud">
-                  <i class="fas fa-cloud"></i>
-                  cloud
-                </div>
-              </div>
-
-
         </div>
     </div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggle = document.querySelector('.dropdown-toggle');
