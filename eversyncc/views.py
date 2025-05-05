@@ -6,10 +6,9 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
-from .forms import UsernameChangeForm, EventForm
+from .forms import UsernameChangeForm
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
-from.models import Event
 
 
 def logout_view(request):
@@ -80,14 +79,3 @@ class RedirectFromLogin(LoginView):
         if request.user.is_authenticated:
             return redirect('/')  # Change 'home' to your desired redirect
         return super().dispatch(request, *args, **kwargs)
-    
-def event_list(request):
-    events = Event.objects.filter(user=request.user)
-
-def create_event(request):
-    if request.method == 'POST':
-        form = EventForm(request.POST)
-        if form.is_valid():
-            event = form.save(commit=False)
-            event.user = request.user
-            event.save()
