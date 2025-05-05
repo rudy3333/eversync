@@ -6,10 +6,10 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
-from .forms import UsernameChangeForm
+from .forms import UsernameChangeForm, DocumentForm
+from .models import Document
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
-
 
 def logout_view(request):
     request.session.flush()
@@ -57,9 +57,6 @@ def change_username(request):
     return render(request, 'manage.html', {'form': form})
 
 
-
-
-
 @login_required
 def change_password(request):
     if request.method == 'POST':
@@ -77,5 +74,23 @@ def change_password(request):
 class RedirectFromLogin(LoginView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('/')  # Change 'home' to your desired redirect
+            return redirect('/') 
         return super().dispatch(request, *args, **kwargs)
+    
+@login_required
+def upload_file(request):
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.user = request.user
+            document.save()
+            return redirect('file_list')
+    else:
+        form = DocumentForm()
+    return render(request, 'upload.html', {'form': form})
+
+@login_required
+def file_list(request):
+    documents = Document.objects.filter(user=request.user)
+    return render(request, 'file_list.html', {'documents': documents})
