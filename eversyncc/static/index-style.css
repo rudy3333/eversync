@@ -89,11 +89,20 @@ body {
 
 .button-container {
 display: flex;
+flex-direction: column;
 justify-content: center;
 gap: 20px;
 margin-top: 30px;
+align-items: center;
+
 }
 
+@media (min-width: 600px) {
+    .button-container {
+        flex-direction: row; /* Change to row layout on larger screens */
+        justify-items: center;
+    }
+}
 .service-button {
 width: 200px;
 height: 200px;
