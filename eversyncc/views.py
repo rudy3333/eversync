@@ -20,6 +20,7 @@ def logout_view(request):
 def register(request):
         if request.user.is_authenticated:
             return redirect('/')
+        
         if request.method == "POST":
             form = UserCreationForm(request.POST)
             if form.is_valid():
@@ -35,7 +36,8 @@ def index(request):
 
 @login_required
 def manage(request):
-    return render(request, "manage.html")
+    form = PasswordChangeForm(user=request.user)
+    return render(request, "manage.html", {"password_form": form})
 
 @login_required
 def change_username(request):
@@ -45,7 +47,7 @@ def change_username(request):
             new_username = form.cleaned_data['new_username']
             user = request.user
             user.username = new_username
-            user.save()
+            form.save()
             messages.success(request, "Username updated successfully!")
             return redirect('manage')  # Redirect back to the manage account page
         else:
