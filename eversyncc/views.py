@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm
 from django.contrib import messages
-
+from django.contrib.auth.views import LoginView
 
 
 
@@ -18,14 +18,16 @@ def logout_view(request):
     return redirect('login')
 
 def register(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("")
-    else:
-        form = UserCreationForm()
-    return render(request, "register.html", {"form": form})
+        if request.user.is_authenticated:
+            return redirect('/')
+        if request.method == "POST":
+            form = UserCreationForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect("")
+        else:
+            form = UserCreationForm()
+        return render(request, "register.html", {"form": form})
 
 @login_required
 def index(request):
@@ -69,3 +71,9 @@ def change_password(request):
     else:
         form = PasswordChangeForm(user=request.user)
     return render(request, 'manage.html', {'password_form': form})
+
+class RedirectFromLogin(LoginView):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('/')  # Change 'home' to your desired redirect
+        return super().dispatch(request, *args, **kwargs)
