@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 # Create your views here.
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm
 from django.contrib import messages
-
 
 
 
@@ -51,4 +51,21 @@ def change_username(request):
     else:
         form = UsernameChangeForm()
 
-    return render(request, 'manage.html', {'form': form})
+    return render(request, 'manage.html', {'username_form': form})
+
+
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            messages.success(request, "Password updated successfully!")
+            return redirect('manage')  # Redirect to an appropriate page
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = PasswordChangeForm(user=request.user)
+    return render(request, 'manage.html', {'password_form': form})

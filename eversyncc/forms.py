@@ -17,3 +17,7 @@ class UsernameChangeForm(forms.Form):
         if User.objects.filter(username=new_username).exists():
             raise forms.ValidationError("This username is already taken.")
         return new_username
+    
+class ChangePasswordForm(forms.Form):
+    old_password = forms.CharField(widget=forms.PasswordInput())
+    new_password = forms.CharField(widget=forms.PasswordInput())
