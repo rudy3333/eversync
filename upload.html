@@ -61,8 +61,15 @@
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.as_p }}
-                    <input type="submit" value="Upload" class="register-button">
+                    <input type="submit" value="Upload" class="login-link">
                 </form>
+
+                <div class="divider"></div>
+
+                <div style="display: flex; justify-content: center;">
+                    <a href="{% url 'file_list' %}" class="register-button" style="width: 100%; text-align: center; text-decoration: none;">View your files</a>
+                </div>
+
         </div>
     </div>
 

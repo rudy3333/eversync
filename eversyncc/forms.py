@@ -26,4 +26,11 @@ class ChangePasswordForm(forms.Form):
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
-        fields = ['title', 'file']
+        fields = ['file']
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.title = self.cleaned_data['file'].name
+        if commit:
+            instance.save()
+        return instance

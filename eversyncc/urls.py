@@ -15,7 +15,7 @@ urlpatterns = [
     path('change_password/', views.change_password, name="change_password"),
     path("accounts/login/", RedirectFromLogin.as_view(), name="login"),
     path('upload/', upload_file, name='upload_file'),
-    path('files/', file_list, name='file_list'),
+    path('file_list/', file_list, name='file_list'),
 ]
 
 if settings.DEBUG:
