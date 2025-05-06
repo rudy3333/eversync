@@ -68,10 +68,14 @@
                     </li>
                 {% endfor %}
             </ul>
+        
+            <div class="divider"></div>
+
+            <div style="display: flex; justify-content: center;">
+                <a href="{% url 'upload_file' %}" class="login-link" style="width: 100%; text-align: center; text-decoration: none;">View your files</a>
+            </div>      
         </div>
-    </div>
-
-
+     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
