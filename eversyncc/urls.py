@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import RedirectFromLogin, upload_file, file_list
+from .views import RedirectFromLogin, upload_file, file_list, delete_file
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -16,6 +16,7 @@ urlpatterns = [
     path("accounts/login/", RedirectFromLogin.as_view(), name="login"),
     path('upload/', upload_file, name='upload_file'),
     path('file_list/', file_list, name='file_list'),
+    path('delete_file/<int:file_id>', delete_file, name='delete_file')
 ]
 
 if settings.DEBUG:

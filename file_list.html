@@ -64,6 +64,7 @@
                 {% for document in documents %}
                     <li>
                         <a href="{{ document.file.url }}">{{ document.title }}</a>
+                <button onclick="deleteFile('{{ document.id }}')">Delete</button>
                     </li>
                 {% endfor %}
             </ul>
@@ -81,6 +82,31 @@
             });
         });
     </script>
+
+    <script>
+        const csrfToken = '{{ csrf_token }}'
+
+        function deleteFile(fileId) {
+        if (confirm("Are you sure you want to delete this file?")) {
+            fetch(`/delete_file/${fileId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'file_id': '{{ file.id }}'
+                },
+            })
+        
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert("Error deleting files");
+            }
+        })
+        }
+        }
+    </script>
+
 
 </body>
 </html>

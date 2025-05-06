@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 # Create your views here.
@@ -94,3 +94,14 @@ def upload_file(request):
 def file_list(request):
     documents = Document.objects.filter(user=request.user)
     return render(request, 'file_list.html', {'documents': documents})
+
+
+@login_required
+def delete_file(request, file_id):
+    if request.method == 'DELETE':
+        try:
+            file = Document.objects.get(id=file_id)
+            file.delete()
+            return JsonResponse({'message' : 'Success.'})
+        except Document.DoesNotExist:
+            return JsonResponse({'error': 'Error.'}, status=404)
