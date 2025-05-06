@@ -62,8 +62,9 @@
             <h1>Your Uploaded Files</h1>
             <ul>
                 {% for document in documents %}
-                    <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <a href="{{ document.file.url }}">{{ document.title }}</a>
+                  <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">       
+                  <img src="{{ document.file.url }}" alt="{{ document.title }}" style="height: 50px; margin-right: 10px;" />
+                  <a href="{{ document.file.url }}">{{ document.title }}</a>
                         <button onclick="deleteFile('{{ document.id }}')" style="margin-left: 10px;">Delete</button>
                     </li>
                 {% endfor %}
