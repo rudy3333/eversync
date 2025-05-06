@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="{% static 'register-style.css' %}" ">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body style="overflow: hidden;">
+<body>   
     <div class="header">
         <div class="header-content">
             <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
@@ -60,6 +60,7 @@
             {% endif %}
 
             <h1>Your Uploaded Files</h1>
+            <div style="display: inline-block;">
             <ul>
                 {% for document in documents %}
                 <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -79,7 +80,7 @@
                 </li>
             {% endfor %}
             </ul>
-        
+            </div>
             <div class="divider"></div>
 
             <div style="display: flex; justify-content: center;">

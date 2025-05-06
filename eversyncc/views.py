@@ -10,6 +10,8 @@ from .forms import UsernameChangeForm, DocumentForm
 from .models import Document
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
+import os
+
 
 def logout_view(request):
     request.session.flush()
@@ -83,6 +85,14 @@ def upload_file(request):
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             document = form.save(commit=False)
+            filename = document.file.name
+            ext = os.path.splitext(filename)[1].lower()
+
+            forbidden_extensions=['.html','.htm','.php','.exe','.js','.sh','.bat']
+            if ext in forbidden_extensions:
+                request.session.flush()
+                logout(request)
+                return HttpResponse("<html><body><script>alert('Uploading possibly malicious files is forbidden. You have been logged out.'); location.reload();</script></body></html>")
             document.user = request.user
             document.save()
             return redirect('file_list')
