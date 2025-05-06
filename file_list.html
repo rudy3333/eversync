@@ -62,12 +62,22 @@
             <h1>Your Uploaded Files</h1>
             <ul>
                 {% for document in documents %}
-                  <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">       
-                  <img src="{{ document.file.url }}" alt="{{ document.title }}" style="height: 50px; margin-right: 10px;" />
-                  <a href="{{ document.file.url }}">{{ document.title }}</a>
-                        <button onclick="deleteFile('{{ document.id }}')" style="margin-left: 10px;">Delete</button>
-                    </li>
-                {% endfor %}
+                <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    {% with document.file.url|lower as file_url %}
+                        {% with file_url|slice:"-4:" as slice4 %}
+                            {% with file_url|slice:"-5:" as slice5 %}
+                                {% if slice4 == ".png" or slice4 == ".jpg" or slice4 == ".gif" or slice5 == ".jpeg" or slice5 == ".webp" %}
+                                    <img src="{{ document.file.url }}" style="height: 70px; margin-right: 10px;"></img>
+                                {% else %}
+                                    <img src="{% static 'newnew.png' %}" style="height: 90px; margin-right: 10px;"></img>
+                                {% endif %}
+                            {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
+                    <a href="{{ document.file.url }}">{{ document.title }}</a>
+                    <button onclick="deleteFile('{{ document.id }}')" style="margin-left: 10px;">Delete</button>
+                </li>
+            {% endfor %}
             </ul>
         
             <div class="divider"></div>
