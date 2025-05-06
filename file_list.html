@@ -62,9 +62,9 @@
             <h1>Your Uploaded Files</h1>
             <ul>
                 {% for document in documents %}
-                    <li>
+                    <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <a href="{{ document.file.url }}">{{ document.title }}</a>
-                <button onclick="deleteFile('{{ document.id }}')">Delete</button>
+                        <button onclick="deleteFile('{{ document.id }}')" style="margin-left: 10px;">Delete</button>
                     </li>
                 {% endfor %}
             </ul>
@@ -72,7 +72,7 @@
             <div class="divider"></div>
 
             <div style="display: flex; justify-content: center;">
-                <a href="{% url 'upload_file' %}" class="login-link" style="width: 100%; text-align: center; text-decoration: none;">View your files</a>
+                <a href="{% url 'upload_file' %}" class="register-button" style="width: 100%; text-align: center; text-decoration: none;">Upload</a>
             </div>      
         </div>
      </div>
