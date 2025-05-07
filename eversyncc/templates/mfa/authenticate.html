@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    <link rel="stylesheet" href="{% static 'login-style.css' %}" ">
+    
+</head>
+    
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo" >eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-box" style="width: 50%; margin: 0 auto;">
+            {% load i18n %} {% load allauth %} {% load allauth static %} {% block content %} {% element h1 %} {% trans "Two-Factor Authentication" %}<div class="divider"></div> {% endelement %} {% element p %} {% blocktranslate %}Your account is protected by two-factor authentication. Please enter an authenticator code:{% endblocktranslate %} {% endelement %} {% url 'mfa_authenticate' as action_url %} 
+            <form method="post" action="{{ action_url }}">
+                {% csrf_token %}
+                {% element fields form=form unlabeled=True %} {% endelement %}
+                <button type="submit" class="login-button" style="margin-bottom: 10px;">Sign In</button>
+            </form>
+
+            <form method="post" action="{% url 'logoutz' %}">
+                {% csrf_token %}
+                <button type="submit" class="login-button">Cancel</button>
+            </form>
+
+            {% if "webauthn" in MFA_SUPPORTED_TYPES %}
+                {% element hr %} {% endelement %}
+                {% element h2 %} {% translate "Alternative options" %} {% endelement %}
+                {% element button_group vertical=True %}
+                    <button form="webauthn_form" id="mfa_webauthn_authenticate" type="button" class="login-button">Use a security key</button>
+                    {% element button type="submit" form="logout-from-stage" tags="outline,primary,mfa,cancel" %}
+                        {% trans "Cancel" %}
+                    {% endelement %}
+                {% endelement %}
+                {% element form id="webauthn_form" form=webauthn_form method="post" action=action_url no_visible_fields=True %}
+                    {% slot body %}
+                        {% csrf_token %}
+                        {% element fields form=webauthn_form %}
+                        {% endelement %}
+                    {% endslot %}
+                {% endelement %}
+                {{ js_data|json_script:"js_data" }}
+                {% include "mfa/webauthn/snippets/scripts.html" %}
+            {% endif %}
+            {% csrf_token %}
+            {% endblock content %}
+        </div>
+        </div>
+    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        toggle.addEventListener('click', function () {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+</script>
+</body>
+</html> 
