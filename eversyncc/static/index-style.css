@@ -134,3 +134,8 @@ background-color: #03a9f4;
 font-size: 70px;
 margin-bottom: 5px;
 }
+
+.divider {
+    border-top: 1px solid #dadde1;
+    margin: 20px 0;
+}
