@@ -11,6 +11,8 @@ from .models import Document
 from django.contrib import messages
 from django.contrib.auth.views import LoginView
 import os
+from pathlib import Path
+
 
 
 def logout_view(request):
@@ -111,7 +113,12 @@ def delete_file(request, file_id):
     if request.method == 'DELETE':
         try:
             file = Document.objects.get(id=file_id)
-            file.delete()
+            file_path = file.file.path
+            try:
+                file.delete()
+            except:
+                pass
+            os.remove(file_path)
             return JsonResponse({'message' : 'Success.'})
         except Document.DoesNotExist:
             return JsonResponse({'error': 'Error.'}, status=404)
