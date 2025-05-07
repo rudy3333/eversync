@@ -45,7 +45,17 @@
             {% load i18n %} {% load allauth %} {% load allauth static %} {% block content %} {% element h1 %} {% trans "Two-Factor Authentication" %}<div class="divider"></div> {% endelement %} {% element p %} {% blocktranslate %}Your account is protected by two-factor authentication. Please enter an authenticator code:{% endblocktranslate %} {% endelement %} {% url 'mfa_authenticate' as action_url %} 
             <form method="post" action="{{ action_url }}">
                 {% csrf_token %}
-                {% element fields form=form unlabeled=True %} {% endelement %}
+                <div class="responsive-form-layout">
+                    <div>
+                        <div style="margin: 0 auto; max-width: 400px; display: flex; justify-content: center; width: 100%;">
+                            {% element fields form=form unlabeled=True %}
+                            {% endelement %}
+                        </div>
+                    </div>
+                    <div>
+                        <img src="{% static '2fa.png' %}" alt="2FA" style="height: 100%; max-height: 160px; width: auto; object-fit: contain;">
+                    </div>
+                </div>
                 <button type="submit" class="login-button" style="margin-bottom: 10px;">Sign In</button>
             </form>
 
@@ -78,6 +88,42 @@
         </div>
         </div>
     </div>
+<style>
+    .responsive-form-layout {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .responsive-form-layout > div {
+        flex: 1 1 100%;
+    }
+
+    .responsive-form-layout > div:last-child {
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (min-width: 768px) {
+        .responsive-form-layout {
+            flex-wrap: nowrap;
+        }
+
+        .responsive-form-layout > div {
+            flex: 1;
+        }
+
+        .responsive-form-layout > div:last-child {
+            flex-shrink: 0;
+            max-width: 160px;
+            display: flex;
+            align-items: center;
+        }
+    }
+</style>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggle = document.querySelector('.dropdown-toggle');
