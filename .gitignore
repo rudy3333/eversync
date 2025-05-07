@@ -89,8 +89,6 @@ local_settings.py
 db.sqlite3
 
 
-settings.py
-#currently wont push cus its a secret key and i havent set up a .env file yet
 
 files
 #self explanatory
