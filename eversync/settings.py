@@ -156,3 +156,5 @@ REGISTRATION_SALT = 'registration'
 MEDIA_URL = '/files/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'files')
 STATIC_ROOT= os.path.join(BASE_DIR, 'eversyncc/static')
+
+ACCOUNT_MFA_ENABLED = True

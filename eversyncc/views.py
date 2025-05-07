@@ -9,7 +9,7 @@ from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm, DocumentForm
 from .models import Document
 from django.contrib import messages
-from django.contrib.auth.views import LoginView
+from allauth.account.views import LoginView as AllauthLoginView
 import os
 from pathlib import Path
 
@@ -75,7 +75,7 @@ def change_password(request):
         form = PasswordChangeForm(user=request.user)
     return render(request, 'manage.html', {'password_form': form})
 
-class RedirectFromLogin(LoginView):
+class RedirectFromLogin(AllauthLoginView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             return redirect('/') 
