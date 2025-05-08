@@ -1,0 +1,18 @@
+{% load allauth %}
+<section>
+    <h2>
+        {% slot title %}
+        {% endslot %}
+    </h2>
+    {% slot body %}
+    {% endslot %}
+    {% if slots.actions %}
+        <ul style="display: flex; justify-content: center; padding: 0;">
+            {% for action in slots.actions %}
+                <li style="list-style-type: none; width: 100%; text-align: center;">
+                    {{ action }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>
