@@ -7,7 +7,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm, DocumentForm
-from .models import Document
+from .models import Document, Event
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
@@ -122,3 +122,16 @@ def delete_file(request, file_id):
             return JsonResponse({'message' : 'Success.'})
         except Document.DoesNotExist:
             return JsonResponse({'error': 'Error.'}, status=404)
+
+@login_required
+def calendar(request):
+    events = Event.objects.filter(user=request.user)
+    events_data = [
+        {
+            "title": event.title,
+            "start": event.start_time.isoformat(),
+            "end": event.end_time.isoformat(),
+        }
+        for event in events
+    ]
+    return render(request, 'calendar.html', {'events_data': events_data})
