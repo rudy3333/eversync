@@ -81,6 +81,8 @@
                     document.getElementById('event-title').textContent = info.event.title;
                     document.getElementById('event-start').textContent = info.event.start ? info.event.start.toLocaleString() : '';
                     document.getElementById('event-end').textContent = info.event.end ? info.event.end.toLocaleString() : '';
+                    document.getElementById('event-id').textContent = info.event.id;
+
                     
                     // Display the modal
                     document.getElementById('event-modal').style.display = 'flex';
@@ -128,6 +130,7 @@
         .then(data => {
             if (data.message) {
                 alert('Event created!');
+                location.reload();
                 calendar.refetchEvents();
                 document.getElementById('event-form').reset();
             } else {
@@ -178,6 +181,8 @@
             <p><strong>Start:</strong> <span id="event-start"></span></p>
             <p><strong>End:</strong> <span id="event-end"></span></p>
             <button id="close-modal">Close</button>
+            <span id="event-id" style="display: none;"></span>
+            <button id="delete-event" style="background-color: red; color: white; border: none; cursor: pointer; padding: 10px 20px; border-radius: 4px; font-size: 16px; margin-top: 10px;">Delete</button>
         </div>
     </div>
 
@@ -219,4 +224,36 @@
             background-color: #0056b3;
         }
     </style>
+
+
+<script>
+    document.getElementById('delete-event').addEventListener('click', function () {
+        const title = document.getElementById('event-title').textContent;
+        const eventId = document.getElementById('event-id').textContent;
+
+        fetch(`/calendar_event_delete/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: new URLSearchParams({
+                id: eventId,
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.message) {
+                alert('Event deleted!');
+                document.getElementById('event-modal').style.display = 'none';
+                calendar.refetchEvents();
+                location.reload();
+            } else {
+                alert('Event deleted!');
+                location.reload();
+            }
+        });
+    });
+</script>
+
 </html>     

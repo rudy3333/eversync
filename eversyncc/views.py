@@ -124,6 +124,21 @@ def delete_file(request, file_id):
             return JsonResponse({'error': 'Error.'}, status=404)
 
 @login_required
+def calendar_event_delete(request, event_id):
+    if request.method == 'POST':
+        try:
+            event = Event.objects.get(id=event_id)
+            try:
+                event.delete()
+                return JsonResponse({'messsage': 'Success.'})
+            except:
+                return JsonResponse({'error': 'Error.'}, status=404)
+        except:
+            return JsonResponse({'error': 'Error.'}, status=404)
+
+
+
+@login_required
 def calendar(request):
     events = Event.objects.filter(user=request.user)
     events_data = [
@@ -141,6 +156,7 @@ def calendar_events(request):
     events = Event.objects.filter(user=request.user)
     events_data = [
         {
+            "id": event.id,
             "title": event.title,
             "start": event.start_time.isoformat(),
             "end": event.end_time.isoformat(),
