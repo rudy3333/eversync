@@ -38,4 +38,4 @@ class DocumentForm(forms.ModelForm):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event 
-        fields = ['title', 'start_time', 'end_time']
+        fields = ['title', 'start_time', 'end_time', 'color']

@@ -144,6 +144,7 @@ def calendar_events(request):
             "title": event.title,
             "start": event.start_time.isoformat(),
             "end": event.end_time.isoformat(),
+            "color": event.color
         }
         for event in events
     ]

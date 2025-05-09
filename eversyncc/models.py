@@ -17,6 +17,7 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    color = models.TextField(default='#3788d8')
 
     def __str__(self):
         return self.title
