@@ -8,10 +8,41 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
-</head>
-    
+    <style>
+    #pomodoro-box {
+        display: block;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        color: black;
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        font-size: 3rem;
+        z-index: 9999;
+    }
+    #pomodoro-box button {
+        font-size: 1.5rem;
+        margin: 10px;
+        padding: 15px 30px;
+        background: #444;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+    }
+    </style>
 </head>
 <body>
+    <div id="pomodoro-box" style="display: none;">
+        <h3>Focus Timer</h3>
+        <p id="timer-display">25:00</p>
+        <button onclick="startPomodoro()">Start</button>
+        <button onclick="stopPomodoro()">Stop</button>
+    </div>
+
     <div class="header">
         <div class="header-content">
             <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
@@ -42,12 +73,53 @@
 
 
     <script>
+        // Dropdown menu code
         document.addEventListener('DOMContentLoaded', function () {
             const toggle = document.querySelector('.dropdown-toggle');
             const menu = document.querySelector('.dropdown-menu');
             toggle.addEventListener('click', function () {
                 menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
             });
+        });
+
+        // Pomodoro timer code
+        let pomodoroInterval = null;
+        let totalSeconds = 25 * 60;
+        let running = false;
+
+        function updateDisplay() {
+            const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+            const seconds = String(totalSeconds % 60).padStart(2, '0');
+            document.getElementById('timer-display').textContent = `${minutes}:${seconds}`;
+        }
+
+        function startPomodoro() {
+            if (running) return;
+            running = true;
+            pomodoroInterval = setInterval(() => {
+                if (totalSeconds > 0) {
+                    totalSeconds--;
+                    updateDisplay();
+                } else {
+                    stopPomodoro();
+                }
+            }, 1000);
+        }
+
+        function stopPomodoro() {
+            running = false;
+            clearInterval(pomodoroInterval);
+            totalSeconds = 25 * 60;
+            updateDisplay();
+        }
+
+        function togglePomodoro() {
+            document.getElementById('pomodoro-box').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            togglePomodoro(); // Automatically show the timer when the page loads
+            updateDisplay();
         });
     </script>
     </body>
