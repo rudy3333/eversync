@@ -38,56 +38,17 @@
             </div>
         </div>
     </div>
-    
-    <div class="container">
-        <div class="welcome-box">
-            <h1>Welcome to Eversync</h1>
-            <p>You are logged in as {{ user.username }}</p>
-        </div>
-        
-        <div class="content-box">
-            <h2>Your Dashboard</h2>
-
-            <div class="button-container">
-                <div class="service-button mail">
-                  <i class="fas fa-envelope"></i>
-                  mail
-                </div>
-
-                  <a href="/calendar" style="text-decoration: none;"><div class="service-button calendar">
-                    <i class="fas fa-calendar-alt"></i>
-                  calendar
-                </div></a>
-                <a href="/upload" style="text-decoration: none;"><div class="service-button cloud">
-                  <i class="fas fa-cloud"></i>
-                  cloud
-                </div></a>
-
-                <a href="/notes" style="text-decoration: none;"><div class="service-button notes">
-                    <i class="fa-solid fa-clipboard"></i>
-                    notes
-                </div>
-                </a>
-            </div>
-
-            <div class="button-container">
-                <a href="/pomodoro" style="text-decoration: none;"><div class="service-button pomodoro">
-                    <i class="fa-solid fa-hourglass"></i>
-                    timer
-                </div></a>
-            </div>
 
 
-        </div>
-    </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggle = document.querySelector('.dropdown-toggle');
-        const menu = document.querySelector('.dropdown-menu');
-        toggle.addEventListener('click', function () {
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.querySelector('.dropdown-toggle');
+            const menu = document.querySelector('.dropdown-menu');
+            toggle.addEventListener('click', function () {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
         });
-    });
-</script>
-</body>
-</html>
+    </script>
+    </body>
+    </html> 

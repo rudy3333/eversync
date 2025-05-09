@@ -214,3 +214,7 @@ def notes(request):
         for note in notes
     ]
     return render(request, 'notes.html', {'notes_data': notes_data})
+
+@login_required
+def pomodoro(request):
+    return render(request, "pomodoro.html")
