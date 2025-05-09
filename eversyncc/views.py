@@ -143,7 +143,7 @@ def calendar_events(request):
         {
             "title": event.title,
             "start": event.start_time.isoformat(),
-            "end": event.start_time.isoformat(),
+            "end": event.end_time.isoformat(),
         }
         for event in events
     ]

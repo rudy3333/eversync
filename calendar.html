@@ -40,7 +40,7 @@
     </div> 
     <h1 style="text-align: center;">Calendar</h1>
 
-    <form id="event-form">
+    <form id="event-form" style="text-align: center;">
         <h3>Create Event</h3>
         <input type="text" id="title" placeholder="Title" required>
         <input type="datetime-local" id="start" required>
@@ -52,8 +52,12 @@
         <div id="calendar"></div>
     </div>
     <style>
+        .fc-button-group {
+            margin-left: 100px;
+        }
+
         .calendar-container {
-            max-width: 500px; 
+            max-width: 800px; 
             margin: 0 auto;   
             padding: 20px;    
         }
@@ -68,11 +72,32 @@
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 initialView: 'dayGridMonth',
-                events: '/calendar/events/',  //FIX
+                events: '/calendar/events/',
                 editable: true,  
-                droppable: true,  
+                droppable: true,
+                eventClick: function(info) {
+                    // Set the modal content
+                    document.getElementById('event-title').textContent = info.event.title;
+                    document.getElementById('event-start').textContent = info.event.start ? info.event.start.toLocaleString() : '';
+                    document.getElementById('event-end').textContent = info.event.end ? info.event.end.toLocaleString() : '';
+                    
+                    // Display the modal
+                    document.getElementById('event-modal').style.display = 'flex';
+                },
             });
             calendar.render();
+
+            // Close modal when the 'Close' button is clicked
+            document.getElementById('close-modal').addEventListener('click', function () {
+                document.getElementById('event-modal').style.display = 'none';
+            });
+
+            // Close modal if clicked outside of the modal content
+            document.getElementById('event-modal').addEventListener('click', function (e) {
+                if (e.target === document.getElementById('event-modal')) {
+                    document.getElementById('event-modal').style.display = 'none';
+                }
+            });
         });
     </script>
 
@@ -143,4 +168,52 @@
     });
 </script>
 </body>
+    <div id="event-modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Event Details</h3>
+            <p><strong>Title:</strong> <span id="event-title"></span></p>
+            <p><strong>Start:</strong> <span id="event-start"></span></p>
+            <p><strong>End:</strong> <span id="event-end"></span></p>
+            <button id="close-modal">Close</button>
+        </div>
+    </div>
+
+    <style>
+        #event-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #close-modal {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #close-modal:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </html>     
