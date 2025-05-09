@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+</head>
+    
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo" >eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+  <script>
+    async function fetchNotes() {
+      const response = await fetch("/note_list");
+      const notes = await response.json();
+      const container = document.getElementById("notes-container");
+      container.innerHTML = "";
+
+      notes.forEach(note => {
+        const noteDiv = document.createElement("div");
+        noteDiv.innerHTML = `<h3>${note.title}</h3><p>${note.content}</p>`;
+        container.appendChild(noteDiv);
+      });
+    }
+
+    async function addNote(event) {
+      event.preventDefault();
+      const title = document.getElementById("title").value;
+      const content = document.getElementById("content").value;
+
+      const response = await fetch("/note_add/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRFToken": getCSRFToken()
+        },
+        body: `title=${encodeURIComponent(title)}&content=${encodeURIComponent(content)}`
+      });
+
+      if (response.status === 201) {
+        document.getElementById("note-form").reset();
+        fetchNotes();
+      } else {
+        alert("Failed to create note");
+      }
+    }
+
+    function getCSRFToken() {
+      const name = "csrftoken=";
+      const decodedCookie = decodeURIComponent(document.cookie);
+      const cookies = decodedCookie.split(";");
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.indexOf(name) === 0) {
+          return cookie.substring(name.length, cookie.length);
+        }
+      }
+      return "";
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchNotes();
+      document.getElementById("note-form").addEventListener("submit", addNote);
+    });
+  </script>
+  <style>
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    input, textarea {
+      width: 80%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #ffec99;
+      border: 1px solid #e0c97f;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #notes-container > div {
+      background-color: #fff6cc;
+      border: 2px solid #ffe066;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    #notes-container h3 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Your Notes</h1>
+
+  <form id="note-form">
+    <input type="text" id="title" name="title" placeholder="Note Title" required><br>
+    <textarea id="content" name="content" placeholder="Note Content" required></textarea><br>
+    <button type="submit">Add Note</button>
+  </form>
+
+
+  <div id="notes-container">  </div>
+
+</div>
+</div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.querySelector('.dropdown-toggle');
+    const menu = document.querySelector('.dropdown-menu');
+    toggle.addEventListener('click', function () {
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    });
+});
+</script>
+</body>
+</html> 
