@@ -6,8 +6,8 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
-from .forms import UsernameChangeForm, DocumentForm, EventForm
-from .models import Document, Event
+from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm
+from .models import Document, Event, Notes
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
@@ -177,3 +177,40 @@ def calendar_event_create(request):
             return JsonResponse({'message': 'Event created'}, status=201)
     else:
         return JsonResponse({'message': 'Error'}, status=400)
+    
+
+@login_required
+def note_add(request):
+    if request.method == 'POST':
+        form = NoteForm(request.POST)
+        if form.is_valid():
+            note = form.save(commit=False)
+            note.user = request.user
+            note.save()
+            return JsonResponse({'message': 'Note created'}, status=201)
+    else:
+        return JsonResponse({'message': 'Error'}, status=400)
+    
+@login_required
+def note_list(request):
+    notes = Notes.objects.filter(user_id=request.user)
+    notes_data = [
+        {
+        "content": note.content,
+        "title": note.title,
+        }
+        for note in notes
+    ]
+    return JsonResponse(notes_data, safe=False)
+
+@login_required
+def notes(request):
+    notes = Notes.objects.filter(user_id=request.user)
+    notes_data = [
+        {
+        "content": note.content,
+        "title": note.title,
+        }
+        for note in notes
+    ]
+    return render(request, 'notes.html', {'notes_data': notes_data})

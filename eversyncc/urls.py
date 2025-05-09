@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import RedirectFromLogin, upload_file, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete
+from .views import RedirectFromLogin, upload_file, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -20,7 +20,10 @@ urlpatterns = [
     path('calendar/', calendar, name="calendar"),
     path('calendar/events/', calendar_events, name="calendar_events"),
     path('calendar_event_create/', calendar_event_create, name="calendar_event_create"),
-    path('calendar_event_delete/<int:event_id>', calendar_event_delete, name="calendar_event_delete")
+    path('calendar_event_delete/<int:event_id>', calendar_event_delete, name="calendar_event_delete"),
+    path('note_add/', note_add, name="note_add"),
+    path('note_list/', note_list, name="note_list"),
+    path('notes/', notes, name="notes")
 ]
 
 if settings.DEBUG:

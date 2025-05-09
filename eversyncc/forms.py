@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import Document, Event
+from .models import Document, Event, Notes
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(required=False)
@@ -39,3 +39,8 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event 
         fields = ['title', 'start_time', 'end_time', 'color']
+
+class NoteForm(forms.ModelForm):
+    class Meta:
+        model = Notes
+        fields = ['title', 'content']
