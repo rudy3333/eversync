@@ -38,7 +38,16 @@
             </div>
         </div>
     </div> 
-    <h1>Calendar</h1>
+    <h1 style="text-align: center;">Calendar</h1>
+
+    <form id="event-form">
+        <h3>Create Event</h3>
+        <input type="text" id="title" placeholder="Title" required>
+        <input type="datetime-local" id="start" required>
+        <input type="datetime-local" id="end" required>
+        <button type="submit">Add Event</button>
+      </form>
+
     <div class="calendar-container">
         <div id="calendar"></div>
     </div>
@@ -66,6 +75,58 @@
             calendar.render();
         });
     </script>
+
+<script>
+    document.getElementById('event-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const title = document.getElementById('title').value;
+        const start = document.getElementById('start').value;
+        const end = document.getElementById('end').value;
+
+        fetch('/calendar_event_create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: new URLSearchParams({
+                title: title,
+                start_time: start,
+                end_time: end,
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.message) {
+                alert('Event created!');
+                calendar.refetchEvents();
+                document.getElementById('event-form').reset();
+            } else {
+                alert('Error creating event.');
+            }
+        });
+    });
+
+    // CSRF helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggle = document.querySelector('.dropdown-toggle');

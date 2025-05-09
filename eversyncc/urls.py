@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import RedirectFromLogin, upload_file, file_list, delete_file, calendar
+from .views import RedirectFromLogin, upload_file, file_list, delete_file, calendar, calendar_events, calendar_event_create
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -17,7 +17,9 @@ urlpatterns = [
     path('upload/', upload_file, name='upload_file'),
     path('file_list/', file_list, name='file_list'),
     path('delete_file/<int:file_id>', delete_file, name='delete_file'),
-    path('calendar/', calendar, name="calendar")
+    path('calendar/', calendar, name="calendar"),
+    path('calendar/events/', calendar_events, name="calendar_events"),
+    path('calendar_event_create/', calendar_event_create, name="calendar_event_create")
 ]
 
 if settings.DEBUG:

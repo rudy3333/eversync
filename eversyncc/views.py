@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
-from .forms import UsernameChangeForm, DocumentForm
+from .forms import UsernameChangeForm, DocumentForm, EventForm
 from .models import Document, Event
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
@@ -135,3 +135,28 @@ def calendar(request):
         for event in events
     ]
     return render(request, 'calendar.html', {'events_data': events_data})
+
+@login_required
+def calendar_events(request):
+    events = Event.objects.filter(user=request.user)
+    events_data = [
+        {
+            "title": event.title,
+            "start": event.start_time.isoformat(),
+            "end": event.start_time.isoformat(),
+        }
+        for event in events
+    ]
+    return JsonResponse(events_data, safe=False)
+
+@login_required
+def calendar_event_create(request):
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.user = request.user
+            event.save()
+            return JsonResponse({'message': 'Event created'}, status=201)
+    else:
+        return JsonResponse({'message': 'Error'}, status=400)
