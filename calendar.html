@@ -10,6 +10,21 @@
     <link rel="stylesheet" href="{% static 'register-style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+
+    <style>
+            #event-form input, #event-form button {
+                border: 1px solid #ccc;
+                padding: 8px;
+                margin: 5px;
+                border-radius: 4px;
+            }
+
+            #event-form input:focus {
+                border-color: #888;
+                outline: none;
+            }
+    </style>
+
 </head>
 <body>   
     <div class="header">
@@ -166,7 +181,11 @@
     }
 </script>
 
-
+<script>
+    document.getElementById('color').addEventListener('input', function (e) {
+        e.target.style.backgroundColor = e.target.value;
+    });
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -266,4 +285,4 @@
     });
 </script>
 
-</html>     
+</html>    

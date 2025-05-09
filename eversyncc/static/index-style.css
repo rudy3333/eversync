@@ -130,6 +130,10 @@ background-color: #4caf50;
 background-color: #03a9f4;
 }
 
+.notes {
+    background-color: #ffd018;
+}
+
 .service-button i {
 font-size: 70px;
 margin-bottom: 5px;
