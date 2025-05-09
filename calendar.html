@@ -55,6 +55,16 @@
     <style>
         .fc-button-group {
             margin-left: 100px;
+            display: flex;
+            flex-direction: row;  
+        }
+
+        @media (max-width: 768px) {  
+            .fc-button-group {
+                margin-left: 0;  
+                flex-direction: column;  
+                align-items: center; 
+            }
         }
 
         .calendar-container {
