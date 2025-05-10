@@ -7,13 +7,15 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm
-from .models import Document, Event, Notes
+from .models import Document, Event, Notes, Embed
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
 from pathlib import Path
+import micawber
 
 
+providers = micawber.bootstrap_basic()
 
 def logout_view(request):
     request.session.flush()
@@ -219,3 +221,23 @@ def notes(request):
 @login_required
 def pomodoro(request):
     return render(request, "pomodoro.html")
+
+@login_required
+
+def add_embed(request):
+    if request.method == 'POST':
+        url = request.POST["url"]
+        info = providers.request(url)
+
+        embed = Embed.objects.create(
+            url=url,
+            title=info.get("title", "No title"),
+            embed_html=info.get("html", "")
+        )
+        return redirect("embed_list")
+    return render(request, "add_embed.html")
+
+    
+def embed_list(request):
+    embeds = Embed.objects.all()
+    return render(request, "embed_list.html", {"embeds": embeds})
