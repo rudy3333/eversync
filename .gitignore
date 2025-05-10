@@ -92,3 +92,7 @@ db.sqlite3
 
 files
 #self explanatory
+
+fly.toml
+fly-deploy.yml
+Dockerfile

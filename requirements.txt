@@ -1,0 +1,17 @@
+asgiref
+cffi
+confusable-homoglyphs
+cryptography
+Django
+django-allauth
+django-registration
+dotenv
+fido2
+gunicorn
+packaging
+pycparser
+python-dotenv
+sqlparse
+psycopg2-binary
+psycopg
+qrcode
