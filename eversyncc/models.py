@@ -30,3 +30,13 @@ class Notes(models.Model):
     
     def __str__(self):
         return self.title
+    
+class Embed(models.Model):
+    url = models.URLField()
+    title = models.CharField(max_length=200)
+    provider = models.CharField(max_length=100)
+    embed_html = models.TextField()
+    added_at = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

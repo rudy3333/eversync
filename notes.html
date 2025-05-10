@@ -48,7 +48,7 @@
 
       notes.forEach(note => {
         const noteDiv = document.createElement("div");
-        noteDiv.innerHTML = `<h3>${note.title}</h3><p>${note.content}</p>`;
+        noteDiv.innerHTML = `<h3>${note.title}</h3><p>${note.content}</p><small>Created at: ${note.time}</small>`;
         container.appendChild(noteDiv);
       });
     }

@@ -198,6 +198,7 @@ def note_list(request):
         {
         "content": note.content,
         "title": note.title,
+        "time": note.created_at
         }
         for note in notes
     ]
