@@ -227,6 +227,8 @@ def pomodoro(request):
 def add_embed(request):
     if request.method == 'POST':
         url = request.POST["url"]
+        if "x.com" in url:
+            url = url.replace("x.com", "twitter.com")
         info = providers.request(url)
 
         embed = Embed.objects.create(
@@ -241,3 +243,16 @@ def add_embed(request):
 def embed_list(request):
     embeds = Embed.objects.all()
     return render(request, "embed_list.html", {"embeds": embeds})
+
+@login_required
+def delete_embed(request, id):
+    if request.method == 'POST':
+        try:
+            embed = Embed.objects.get(id=id)
+            try:
+                embed.delete()
+                return JsonResponse({'messsage': 'Success.'})
+            except:
+                return JsonResponse({'error': 'Error.'}, status=404)
+        except:
+            return JsonResponse({'error': 'Error.'}, status=404)
