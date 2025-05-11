@@ -198,7 +198,7 @@ def note_list(request):
     notes = Notes.objects.filter(user_id=request.user)
     notes_data = [
         {
-        "content": note.content,
+        "content": note.content.replace('\n', '<br>'),
         "title": note.title,
         "time": note.created_at
         }
@@ -211,7 +211,7 @@ def notes(request):
     notes = Notes.objects.filter(user_id=request.user)
     notes_data = [
         {
-        "content": note.content,
+        "content": note.content.replace('\n', '<br>'),
         "title": note.title,
         }
         for note in notes
