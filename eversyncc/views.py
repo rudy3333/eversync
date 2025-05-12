@@ -251,8 +251,17 @@ def delete_embed(request, id):
             embed = Embed.objects.get(id=id)
             try:
                 embed.delete()
-                return JsonResponse({'messsage': 'Success.'})
+                return redirect('embed_list')
             except:
                 return JsonResponse({'error': 'Error.'}, status=404)
         except:
             return JsonResponse({'error': 'Error.'}, status=404)
+        
+
+@login_required
+def view_embed(request, id):
+    try:
+        embed = Embed.objects.get(id=id)
+        return render(request, "view_embed.html", {"embed": embed})
+    except:
+        return HttpResponse("embed not found", status=404)
