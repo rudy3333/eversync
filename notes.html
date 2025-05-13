@@ -88,6 +88,48 @@
       return "";
     }
 
+    let recognition;
+
+    function startVoiceRecognition() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert("Your browser does not support speech recognition.");
+        return;
+      }
+
+      document.getElementById('voiceModal').style.display = 'block';
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('content').value += transcript;
+        closeVoiceModal();
+      };
+
+      recognition.onerror = function(event) {
+        console.error("Speech recognition error", event.error);
+        alert("Speech recognition error: " + event.error);
+        closeVoiceModal();
+      };
+
+      recognition.start();
+    }
+
+    function stopVoiceRecognition() {
+      if (recognition) {
+        recognition.stop();
+        closeVoiceModal();
+      }
+    }
+
+    function closeVoiceModal() {
+      document.getElementById('voiceModal').style.display = 'none';
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       fetchNotes();
       document.getElementById("note-form").addEventListener("submit", addNote);
@@ -144,6 +186,7 @@
   <form id="note-form">
     <input type="text" id="title" name="title" placeholder="Note Title" required><br>
     <textarea id="content" name="content" placeholder="Note Content" required></textarea><br>
+    <button type="button" onclick="startVoiceRecognition()">🎤 Speak</button>
     <button type="submit">Add Note</button>
   </form>
 
@@ -163,4 +206,10 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 </body>
+  <div id="voiceModal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div style="background-color: #fff; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 300px; text-align: center; border-radius: 10px;">
+      <h3>Speak now...</h3>
+      <button onclick="stopVoiceRecognition()">❌ Cancel</button>
+    </div>
+  </div>
 </html> 
