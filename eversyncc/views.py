@@ -257,3 +257,6 @@ def delete_embed(request, id):
         except:
             return JsonResponse({'error': 'Error.'}, status=404)
         
+@login_required
+def meeting(request):
+    return render(request, 'meeting.html')

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import RedirectFromLogin, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
+from .views import RedirectFromLogin, meeting, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -28,6 +28,7 @@ urlpatterns = [
     path('add_embed/', add_embed, name="add_embed"),
     path('embed_list/', embed_list, name="embed_list"),
     path('delete_embed/<int:id>/', delete_embed, name="delete_embed"),
+    path('meeting', meeting,  name="meeting")
 ]
 
 if settings.DEBUG:
