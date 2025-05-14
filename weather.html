@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+</head>
+    
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+            color: white;
+            margin: 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .weather-container {
+            margin: 0 auto;
+            display: block;
+            max-width: 900px;
+            width: 100%;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            color: black;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .current-weather {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .forecast {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .forecast-card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            width: 100px;
+            text-align: center;
+        }
+
+        .forecast-card h3 {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .forecast-card p {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="weather-container">
+        <h1>Weather in {{ location }}</h1>
+
+        <div class="current-weather">
+            <p>Now: <span id="current-temp"></span>°C, <span id="current-code"></span></p>
+            <p>High: <span id="max-temp"></span>°C / Low: <span id="min-temp"></span>°C</p>
+            <p>Sunrise: <span id="sunrise-time"></span> / Sunset: <span id="sunset-time"></span></p>
+        </div>
+
+        <canvas id="weatherChart" width="800" height="400"></canvas>
+
+        <div class="forecast">
+            {% for hour in hourly_forecast %}
+                <div class="forecast-card">
+                    <h3>{{ hour.time }}</h3>
+                    <p>{{ hour.temp }}°C</p>
+                    <p>{{ hour.condition }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        fetch("{% url 'weather_api' location=location %}")
+        .then(response => response.json())
+        .then(data => {
+            // Current weather data
+            document.getElementById('current-temp').textContent = data.current.temperature;
+            const weatherDescriptions = {
+                0: "Clear",
+                1: "Mainly Clear",
+                2: "Partly Cloudy",
+                3: "Overcast",
+                45: "Fog",
+                48: "Depositing Rime Fog",
+                51: "Light Drizzle",
+                53: "Moderate Drizzle",
+                55: "Dense Drizzle",
+                61: "Light Rain",
+                63: "Moderate Rain",
+                65: "Heavy Rain",
+                71: "Light Snow",
+                73: "Moderate Snow",
+                75: "Heavy Snow",
+                80: "Rain Showers",
+                81: "Heavy Rain Showers",
+                95: "Thunderstorm",
+            };
+            document.getElementById('current-code').textContent = weatherDescriptions[data.current.weathercode] || "Unknown";
+            document.getElementById('max-temp').textContent = data.summary.today.max_temp;
+            document.getElementById('min-temp').textContent = data.summary.today.min_temp;
+            document.getElementById('sunrise-time').textContent = new Date(data.summary.today.sunrise).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('sunset-time').textContent = new Date(data.summary.today.sunset).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Hourly Forecast Chart
+            const ctx = document.getElementById('weatherChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.hourly.time,
+                    datasets: [{
+                        label: 'Hourly Temperature (°C)',
+                        data: data.hourly.temperature_2m,
+                        borderColor: 'rgba(0, 0, 0, 1)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                        borderWidth: 2,
+                        pointRadius: 1,
+                        fill: true,
+                        tension: 0.3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            ticks: {
+                                autoSkip: true,
+                                maxTicksLimit: 24,
+                                font: {
+                                    family: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                                    size: 12,
+                                    weight: 500,
+                                    color: 'white'
+                                }
+                            },
+                        },
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                font: {
+                                    family: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif',
+                                    size: 14,
+                                    weight: 600,
+                                    color: 'white'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const forecastContainer = document.querySelector('.forecast');
+            data.hourly.forecast.forEach(hour => {
+                forecastContainer.innerHTML += `
+                    <div class="forecast-card">
+                        <h3>${hour.time}</h3>
+                        <p>${hour.temp}°C</p>
+                        <p>${hour.condition}</p>
+                    </div>
+                `;
+            });
+        });
+    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        toggle.addEventListener('click', function () {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+</script>
+</body>
+</html>

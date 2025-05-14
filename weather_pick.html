@@ -40,56 +40,23 @@
     </div>
     
     <div class="container">
-        <div class="welcome-box">
-            <h1>Welcome to Eversync</h1>
-            <p>You are logged in as {{ user.username }}</p>
-        </div>
+        <form onsubmit="event.preventDefault(); loadWeather();">
+            <input type="text" id="location-input" placeholder="Enter a location..." required style="padding: 10px; width: 60%; border-radius: 5px; border: none; margin-bottom: 10px;">
+            <button type="submit" style="padding: 10px 20px; border-radius: 5px; border: none; background-color: #4facfe; color: white; font-weight: bold;">Check Weather</button>
+        </form>
         
-        <div class="content-box">
-            <h2>Your Dashboard</h2>
-
-            <div class="button-container">
-                <div class="service-button mail">
-                  <i class="fas fa-envelope"></i>
-                  mail
-                </div>
-
-                  <a href="/calendar" style="text-decoration: none;"><div class="service-button calendar">
-                    <i class="fas fa-calendar-alt"></i>
-                  calendar
-                </div></a>
-                <a href="/upload" style="text-decoration: none;"><div class="service-button cloud">
-                  <i class="fas fa-cloud-arrow-up"></i>
-                  cloud
-                </div></a>
-
-                <a href="/notes" style="text-decoration: none;"><div class="service-button notes">
-                    <i class="fa-solid fa-clipboard"></i>
-                    notes
-                </div>
-                </a>
-            </div>
-
-            <div class="button-container">
-                <a href="/pomodoro" style="text-decoration: none;"><div class="service-button pomodoro">
-                    <i class="fa-solid fa-hourglass"></i>
-                    timer
-                </div></a>
-
-                <a href="/embed_list" style="text-decoration: none;"><div class="service-button embed">
-                    <i class="fa-solid fa-bookmark"></i>
-                    embeds
-                </div></a>
-
-                <a href="/meeting" style="text-decoration: none;"><div class="service-button meeting">
-                    <i class="fa-solid fa-inverse fa-video"></i>
-                    <div id="white-text">meetings</div>
-                </div></a>
-
-                <a href="/weather_pick" style="text-decoration: none;"><div class="service-button weather">
-                    <i class="fa-solid fa-cloud"></i>
-                    weather
-                </div></a>
+        <iframe id="weather-frame" src="" style="width: 100%; height: 800px; border: none; margin-top: 20px; display: none; border-radius: 12px;"></iframe>
+        
+        <script>
+            function loadWeather() {
+                const location = document.getElementById('location-input').value.trim();
+                if (location) {
+                    const iframe = document.getElementById('weather-frame');
+                    iframe.src = `/weather/${encodeURIComponent(location)}/`;
+                    iframe.style.display = 'block';
+                }
+            }
+        </script>
 
             </div>
 

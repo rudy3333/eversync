@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import RedirectFromLogin, weather_api, meeting, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
+from .views import RedirectFromLogin, weather_pick, weather_view, weather_api, meeting, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -29,7 +29,9 @@ urlpatterns = [
     path('embed_list/', embed_list, name="embed_list"),
     path('delete_embed/<int:id>/', delete_embed, name="delete_embed"),
     path('meeting', meeting,  name="meeting"),
-    path('weather_api/<str:location>', weather_api, name="weather_api")
+    path('weather_api/<str:location>', weather_api, name="weather_api"),
+    path('weather/<str:location>/', weather_view, name="weather_view"),
+    path('weather_pick', weather_pick, name="weather_pick")
 ]
 
 if settings.DEBUG:

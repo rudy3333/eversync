@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import micawber
 import requests
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 
 providers = micawber.bootstrap_basic()
@@ -282,16 +283,57 @@ def weather_api(request, location):
     params = {
         "latitude": lat,
         "longitude": lon,
-        "hourly": "temperature_2m",
+        "hourly": "temperature_2m,weathercode,precipitation_probability,wind_speed_10m",
+        "daily": "temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode",
+        "current_weather": True,
         "timezone": "auto"
     }
 
     weather_response = requests.get(weather_url, params=params).json()
 
-    # Step 3: Return the data
-    hourly_data = {
-        "time": weather_response["hourly"]["time"],
-        "temperature_2m": weather_response["hourly"]["temperature_2m"]
-    }
+    # Construct response
+    hourly = weather_response["hourly"]
+    daily = weather_response["daily"]
+    current = weather_response["current_weather"]
 
-    return JsonResponse(hourly_data)
+    data = {
+        "current": {
+            "temperature": current["temperature"],
+            "wind_speed": current["windspeed"],
+            "weathercode": current["weathercode"]
+        },
+        "summary": {
+            "today": {
+                "max_temp": daily["temperature_2m_max"][0],
+                "min_temp": daily["temperature_2m_min"][0],
+                "sunrise": daily["sunrise"][0],
+                "sunset": daily["sunset"][0],
+                "weathercode": daily["weathercode"][0]
+            }
+        },
+        "hourly": {
+            "time": hourly["time"],
+            "temperature_2m": hourly["temperature_2m"],
+            "weathercode": hourly["weathercode"],
+            "precipitation_probability": hourly["precipitation_probability"],
+            "wind_speed_10m": hourly["wind_speed_10m"]
+        },
+        "daily": {
+            "time": daily["time"],
+            "temperature_max": daily["temperature_2m_max"],
+            "temperature_min": daily["temperature_2m_min"],
+            "sunrise": daily["sunrise"],
+            "sunset": daily["sunset"],
+            "weathercode": daily["weathercode"]
+        }
+    }
+    return JsonResponse(data)
+
+@login_required
+@xframe_options_exempt
+def weather_view(request, location):
+    return render(request, "weather.html", {"location": location})
+
+@login_required
+def weather_pick(request):
+    return render(request, "weather_pick.html")
