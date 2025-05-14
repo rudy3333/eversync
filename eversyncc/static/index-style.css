@@ -138,6 +138,10 @@ background-color: #03a9f4;
     background-color: #683cbc;
 }
 
+.meeting {
+    background-color: #201c1c;
+}
+
 .service-button i {
 font-size: 70px;
 margin-bottom: 5px;
@@ -147,3 +151,8 @@ margin-bottom: 5px;
     border-top: 1px solid #dadde1;
     margin: 20px 0;
 }
+
+#white-text {
+    color: white;
+  }
+  

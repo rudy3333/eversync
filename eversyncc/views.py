@@ -13,6 +13,7 @@ from allauth.account.views import LoginView as AllauthLoginView
 import os
 from pathlib import Path
 import micawber
+import requests
 
 
 providers = micawber.bootstrap_basic()
@@ -260,3 +261,37 @@ def delete_embed(request, id):
 @login_required
 def meeting(request):
     return render(request, 'meeting.html')
+
+@login_required
+def weather_api(request, location):
+    # Step 1: Geocode the location
+    url = f'https://nominatim.openstreetmap.org/search?q={location}&format=json'
+    headers = {
+        'User-Agent': 'my-weather-app'
+    }
+    geo_response = requests.get(url, headers=headers).json()
+
+    if not geo_response:
+        return JsonResponse({'error': 'Location not found'}, status=404)
+
+    lat = geo_response[0]["lat"]
+    lon = geo_response[0]["lon"]
+
+    # Step 2: Call Open-Meteo's raw JSON API
+    weather_url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "hourly": "temperature_2m",
+        "timezone": "auto"
+    }
+
+    weather_response = requests.get(weather_url, params=params).json()
+
+    # Step 3: Return the data
+    hourly_data = {
+        "time": weather_response["hourly"]["time"],
+        "temperature_2m": weather_response["hourly"]["temperature_2m"]
+    }
+
+    return JsonResponse(hourly_data)
