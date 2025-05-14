@@ -41,8 +41,30 @@
     
     <div class="container">
         <form onsubmit="event.preventDefault(); loadWeather();">
-            <input type="text" id="location-input" placeholder="Enter a location..." required style="padding: 10px; width: 60%; border-radius: 5px; border: none; margin-bottom: 10px;">
+            <input type="text" id="location-input" placeholder="Enter a location..." required style="padding: 10px; width: 100%; border-radius: 5px; border: none; margin-bottom: 10px;">
             <button type="submit" style="padding: 10px 20px; border-radius: 5px; border: none; background-color: #4facfe; color: white; font-weight: bold;">Check Weather</button>
+            <button onclick="getLocation()" required style="padding: 10px; width: 86%; border-radius: 5px; border: none; margin-bottom: 10px;">Use current location</button>
+
+            <script>
+                function getLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(success, error);
+                } else {
+                    alert("Geolocation is not supported by your browser.");
+                }
+                }
+
+                function success(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                document.getElementById("location-input").value = String(lat) + ',' + String(lon);
+                }
+
+                function error() {
+                alert("Unable to retrieve your location.");
+                }
+            </script>
+
         </form>
         
         <iframe id="weather-frame" src="" style="width: 100%; height: 800px; border: none; margin-top: 20px; display: none; border-radius: 12px;"></iframe>
