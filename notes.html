@@ -8,6 +8,7 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 </head>
     
 </head>
@@ -126,8 +127,35 @@
       }
     }
 
+    async function performOCR() {
+      const fileInput = document.getElementById('ocrImageInput');
+      if (!fileInput.files.length) {
+        alert("Please select an image first.");
+        return;
+      }
+
+      const image = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async function () {
+        const result = await Tesseract.recognize(reader.result, 'eng');
+        document.getElementById('content').value += result.data.text;
+        closeOCRModal();
+      };
+
+      reader.readAsDataURL(image);
+    }
+
     function closeVoiceModal() {
       document.getElementById('voiceModal').style.display = 'none';
+    }
+
+    function showOCRModal() {
+      document.getElementById('ocrModal').style.display = 'block';
+    }
+
+    function closeOCRModal() {
+      document.getElementById('ocrModal').style.display = 'none';
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -187,9 +215,18 @@
     <input type="text" id="title" name="title" placeholder="Note Title" required><br>
     <textarea id="content" name="content" placeholder="Note Content" required></textarea><br>
     <button type="button" onclick="startVoiceRecognition()">🎤 Speak</button>
+    <button type="button" onclick="showOCRModal()">🧠 Extract text from image</button>
     <button type="submit">Add Note</button>
   </form>
 
+  <div id="ocrModal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+    <div style="background-color: #fff; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 300px; text-align: center; border-radius: 10px;">
+      <h3>Select an Image</h3>
+      <input type="file" id="ocrImageInput" accept="image/*"><br><br>
+      <button onclick="performOCR()">Extract</button>
+      <button onclick="closeOCRModal()">Cancel</button>
+    </div>
+  </div>
 
   <div id="notes-container">  </div>
 
