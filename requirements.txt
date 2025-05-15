@@ -16,3 +16,4 @@ psycopg2-binary
 psycopg
 qrcode
 micawber
+requests
