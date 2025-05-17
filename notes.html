@@ -90,8 +90,11 @@
     }
 
     let recognition;
+    let userManuallyStopped = false;
+
 
     function startVoiceRecognition() {
+      userManuallyStopped = false;
       if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
         alert("Your browser does not support speech recognition.");
         return;
@@ -102,26 +105,49 @@
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
-      recognition.interimResults = false;
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
+      let finalTranscript = '';
+
 
       recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('content').value += transcript;
-        closeVoiceModal();
-      };
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + ' ';
+        }
+      }
+      if (finalTranscript) {
+        document.getElementById('content').value += finalTranscript;
+      }
+    };
+
+      
 
       recognition.onerror = function(event) {
-        console.error("Speech recognition error", event.error);
-        alert("Speech recognition error: " + event.error);
-        closeVoiceModal();
-      };
-
-      recognition.start();
+    console.warn("Speech recognition error:", event.error);
+    if (!userManuallyStopped && event.error === "no-speech") {
+      setTimeout(() => recognition.start(), 500); // retry after brief pause
+    } else {
+      closeVoiceModal();
     }
+  };
 
+  recognition.onend = function() {
+    if (!userManuallyStopped) {
+      console.log("Recognition ended. Restarting...");
+      recognition.start(); // Keep listening forever
+    }
+  };
+
+  recognition.start();
+}
+    
+    
     function stopVoiceRecognition() {
       if (recognition) {
+        userManuallyStopped = true;
         recognition.stop();
         closeVoiceModal();
       }
