@@ -8,6 +8,40 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+
+    <style>
+        .container {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.welcome-box {
+  flex: 0 0 250px;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 250px; 
+}
+
+/* On mobile */
+@media (max-width: 700px) {
+  .container {
+    flex-direction: column;
+    align-items: center; 
+  }
+  .welcome-box {
+    flex: none;
+    width: auto;
+    max-width: 90vw; 
+    margin: 0 0 20px 0; 
+    padding: 15px;
+  }
+  .content-box {
+    width: 100%;
+  }
+}
+
+    </style>
 </head>
     
 </head>
