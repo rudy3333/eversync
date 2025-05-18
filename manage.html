@@ -8,6 +8,27 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+
+
+    <style>
+        @media (max-width: 700px) {
+            .welcome-box {
+                flex: none;
+                width: auto;
+                max-width: 90vw;
+                margin: 0 0 20px 0;
+                padding: 15px;
+            }
+            .welcome-section {
+                flex-direction: column !important;
+                width: 100%;
+            }
+            .welcome-section .welcome-box {
+                width: 100% !important;
+                max-width: 100%;
+            }
+        }
+    </style>
 </head>
     
 </head>
