@@ -9,15 +9,41 @@
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
     <script src='https://8x8.vc/vpaas-magic-cookie-bffe3f1241674331a318ea51c0f85ae7/external_api.js' async></script>
-    <style>html, body, #jaas-container { height: 100%; }</style>
+    <style>html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden; /* prevent scrolling */
+    }
+    
+    body {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .header {
+        height: 80px; /* adjust to your navbar height */
+        flex-shrink: 0;
+    }
+    
+    #jaas-container {
+        flex: 1;
+        width: 100%;
+    }
+    </style>
     <script type="text/javascript">
-      window.onload = () => {
+        window.onload = () => {
         const api = new JitsiMeetExternalAPI("8x8.vc", {
-          roomName: "vpaas-magic-cookie-bffe3f1241674331a318ea51c0f85ae7/SampleAppPleasedInteriorsWeighSeamlessly",
-          parentNode: document.querySelector('#jaas-container'),
+            roomName: "vpaas-magic-cookie-bffe3f1241674331a318ea51c0f85ae7/SampleAppPleasedInteriorsWeighSeamlessly",
+            parentNode: document.querySelector('#jaas-container'),
         });
-      }
+    
+        api.addEventListener('readyToClose', () => {
+            window.location.replace("{% url 'index' %}");
+        });
+        };
     </script>
+  
   </head>
 </head>
     
@@ -50,7 +76,7 @@
         </div>
     </div>
     
-<div id="jaas-container" />
+<div id="jaas-container"></div>
   
 
         </div>
