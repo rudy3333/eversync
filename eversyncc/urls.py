@@ -31,7 +31,8 @@ urlpatterns = [
     path('meeting', meeting,  name="meeting"),
     path('weather_api/<str:location>', weather_api, name="weather_api"),
     path('weather/<str:location>/', weather_view, name="weather_view"),
-    path('weather_pick', weather_pick, name="weather_pick")
+    path('weather_pick', weather_pick, name="weather_pick"),
+    path('note_delete/<int:note_id>/', views.note_delete, name='note_delete'),
 ]
 
 if settings.DEBUG:

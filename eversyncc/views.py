@@ -200,6 +200,7 @@ def note_list(request):
     notes = Notes.objects.filter(user_id=request.user)
     notes_data = [
         {
+        "id": note.id,
         "content": note.content.replace('\n', '<br>'),
         "title": note.title,
         "time": note.created_at
@@ -337,3 +338,14 @@ def weather_view(request, location):
 @login_required
 def weather_pick(request):
     return render(request, "weather_pick.html")
+
+@login_required
+def note_delete(request, note_id):
+    if request.method == 'POST':
+        try:
+            note = Notes.objects.get(id=note_id, user=request.user)
+            note.delete()
+            return JsonResponse({'message': 'Note deleted'}, status=200)
+        except Notes.DoesNotExist:
+            return JsonResponse({'error': 'Note not found'}, status=404)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
