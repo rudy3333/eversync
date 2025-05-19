@@ -43,12 +43,18 @@
         <form onsubmit="event.preventDefault(); loadWeather();">
             <input type="text" id="location-input" placeholder="Enter a location..." required style="padding: 10px; width: 100%; border-radius: 5px; border: none; margin-bottom: 10px;">
             <button type="submit" style="padding: 10px 20px; border-radius: 5px; border: none; background-color: #4facfe; color: white; font-weight: bold;">Check Weather</button>
-            <button onclick="getLocation()" required style="padding: 10px; width: 86%; border-radius: 5px; border: none; margin-bottom: 10px;">Use current location</button>
+            <button type="button" onclick="getLocation()" class="location-btn" style="padding: 10px 20px; border-radius: 5px; border: none; background-color: #4facfe; color: white; font-weight: bold;">
+                <i class="fas fa-location-arrow"></i> Use current location
+            </button>
 
             <script>
                 function getLocation() {
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(success, error);
+                    navigator.geolocation.getCurrentPosition(success, error, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    });
                 } else {
                     alert("Geolocation is not supported by your browser.");
                 }
@@ -57,11 +63,17 @@
                 function success(position) {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+
                 document.getElementById("location-input").value = String(lat) + ',' + String(lon);
+
+                if (accuracy > 1000) {
+                    alert("Warning: Your location is not very precise (" + Math.round(accuracy) + " meters). Please enter your location manually for better results.");
+                }
                 }
 
                 function error() {
-                alert("Unable to retrieve your location.");
+                alert("Error.");
                 }
             </script>
 
