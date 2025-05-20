@@ -15,6 +15,7 @@ from pathlib import Path
 import micawber
 import requests
 from django.views.decorators.clickjacking import xframe_options_exempt
+from webpush import send_user_notification
 
 
 providers = micawber.bootstrap_basic()
@@ -110,6 +111,9 @@ def upload_file(request):
 def file_list(request):
     documents = Document.objects.filter(user=request.user)
     return render(request, 'file_list.html', {'documents': documents})
+    payload = {"head": "Welcome!", "body": "Hello World"}
+
+    send_user_notification(user=user, payload=payload, ttl=1000)
 
 
 @login_required

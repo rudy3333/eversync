@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("eversyncc.urls")),
-    path("accounts/", include('allauth.urls'))
+    path("accounts/", include('allauth.urls')),
+    path('webpush/', include('webpush.urls'))
     ]

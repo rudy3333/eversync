@@ -48,9 +48,17 @@ INSTALLED_APPS = [
     "django_registration",
     "allauth",
     "allauth.account",
-    "allauth.mfa"
+    "allauth.mfa",
+    "webpush"
 
 ]
+
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": "BArtoQuGwO4z_wyCZJ6cZpkCJVuEHt-YeiHtocH6cTmPNUHL8657te2gXhEiXjjfNMy0igo1PxrSGFokdOokzfA",
+    "VAPID_PRIVATE_KEY": "6L3Sgw-co-X2kuKTIkZAMxXYuhi0F3dcCFwE6VdknOI",
+    "VAPID_ADMIN_EMAIL": "mmax3163@gmail.com"
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
