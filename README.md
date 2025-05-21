@@ -1,9 +1,9 @@
-# Eversync – Notes, Self-Hosted Email & Calendar
+# Eversync – Notes, Office Suite & Calendar
 ![image](https://raw.githubusercontent.com/rudy3333/eversync/refs/heads/master/eversyncc/static/banner.png)
 
 The motto of this project is secure, simple and stupid.
 
-Eversync is a self-hosted productivity suite designed with simplicity and security at its core. It provides note-taking, calendar management, and email, all in one minimal, privacy-respecting platform.
+Eversync is a self-hosted productivity suite designed with simplicity and security at its core. It provides note-taking, calendar management, and other utilities, all in one minimal, privacy-respecting platform.
 
 ### Run
 
