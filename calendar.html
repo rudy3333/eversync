@@ -92,6 +92,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
+                firstDay: 1,
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
@@ -212,6 +213,10 @@
             <button id="close-modal">Close</button>
             <span id="event-id" style="display: none;"></span>
             <button id="delete-event" style="background-color: red; color: white; border: none; cursor: pointer; padding: 10px 20px; border-radius: 4px; font-size: 16px; margin-top: 10px;">Delete</button>
+            <button id="download-event" style="background-color: #4CAF50; color: white; border: none; cursor: pointer; padding: 10px 20px; border-radius: 4px; font-size: 16px; margin-top: 10px;">
+                Download
+            </button>
+            
         </div>
     </div>
 
@@ -285,4 +290,10 @@
     });
 </script>
 
+<script>
+    document.getElementById('download-event').addEventListener('click', function () {
+        const eventId = document.getElementById('event-id').textContent;
+        window.location.href = `/download_calendar/${eventId}`;
+    });
+</script>
 </html>    

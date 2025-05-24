@@ -33,6 +33,7 @@ urlpatterns = [
     path('weather/<str:location>/', weather_view, name="weather_view"),
     path('weather_pick', weather_pick, name="weather_pick"),
     path('note_delete/<int:note_id>/', views.note_delete, name='note_delete'),
+    path('download_calendar/<int:event_id>/', views.download_calendar, name='download_calendar'),
 ]
 
 if settings.DEBUG:

@@ -16,7 +16,8 @@ import micawber
 import requests
 from django.views.decorators.clickjacking import xframe_options_exempt
 from webpush import send_user_notification
-
+from icalendar import Calendar, Event as IcalEvent
+from django.utils.text import slugify
 
 providers = micawber.bootstrap_basic()
 
@@ -225,6 +226,26 @@ def notes(request):
     ]
     return render(request, 'notes.html', {'notes_data': notes_data})
 
+
+@login_required
+def download_calendar(request, event_id):
+    eventz = Event.objects.get(id=event_id, user=request.user)
+    
+    cal = Calendar()
+    event = IcalEvent()
+    event.add('summary', eventz.title)
+    event.add('dtstart', eventz.start_time)
+    event.add('dtend', eventz.end_time)
+    event.add('uid', f'{eventz.id}@eversync') 
+
+    cal.add_component(event)
+
+    filename = f"{slugify(eventz.title)}.ics"
+    response = HttpResponse(cal.to_ical(), content_type='text/calendar')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+    
 @login_required
 def pomodoro(request):
     return render(request, "pomodoro.html")
