@@ -179,4 +179,8 @@ import sentry_sdk
 sentry_sdk.init(
     dsn="https://c7e0cd959143eb387c98fd230bcfeba3@o4509375473057792.ingest.us.sentry.io/4509375473385472",
     send_default_pii=True,
+    traces_sample_rate=1.0,
+    profile_session_sample_rate=1.0,
+    profile_lifecycle="trace"
+
 )

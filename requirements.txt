@@ -19,3 +19,4 @@ micawber
 requests
 django-webpush
 icalendar
+sentry-sdk[django]
