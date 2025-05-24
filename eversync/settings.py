@@ -173,3 +173,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'files')
 STATIC_ROOT= os.path.join(BASE_DIR, 'eversyncc/static')
 
 ACCOUNT_MFA_ENABLED = True
+
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://c7e0cd959143eb387c98fd230bcfeba3@o4509375473057792.ingest.us.sentry.io/4509375473385472",
+    send_default_pii=True,
+)
