@@ -1,15 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Add Task</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    <link rel="stylesheet" href="{% static 'register-style.css' %}" ">
+
+    <style>
+        .register-box form {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+      
+        .register-box label {
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+      
+        .register-box input[type="text"],
+        .register-box input[type="email"],
+        .register-box input[type="password"],
+        .register-box textarea,
+        .register-box select {
+          padding: 10px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          font-size: 14px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+      
+        .register-box button[type="submit"] {
+          background-color: #4CAF50;
+          color: white;
+          border: none;
+          padding: 10px;
+          font-size: 16px;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+      
+        .register-box button[type="submit"]:hover {
+          background-color: #45a049;
+        }
+      </style>
+      
+
+    <style>
+        .container {
+          display: flex;
+          gap: 30px;
+          align-items: flex-start;
+        }
+    
+        .welcome-box {
+          flex: 0 0 250px;
+          padding: 20px;
+          border-radius: 8px;
+          max-width: 250px;
+        }
+    
+        .task-box {
+          flex: 1;
+        }
+    
+        .task {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 12px;
+          border-bottom: 1px solid #ddd;
+        }
+    
+        .task form {
+          display: inline;
+        }
+    
+        @media (max-width: 700px) {
+          .container {
+            flex-direction: column;
+            align-items: center;
+          }
+    
+          .welcome-box {
+            flex: none;
+            width: auto;
+            max-width: 90vw;
+            margin: 0 0 20px 0;
+            padding: 15px;
+          }
+    
+          .task-box {
+            width: 100%;
+          }
+        }
+      </style>
+    
+</head>
+    
 </head>
 <body>
-    <h1>Add New Task</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
-    <a href="{% url 'task_list' %}">Back to Task List</a>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo" >eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="register-box">
+          <h1>Add New Task</h1>
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" style="flex: 1; padding: 10px 0; font-size: 16px; border-radius: 6px;">Save</button>
+                <a href="{% url 'task_list' %}" class="register-button" style="flex: 1; text-align: center; text-decoration: none; color: white; padding: 10px 0; font-size: 16px; border-radius: 6px;">Back to Task List</a>
+              </div>
+              
+          </form>
+        </div>
+      </div>
+      
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        toggle.addEventListener('click', function () {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+</script>
 </body>
 </html>

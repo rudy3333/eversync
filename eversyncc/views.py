@@ -399,7 +399,7 @@ def delete_task(request, task_id):
         try:
             task = Task.objects.get(id=task_id, user=request.user)
             task.delete()
-            return JsonResponse({'message': 'Task deleted'}, status=200)
+            return redirect('task_list')
         except Task.DoesNotExist:
             return JsonResponse({'error': 'Task not found'}, status=404)
     return JsonResponse({'error': 'Invalid request'}, status=400)
@@ -411,7 +411,7 @@ def task_complete(request, task_id):
             task = Task.objects.get(id=task_id, user=request.user)
             task.completed = not task.completed
             task.save()
-            return JsonResponse({'message': 'Task completed'}, status=200)
+            return redirect('task_list')
         except Task.DoesNotExist:
             return JsonResponse({'error': 'Task not found'}, status=404)
     return JsonResponse({'error': 'Invalid request'}, status=400)

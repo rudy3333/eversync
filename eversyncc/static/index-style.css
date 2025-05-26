@@ -142,6 +142,10 @@ background-color: #03a9f4;
     background-color: #201c1c;
 }
 
+.todo {
+    background-color: #c0fc6c;
+}
+
 .service-button i {
 font-size: 70px;
 margin-bottom: 5px;
