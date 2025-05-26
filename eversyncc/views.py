@@ -6,8 +6,8 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
-from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm
-from .models import Document, Event, Notes, Embed
+from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm, TaskForm
+from .models import Document, Event, Notes, Embed, Task
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
@@ -373,4 +373,42 @@ def note_delete(request, note_id):
             return JsonResponse({'message': 'Note deleted'}, status=200)
         except Notes.DoesNotExist:
             return JsonResponse({'error': 'Note not found'}, status=404)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def add_task(request):
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.user = request.user
+            task.save()
+            return JsonResponse({'message': 'Task created'}, status=201)
+        
+@login_required
+def task_list(request):
+    tasks = Task.objects.filter(user=request.user)
+    return render(request, 'task_list.html', {'tasks': tasks})
+
+@login_required
+def delete_task(request, task_id):
+    if request.method == 'POST':
+        try:
+            task = Task.objects.get(id=task_id, user=request.user)
+            task.delete()
+            return JsonResponse({'message': 'Task deleted'}, status=200)
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task not found'}, status=404)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def task_complete(request, task_id):
+    if request.method == 'POST':
+        try:
+            task = Task.objects.get(id=task_id, user=request.user)
+            task.completed = not task.completed
+            task.save()
+            return JsonResponse({'message': 'Task completed'}, status=200)
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Task not found'}, status=404)
     return JsonResponse({'error': 'Invalid request'}, status=400)
