@@ -34,6 +34,10 @@ urlpatterns = [
     path('weather_pick', weather_pick, name="weather_pick"),
     path('note_delete/<int:note_id>/', views.note_delete, name='note_delete'),
     path('download_calendar/<int:event_id>/', views.download_calendar, name='download_calendar'),
+    path('add_task/', views.add_task, name='add_task'),
+    path('task_list/', views.task_list, name='task_list'),
+    path('delete_task/<int:task_id>/', views.delete_task, name='delete_task'),
+    path('task_complete/<int:task_id>/', views.task_complete, name='task_complete'),
 ]
 
 if settings.DEBUG:

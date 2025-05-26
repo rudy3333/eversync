@@ -383,7 +383,10 @@ def add_task(request):
             task = form.save(commit=False)
             task.user = request.user
             task.save()
-            return JsonResponse({'message': 'Task created'}, status=201)
+            return redirect('task_list')
+    else:
+        form = TaskForm()
+    return render(request, 'add_task.html', {'form': form})
         
 @login_required
 def task_list(request):
