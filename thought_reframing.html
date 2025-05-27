@@ -10,10 +10,20 @@
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
 
     <style>
-        .container {
+.container {
   display: flex;
-  gap: 30px;
-  align-items: flex-start;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 100px); /* adjust for header height */
+  padding: 20px;
+}
+
+.welcome-box {
+  padding: 20px;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  max-width: 90vw;
 }
 
 .welcome-box {
@@ -75,83 +85,19 @@
     
     <div class="container">
         <div class="welcome-box">
-            <h1>Welcome to Eversync</h1>
-            <p>You are logged in as {{ user.username }}</p>
-            <div id="affirmation-box" style="font-style: italic; margin-top: 20px;">
-                Loading encouragement...
-            </div>
+            <h1>Thought Reframing</h1>
+            <p style="color: black;">Type your negative thought below and let’s reframe it 💜</p>
+          
+            <input type="text" id="negativeThought" placeholder="I'm not good enough..." 
+                   style="width: 100%;  margin-top: 10px; border-radius: 6px; border: 1px solid #aaa; font-size: 16px;">
             
-            <a href="/thought_reframing" style="font-style: italic; margin-top: 20px; display: block;">
-                thought reframing tool
-            </a>
-            <script>
-                async function fetchAffirmation() {
-                    const res = await fetch("/api/affirmation/");
-                    const data = await res.json();
-                    document.getElementById("affirmation-box").innerText = data.affirmation;
-                }
-            
-                fetchAffirmation();
-            </script>
-        </div>
-        
-        <div class="content-box">
-            <h2>Your Dashboard</h2>
-
-           <div class="button-container">
-         <!--        <div class="service-button mail">
-                  <i class="fas fa-envelope"></i>
-                  mail
-                </div>
--->
-
-                <a href="/task_list" style="text-decoration: none;"><div class="service-button todo">
-                    <i class="fa-solid fa-square-check"></i>
-                    to-do
-                </div></a>
-
-                  <a href="/calendar" style="text-decoration: none;"><div class="service-button calendar">
-                    <i class="fas fa-calendar-alt"></i>
-                  calendar
-                </div></a>
-                <a href="/upload" style="text-decoration: none;"><div class="service-button cloud">
-                  <i class="fas fa-cloud-arrow-up"></i>
-                  cloud
-                </div></a>
-
-                <a href="/notes" style="text-decoration: none;"><div class="service-button notes">
-                    <i class="fa-solid fa-clipboard"></i>
-                    notes
-                </div>
-                </a>
-            </div>
-
-            <div class="button-container">
-                <a href="/pomodoro" style="text-decoration: none;"><div class="service-button pomodoro">
-                    <i class="fa-solid fa-hourglass"></i>
-                    timer
-                </div></a>
-
-                <a href="/embed_list" style="text-decoration: none;"><div class="service-button embed">
-                    <i class="fa-solid fa-bookmark"></i>
-                    embeds
-                </div></a>
-
-                <a href="/meeting" style="text-decoration: none;"><div class="service-button meeting">
-                    <i class="fa-solid fa-inverse fa-video"></i>
-                    <div id="white-text">meetings</div>
-                </div></a>
-
-                <a href="/weather_pick" style="text-decoration: none;"><div class="service-button weather">
-                    <i class="fa-solid fa-cloud"></i>
-                    weather
-                </div></a>
-
-            </div>
-
-
-        </div>
-    </div>
+            <button onclick="sendThought()" 
+                    style="margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #6a0dad; color: white; border: none; border-radius: 6px; cursor: pointer;">
+              Reframe
+            </button>
+          
+            <div id="positiveThought" style="margin-top: 15px; color: #c04cf4;"></div>
+          </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggle = document.querySelector('.dropdown-toggle');
@@ -161,5 +107,44 @@
         });
     });
 </script>
+
+<script>
+    async function sendThought() {
+        const input = document.getElementById('negativeThought').value.trim();
+        const output = document.getElementById('positiveThought');
+    
+        if (!input) {
+            output.textContent = "Please enter a thought 💭";
+            return;
+        }
+    
+        output.textContent = "Thinking... 💭";
+    
+        try {
+            const response = await fetch("https://ai.hackclub.com/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    messages: [
+                        {
+                            role: "user",
+                            content: `Reframe this negative thought positively: "${input}". Provide only the rephrased thought. Do not include explanation or formatting. Make it warm and self-compassionate.`
+                        }
+                    ]
+                })
+            });
+    
+            const data = await response.json();
+            const reply = data.choices?.[0]?.message?.content?.trim();
+    
+            output.textContent = reply || "Couldn't reframe that. Please try again 💔";
+        } catch (error) {
+            output.textContent = "Something went wrong. Try again later 🥺";
+            console.error("API Error:", error);
+        }
+    }
+    </script>
 </body>
 </html>

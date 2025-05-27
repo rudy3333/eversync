@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import RedirectFromLogin, get_affirmation, weather_pick, weather_view, weather_api, meeting, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
+from .views import RedirectFromLogin, thought_reframing, get_affirmation, weather_pick, weather_view, weather_api, meeting, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -39,6 +39,7 @@ urlpatterns = [
     path('delete_task/<int:task_id>/', views.delete_task, name='delete_task'),
     path('task_complete/<int:task_id>/', views.task_complete, name='task_complete'),
     path("api/affirmation/", get_affirmation, name="get_affirmation"),
+    path("thought_reframing", thought_reframing, name="thought_reframing")
 
 ]
 

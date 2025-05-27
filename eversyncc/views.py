@@ -423,3 +423,7 @@ def get_affirmation(request):
         return JsonResponse({"affirmation": data.get("affirmation", "You are enough.")})
     except Exception:
         return JsonResponse({"affirmation": "You're doing great. Keep going!"})
+
+@login_required   
+def thought_reframing(request):
+        return render(request, 'thought_reframing.html')
