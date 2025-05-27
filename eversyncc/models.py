@@ -44,7 +44,7 @@ class Embed(models.Model):
     
 class Task(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
+    title = models.CharField()
     created_at = models.DateField(auto_now_add=True)
     completed = models.BooleanField(default=False)
     due_date = models.DateField(null=True, blank=True)
