@@ -427,3 +427,7 @@ def get_affirmation(request):
 @login_required   
 def thought_reframing(request):
         return render(request, 'thought_reframing.html')
+
+@login_required
+def documents(request):
+    return render(request, "documents.html")
