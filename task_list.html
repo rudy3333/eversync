@@ -97,9 +97,9 @@
             {% for task in tasks %}
                 <div class="task">
                     <div>
-                        <form method="POST" action="{% url 'task_complete' task.id %}">
+                        <form method="POST" action="{% url 'task_complete' task.id %}" style="display: inline;">
                             {% csrf_token %}
-                            <button type="submit">{% if task.completed %}[x]{% else %}[ ]{% endif %}</button>
+                            <input type="checkbox" class="pretty-checkbox" onchange="this.form.submit()" {% if task.completed %}checked{% endif %}>
                         </form>
                         {{ task.title }}
                     </div>

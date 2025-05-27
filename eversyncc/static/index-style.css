@@ -160,3 +160,25 @@ margin-bottom: 5px;
     color: white;
   }
   
+  .pretty-checkbox {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    position: relative;
+}
+
+.pretty-checkbox:checked {
+    background-color: #38a424;
+    border-color: #38a424;
+}
+
+.pretty-checkbox:checked::after {
+    content: "✔";
+    color: white;
+    font-size: 14px;
+    position: absolute;
+}
