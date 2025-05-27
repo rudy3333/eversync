@@ -77,6 +77,21 @@
         <div class="welcome-box">
             <h1>Welcome to Eversync</h1>
             <p>You are logged in as {{ user.username }}</p>
+            <div id="affirmation-box" style="font-style: italic; margin-top: 20px;">
+                Loading encouragement...
+            </div>
+            
+            <div id="affirmation-box" style="font-style: italic;"></div>
+
+            <script>
+                async function fetchAffirmation() {
+                    const res = await fetch("/api/affirmation/");
+                    const data = await res.json();
+                    document.getElementById("affirmation-box").innerText = data.affirmation;
+                }
+            
+                fetchAffirmation();
+            </script>
         </div>
         
         <div class="content-box">

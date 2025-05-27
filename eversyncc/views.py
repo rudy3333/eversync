@@ -415,3 +415,11 @@ def task_complete(request, task_id):
         except Task.DoesNotExist:
             return JsonResponse({'error': 'Task not found'}, status=404)
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def get_affirmation(request):
+    try:
+        res = requests.get("https://www.affirmations.dev/")
+        data = res.json()
+        return JsonResponse({"affirmation": data.get("affirmation", "You are enough.")})
+    except Exception:
+        return JsonResponse({"affirmation": "You're doing great. Keep going!"})
