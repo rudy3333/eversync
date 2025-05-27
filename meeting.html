@@ -34,8 +34,11 @@
     <script type="text/javascript">
         window.onload = () => {
         const api = new JitsiMeetExternalAPI("8x8.vc", {
-            roomName: "vpaas-magic-cookie-bffe3f1241674331a318ea51c0f85ae7/SampleAppPleasedInteriorsWeighSeamlessly",
+            roomName: "vpaas-magic-cookie-bffe3f1241674331a318ea51c0f85ae7/EversyncGroup",
             parentNode: document.querySelector('#jaas-container'),
+            userInfo: {
+                displayName: "{{ user.username }}"
+            }
         });
     
         api.addEventListener('readyToClose', () => {
