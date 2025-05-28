@@ -12,6 +12,9 @@
         <div class="header-content">
             <img target="/" src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px;">
             <a href="/" class="logo">eversync</a>
+            {% block scripts %}
+                {% include "sentry_replay.html" %}
+            {% endblock %}
         </div>
     </div>
     

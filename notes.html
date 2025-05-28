@@ -9,6 +9,10 @@
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
 </head>
     
 </head>

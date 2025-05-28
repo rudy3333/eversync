@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="{% static 'register-style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
 
     <style>
             #event-form input, #event-form button {

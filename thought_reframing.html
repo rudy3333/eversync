@@ -8,6 +8,9 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
 
     <style>
 .container {

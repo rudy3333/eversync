@@ -9,6 +9,9 @@
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
     <script src='https://8x8.vc/vpaas-magic-cookie-bffe3f1241674331a318ea51c0f85ae7/external_api.js' async></script>
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
     <style>html, body {
         margin: 0;
         padding: 0;
