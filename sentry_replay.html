@@ -1,28 +1,40 @@
+{% if request.user.is_authenticated %}
+  <script id="user-data" type="application/json">
+    {
+      "username": "{{ request.user.username|escapejs }}",
+      "id": "{{ request.user.id|escapejs }}"
+    }
+  </script>
+{% endif %}
 
-    <!-- Recommended: Use this bundle for replay, error, and tracing -->
-    <script
-    src="https://browser.sentry-cdn.com/9.23.0/bundle.tracing.replay.min.js"
-    integrity="sha384-oFbOgfbH8J4hqJscPJNKjnPd/0mpYDMh8IvH9V4AVF8HFLdAVCjdJjUybdjedXyM"
-    crossorigin="anonymous"
-    ></script>
-    <script>
-    Sentry.init({
-        dsn: "https://c7e0cd959143eb387c98fd230bcfeba3@o4509375473057792.ingest.us.sentry.io/4509375473385472",
-        // This sets the sample rate to be 10%. You may want this to be 100% while
-        // in development and sample at a lower rate in production
-        replaysSessionSampleRate: 1.0,
-        // If the entire session is not sampled, use the below sample rate to sample
-        // sessions when an error occurs.
-        replaysOnErrorSampleRate: 1.0,
-        integrations: [
-          Sentry.replayIntegration({
-            // Additional SDK configuration goes in here, for example:
-            maskAllText: true,
-            blockAllMedia: true,
-          }),
-        ],
-      });
-      const replay = Sentry.getReplay();
-      replay.start();
+<script
+  src="https://browser.sentry-cdn.com/9.23.0/bundle.tracing.replay.min.js"
+  integrity="sha384-oFbOgfbH8J4hqJscPJNKjnPd/0mpYDMh8IvH9V4AVF8HFLdAVCjdJjUybdjedXyM"
+  crossorigin="anonymous"
+></script>
+<script>
+  Sentry.init({
+    dsn: "https://c7e0cd959143eb387c98fd230bcfeba3@o4509375473057792.ingest.us.sentry.io/4509375473385472",
+    replaysSessionSampleRate: 1.0,
+    replaysOnErrorSampleRate: 1.0,
+    integrations: [
+      Sentry.replayIntegration({
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
+    ],
+  });
 
-    </script>
+  const userDataElement = document.getElementById("user-data");
+  if (userDataElement) {
+    try {
+      const user = JSON.parse(userDataElement.textContent);
+      Sentry.setUser(user);
+    } catch (e) {
+      console.warn("Failed to parse user data for Sentry:", e);
+    }
+  }
+
+  const replay = Sentry.getReplay();
+  replay.start();
+</script>
