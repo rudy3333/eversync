@@ -139,6 +139,12 @@
         const end = document.getElementById('end').value;
         const color = document.getElementById('color').value;
         
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        
+        const startUTC = startDate.toISOString();
+        const endUTC = endDate.toISOString();
+        
         fetch('/calendar_event_create/', {
             method: 'POST',
             headers: {
@@ -147,8 +153,8 @@
             },
             body: new URLSearchParams({
                 title: title,
-                start_time: start,
-                end_time: end,
+                start_time: startUTC,
+                end_time: endUTC,
                 color: color,
             })
         })
