@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
@@ -449,3 +449,21 @@ def save_document(request):
         return JsonResponse({'status': 'success', 'id': doc.id})
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def document_list(request):
+    documents = RichDocument.objects.filter(owner=request.user)
+    return render(request, 'document_list.html', {'documents': documents})
+
+
+@login_required
+def view_document(request, doc_id):
+    document = get_object_or_404(RichDocument, id=doc_id, owner=request.user)
+    return render(request, 'view_document.html', {'document': document})
+
+@login_required
+def delete_document(request, doc_id):
+    if request.method == "POST":
+        doc = get_object_or_404(RichDocument, id=doc_id, owner=request.user)
+        doc.delete()
+    return redirect('document_list')
