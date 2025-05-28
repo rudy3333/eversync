@@ -467,3 +467,12 @@ def delete_document(request, doc_id):
         doc = get_object_or_404(RichDocument, id=doc_id, owner=request.user)
         doc.delete()
     return redirect('document_list')
+
+@login_required
+def get_document(request, id=None):
+    try:
+        doc = RichDocument.objects.get(pk=id)
+        return JsonResponse({"title": doc.title, "content": doc.content})
+    except RichDocument.DoesNotExist:
+        return JsonResponse({"error": "Not found"}, status=404)
+    

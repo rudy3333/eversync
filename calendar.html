@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'register-style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+    <script src="https://unpkg.com/ical.js/dist/ical.es5.min.cjs"></script>
     {% block scripts %}
         {% include "sentry_replay.html" %}
     {% endblock %}
@@ -66,6 +67,12 @@
         <input type="color" id="color" required>
         <button type="submit">Add Event</button>
       </form>
+
+      <form id="import-form" style="text-align: center; margin-top: 20px;">
+        <h3>Import Events (.ics)</h3>
+        <input type="file" id="ics-file" accept=".ics" required>
+        <button type="submit">Import</button>
+    </form>
 
     <div class="calendar-container">
         <div id="calendar"></div>
@@ -166,7 +173,6 @@
             if (data.message) {
                 alert('Event created!');
                 location.reload();
-                calendar.refetchEvents();
                 document.getElementById('event-form').reset();
             } else {
                 alert('Error creating event.');
@@ -289,7 +295,6 @@
             if (data.message) {
                 alert('Event deleted!');
                 document.getElementById('event-modal').style.display = 'none';
-                calendar.refetchEvents();
                 location.reload();
             } else {
                 alert('Event deleted!');
@@ -304,5 +309,62 @@
         const eventId = document.getElementById('event-id').textContent;
         window.location.href = `/download_calendar/${eventId}`;
     });
+</script>
+
+
+<script>
+    document.getElementById('import-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const fileInput = document.getElementById('ics-file');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert('Please select an .ics file');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            const jcalData = ICAL.parse(event.target.result);
+            const vcalendar = new ICAL.Component(jcalData);
+            const vevents = vcalendar.getAllSubcomponents('vevent');
+
+            let eventsToAdd = vevents.map(vevent => {
+                const event = new ICAL.Event(vevent);
+
+                // Format the dates to ISO strings for backend
+                const start = event.startDate.toJSDate().toISOString();
+                const end = event.endDate.toJSDate().toISOString();
+
+                return {
+                    title: event.summary,
+                    start_time: start,
+                    end_time: end,
+                    color: '#3788d8' 
+                };
+            });
+
+            Promise.all(eventsToAdd.map(ev => {
+                return fetch('/calendar_event_create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: new URLSearchParams(ev)
+                }).then(res => res.json());
+            })).then(results => {
+                alert('Events imported successfully!');
+                location.reload();
+                fileInput.value = '';
+            });
+
+        } catch (err) {
+            alert('Invalid .ics file');
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
+});
 </script>
 </html>    
