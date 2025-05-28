@@ -7,7 +7,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm, TaskForm
-from .models import Document, Event, Notes, Embed, Task, RichDocument
+from .models import Document, Event, Notes, Embed, Task, RichDocument, Message
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
@@ -113,9 +113,6 @@ def upload_file(request):
 def file_list(request):
     documents = Document.objects.filter(user=request.user)
     return render(request, 'file_list.html', {'documents': documents})
-    payload = {"head": "Welcome!", "body": "Hello World"}
-
-    send_user_notification(user=user, payload=payload, ttl=1000)
 
 
 @login_required
@@ -476,3 +473,14 @@ def get_document(request, id=None):
     except RichDocument.DoesNotExist:
         return JsonResponse({"error": "Not found"}, status=404)
     
+@login_required
+def send_message(request):
+    users = User.objects.exclude(id=request.user.id)
+    if request.method == 'POST':
+        reciever_username = request.POST.get('receiver')
+        content =  request.POST.get('content')
+        reciever = User.objects.get(username=reciever_username)
+        Message.objects.create(sender=request.user, reciever=reciever, content=content)
+        return JsonResponse({"message": "sent"})
+    else:
+        return JsonResponse({"message": "error"})
