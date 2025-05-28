@@ -7,7 +7,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm, TaskForm
-from .models import Document, Event, Notes, Embed, Task
+from .models import Document, Event, Notes, Embed, Task, RichDocument
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
@@ -18,6 +18,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from webpush import send_user_notification
 from icalendar import Calendar, Event as IcalEvent
 from django.utils.text import slugify
+import json
 
 providers = micawber.bootstrap_basic()
 
@@ -431,3 +432,20 @@ def thought_reframing(request):
 @login_required
 def documents(request):
     return render(request, "documents.html")
+
+
+@login_required
+def save_document(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        title = data.get('title', 'Untitled')
+        content = data.get('content', '')
+
+        doc = RichDocument.objects.create(
+            title=title,
+            content=content,
+            owner=request.user
+        )
+        return JsonResponse({'status': 'success', 'id': doc.id})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)

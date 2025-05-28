@@ -89,6 +89,8 @@
     <div class="editor-controls">
         <button onclick="copyToClipboard()">Copy</button>
         <button onclick="downloadNote()">Download</button>
+        <button onclick="saveDocument()">Save</button>
+
     </div>
 
     <script>
@@ -124,6 +126,28 @@
             link.download = 'note.html';
             link.click();
         }
+        
+        function saveDocument() {
+        const title = prompt("Enter document title:");
+        const content = quill.root.innerHTML;
+
+        fetch('/save-document/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ title: title, content: content })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert("Saved successfully! Document ID: " + data.id);
+        })
+        .catch(error => {
+            alert("Error saving document.");
+            console.error(error);
+        });
+    }
     </script>
 </body>
 </html>
