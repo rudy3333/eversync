@@ -8,6 +8,8 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}" />
     <link rel="stylesheet" href="{% static 'index-style.css' %}" />
+    <link rel="stylesheet" href="{% static 'login-style.css' %}" />
+
     {% block scripts %}
         {% include "sentry_replay.html" %}
     {% endblock %}
@@ -49,6 +51,31 @@
                 width: 100%;
             }
         }
+        input.form-control,
+        textarea.form-control {
+            margin-bottom: 10px;
+            width: calc(100% - 20px);
+            padding: 10px;
+            font-size: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input.form-control:focus,
+        textarea.form-control:focus {
+            border-color: #6c63ff;
+            box-shadow: 0 0 6px rgba(108, 99, 255, 0.5);
+            outline: none;
+            background-color: #fff;
+        }
+
+        label.form-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 6px;
+        }
     </style>
 </head>
 <body>
@@ -89,7 +116,7 @@
                 <label for="content" class="form-label">Message:</label>
                 <textarea id="content" name="content" class="form-control" rows="3" required></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Send</button>
+            <button type="submit" class="login-button">Send</button>
         </form>
 
         <hr class="my-5">
