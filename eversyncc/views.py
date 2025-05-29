@@ -479,8 +479,32 @@ def send_message(request):
     if request.method == 'POST':
         reciever_username = request.POST.get('receiver')
         content =  request.POST.get('content')
-        reciever = User.objects.get(username=reciever_username)
-        Message.objects.create(sender=request.user, reciever=reciever, content=content)
+        receiver = User.objects.get(username=reciever_username)
+        Message.objects.create(sender=request.user, receiver=receiver, content=content)
         return JsonResponse({"message": "sent"})
     else:
         return JsonResponse({"message": "error"})
+    
+@login_required
+def inbox(request):
+    messages = Message.objects.filter(receiver=request.user)
+    data = [{
+        "sender": msg.sender.username,
+        "content": msg.content,
+        "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+    } for msg in messages]
+    return JsonResponse({"messages": data})
+
+@login_required
+def sent_messages(request):
+    messages = Message.objects.filter(sender=request.user)
+    data = [{
+        "receiver": msg.receiver.username,
+        "content": msg.content,
+        "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+    } for msg in messages]
+    return JsonResponse({"messages": data})
+    
+@login_required
+def chat_page(request):
+    return render(request, 'chat.html')
