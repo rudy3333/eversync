@@ -12,6 +12,46 @@
         {% include "sentry_replay.html" %}
     {% endblock %}
 
+    <style>
+        
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #1c1e21;
+    font-weight: bold;
+}
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dddfe2;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+.form-group input:focus {
+    outline: none;
+    border-color: #1877f2;
+    box-shadow: 0 0 0 2px #e7f3ff;
+}
+
+.login-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #1877f2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.login-button:hover {
+    background-color: #166fe5;
+}
+    </style>
 
     <style>
 .container {
@@ -24,7 +64,7 @@
 .welcome-box {
   padding: 20px;
   border-radius: 8px;
-  max-width: 250px;
+  max-width: 300px;
   width: 100%;
 }
 
@@ -82,8 +122,13 @@
             <div style="width: 300px; aspect-ratio: 1 / 1; overflow: hidden;">
                 <img id="thumbnail" style="width: 100%; height: 100%; object-fit: cover;" />
             </div>
-            <input type="text" id="musicInput" placeholder="Enter artist - song">
-            <button onclick="playSong()">Play</button>
+            <form onsubmit="return false;" class="form-group">
+            <div class="form-group">
+            <input type="text" id="musicInput"  class="form-label" placeholder="Enter artist - song">
+            <button onclick="playSong()" class="login-button">Play</button>
+        </div>
+
+        </form>
             <audio id="musicPlayer" controls></audio>
             
             <script>
