@@ -96,3 +96,4 @@ files
 fly.toml
 fly-deploy.yml
 Dockerfile
+cookies.txt

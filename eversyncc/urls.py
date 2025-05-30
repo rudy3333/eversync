@@ -50,6 +50,8 @@ urlpatterns = [
     path('chat', views.chat_page, name="chat"),
     path('delete/<int:message_id>/', views.delete_message, name='delete_message'),
     path('stream_song/', views.stream_song, name='stream_song'),
+    path('music', views.music, name="music"),
+    path('get_thumbnail/', views.get_thumbnail, name='get_thumbnail'),
 ]
 
 if settings.DEBUG:

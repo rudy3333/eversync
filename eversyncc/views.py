@@ -518,7 +518,10 @@ def delete_message(request, message_id):
         message = get_object_or_404(Message, id=message_id, sender=request.user)
         message.delete()
     return redirect('chat')
-    
+
+def music(request):
+    return render(request, 'music.html') 
+
 def stream_song(request):
     query = request.GET.get("query")
     if not query:
@@ -533,7 +536,8 @@ def stream_song(request):
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
             }],
-            'quiet': True
+            'quiet': True,
+            'cookiefile': '/code/cookies.txt'
         }
 
         with YoutubeDL(ytpdl_options) as ytpdl:
@@ -541,3 +545,27 @@ def stream_song(request):
             filepath = ytpdl.prepare_filename(info['entries'][0]).replace('.webm', '.mp3').replace('.m4a', '.mp3')
         return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
         
+def get_thumbnail(request):
+    query = request.GET.get("query")
+    if not query:
+        return JsonResponse({"error": "No search query provided"}, status=400)
+
+    ytdlp_opts = {
+        'quiet': True,
+        'skip_download': True,
+        'format': 'bestaudio/best',
+        'noplaylist': True,
+        'default_search': 'ytsearch1',
+        'cookiefile': '/code/cookies.txt'
+    }
+
+    with YoutubeDL(ytdlp_opts) as ydl:
+        info = ydl.extract_info(f"ytsearch1:{query} topic", download=False)
+        video_info = info['entries'][0]
+        thumbnail_url = video_info.get('thumbnail')
+        title = video_info.get('title')
+
+    return JsonResponse({
+        "thumbnail": thumbnail_url,
+        "title": title
+    })
