@@ -37,6 +37,12 @@
         color: white;
         cursor: pointer;
     }
+    #pomodoro-settings {
+        margin-top: 20px;
+        font-size: 1.2rem;
+        display: none;
+        text-align: center;
+    }
     </style>
 </head>
 <body>
@@ -45,6 +51,15 @@
         <p id="timer-display">25:00</p>
         <button onclick="startPomodoro()">Start</button>
         <button onclick="stopPomodoro()">Stop</button>
+        <button onclick="toggleSettings()">Settings</button>
+
+        <div id="pomodoro-settings">
+            <h4>Settings</h4>
+            <label for="session-minutes">Session Length (minutes):</label>
+            <input type="number" id="session-minutes" min="1" value="25" style="font-size: 1.2rem; width: 60px;">
+            <br><br>
+            <button onclick="applySettings()">Apply</button>
+        </div>
     </div>
 
     <div class="header">
@@ -74,27 +89,23 @@
         </div>
     </div>
 
-
-
     <script>
-        // Dropdown menu code
-        document.addEventListener('DOMContentLoaded', function () {
-            const toggle = document.querySelector('.dropdown-toggle');
-            const menu = document.querySelector('.dropdown-menu');
-            toggle.addEventListener('click', function () {
-                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            });
-        });
-
-        // Pomodoro timer code
         let pomodoroInterval = null;
         let totalSeconds = 25 * 60;
+        let sessionLength = 25;
         let running = false;
 
         function updateDisplay() {
             const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
             const seconds = String(totalSeconds % 60).padStart(2, '0');
             document.getElementById('timer-display').textContent = `${minutes}:${seconds}`;
+        }
+
+        function applySettings() {
+            const input = document.getElementById('session-minutes');
+            sessionLength = parseInt(input.value) || 25;
+            totalSeconds = sessionLength * 60;
+            updateDisplay();
         }
 
         function startPomodoro() {
@@ -113,7 +124,7 @@
         function stopPomodoro() {
             running = false;
             clearInterval(pomodoroInterval);
-            totalSeconds = 25 * 60;
+            totalSeconds = sessionLength * 60;
             updateDisplay();
         }
 
@@ -121,10 +132,21 @@
             document.getElementById('pomodoro-box').style.display = 'block';
         }
 
+        function toggleSettings() {
+            const settings = document.getElementById('pomodoro-settings');
+            settings.style.display = settings.style.display === 'block' ? 'none' : 'block';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            togglePomodoro(); // Automatically show the timer when the page loads
+            togglePomodoro();
             updateDisplay();
+
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            dropdownToggle.addEventListener('click', () => {
+                dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            });
         });
     </script>
-    </body>
-    </html> 
+</body>
+</html>

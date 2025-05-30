@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 # Create your views here.
@@ -19,6 +19,8 @@ from webpush import send_user_notification
 from icalendar import Calendar, Event as IcalEvent
 from django.utils.text import slugify
 import json
+import tempfile
+from yt_dlp import YoutubeDL
 
 providers = micawber.bootstrap_basic()
 
@@ -516,3 +518,26 @@ def delete_message(request, message_id):
         message = get_object_or_404(Message, id=message_id, sender=request.user)
         message.delete()
     return redirect('chat')
+    
+def stream_song(request):
+    query = request.GET.get("query")
+    if not query:
+        return JsonResponse({"error": "No search query provided"}, status=400)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        ytpdl_options = {
+            'format': 'bestaudio[ext=m4a]/bestaudio/best',
+            'noplaylist': 'true',
+            'outtmpl': f'{tmpdir}/%(title)s.%(ext)s',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+            }],
+            'quiet': True
+        }
+
+        with YoutubeDL(ytpdl_options) as ytpdl:
+            info = ytpdl.extract_info(f"ytsearch1:{query} audio", download=True)
+            filepath = ytpdl.prepare_filename(info['entries'][0]).replace('.webm', '.mp3').replace('.m4a', '.mp3')
+        return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
+        

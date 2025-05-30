@@ -49,6 +49,7 @@ urlpatterns = [
     path('inbox/', views.inbox, name='inbox'),
     path('chat', views.chat_page, name="chat"),
     path('delete/<int:message_id>/', views.delete_message, name='delete_message'),
+    path('stream_song/', views.stream_song, name='stream_song'),
 ]
 
 if settings.DEBUG:

@@ -20,3 +20,4 @@ requests
 django-webpush
 icalendar
 sentry-sdk[django]
+yt-dlp
