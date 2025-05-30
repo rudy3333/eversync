@@ -139,6 +139,10 @@
                         ul.append(`<li class="list-group-item">
                             <strong>${msg.sender}</strong>: ${msg.content}<br>
                             <small>${msg.timestamp}</small>
+                            <form action="/delete/${msg.id}/" method="post" style="display:inline;">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="${$('input[name="csrfmiddlewaretoken"]').val()}">
+                            <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px;">Delete</button>
+                        </form>
                         </li>`);
                     });
                 });
@@ -163,7 +167,6 @@
                     content: content,
                     csrfmiddlewaretoken: csrfToken
                 }, function (response) {
-                    alert(response.message);
                     $('#content').val('');
                     loadMessages();
                 }).fail(function (xhr) {

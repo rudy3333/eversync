@@ -492,6 +492,7 @@ def inbox(request):
         "sender": msg.sender.username,
         "content": msg.content,
         "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        "id": msg.id
     } for msg in messages]
     return JsonResponse({"messages": data})
 
@@ -508,3 +509,10 @@ def sent_messages(request):
 @login_required
 def chat_page(request):
     return render(request, 'chat.html')
+
+@login_required
+def delete_message(request, message_id):
+    if request.method == "POST":
+        message = get_object_or_404(Message, id=message_id, sender=request.user)
+        message.delete()
+    return redirect('chat')

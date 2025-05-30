@@ -150,6 +150,14 @@ background-color: #03a9f4;
     background-color: #548cf4;
 }
 
+.weather{
+    background-color: #1864b4;
+}
+
+.chat {
+    background-color: #e07454;
+}
+
 .service-button i {
 font-size: 70px;
 margin-bottom: 5px;

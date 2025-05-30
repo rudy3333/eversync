@@ -47,8 +47,8 @@ urlpatterns = [
     path('documents/<int:doc_id>/delete/', views.delete_document, name='delete_document'),
     path('send/', views.send_message, name='send_message'),
     path('inbox/', views.inbox, name='inbox'),
-    path('chat', views.chat_page, name="chat")
-
+    path('chat', views.chat_page, name="chat"),
+    path('delete/<int:message_id>/', views.delete_message, name='delete_message'),
 ]
 
 if settings.DEBUG:
