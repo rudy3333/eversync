@@ -124,6 +124,12 @@
         <h3>Inbox</h3>
         <button class="btn btn-secondary mb-3" onclick="loadMessages()">Refresh</button>
         <ul id="messages" class="list-group"></ul>
+
+        <hr class="my-5">
+        <h3>Outbox</h3>
+        <button class="btn btn-secondary mb-3" onclick="loadOutbox()">Refresh</button>
+        <ul id="outbox-messages" class="list-group"></ul>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -147,9 +153,29 @@
                     });
                 });
         }
+        function loadOutbox() {
+            fetch('/outbox/')
+                .then(res => res.json())
+                .then(data => {
+                    let ul = $('#outbox-messages');
+                    ul.empty();
+                    data.messages.forEach(msg => {
+                        ul.append(`<li class="list-group-item">
+                            <strong>To: ${msg.receiver}</strong>: ${msg.content}<br>
+                            <small>${msg.timestamp}</small>
+                            <form action="/delete/${msg.id}/" method="post" style="display:inline;">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${$('input[name="csrfmiddlewaretoken"]').val()}">
+                                <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px;">Delete</button>
+                            </form>
+                        </li>`);
+                    });
+                });
+        }
 
         document.addEventListener('DOMContentLoaded', function () {
             loadMessages();   
+            loadOutbox();
+
             const toggle = document.querySelector('.dropdown-toggle');
             const menu = document.querySelector('.dropdown-menu');
             toggle.addEventListener('click', function () {
@@ -169,6 +195,7 @@
                 }, function (response) {
                     $('#content').val('');
                     loadMessages();
+                    loadOutbox();  // Refresh outbox as well after sending
                 }).fail(function (xhr) {
                     alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong.'));
                 });

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import RedirectFromLogin, thought_reframing, chat_page, inbox, send_message, document_list, save_document, documents, get_affirmation, weather_pick, weather_view, weather_api, meeting, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
+from .views import RedirectFromLogin, thought_reframing, sent_messages, chat_page, inbox, send_message, document_list, save_document, documents, get_affirmation, weather_pick, weather_view, weather_api, meeting, delete_embed, pomodoro, upload_file, add_embed, embed_list, file_list, delete_file, calendar, calendar_events, calendar_event_create, calendar_event_delete, note_add, note_list, notes
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -47,6 +47,7 @@ urlpatterns = [
     path('documents/<int:doc_id>/delete/', views.delete_document, name='delete_document'),
     path('send/', views.send_message, name='send_message'),
     path('inbox/', views.inbox, name='inbox'),
+    path('outbox/', views.sent_messages, name="outbox"),
     path('chat', views.chat_page, name="chat"),
     path('delete/<int:message_id>/', views.delete_message, name='delete_message'),
     path('stream_song/', views.stream_song, name='stream_song'),

@@ -505,6 +505,7 @@ def sent_messages(request):
         "receiver": msg.receiver.username,
         "content": msg.content,
         "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+        "id": msg.id
     } for msg in messages]
     return JsonResponse({"messages": data})
     
