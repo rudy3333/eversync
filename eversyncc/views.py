@@ -106,6 +106,11 @@ def upload_file(request):
                 return HttpResponse("<html><body><script>alert('Uploading possibly malicious files is forbidden. You have been logged out.'); location.reload();</script></body></html>")
             document.user = request.user
             document.save()
+
+            user_storage = request.user.userstorage
+            user_storage.used_storage += document.size
+            user_storage.save()
+
             return redirect('file_list')
     else:
         form = DocumentForm()

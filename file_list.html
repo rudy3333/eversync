@@ -13,7 +13,16 @@
         {% include "sentry_replay.html" %}
     {% endblock %}
 </head>
-<body>   
+<body>
+    
+    <style>
+        .file-thumbnail {
+            max-width: 100px; 
+            max-height: 100px;
+            object-fit: contain;
+        }
+    </style>
+
     <div class="header">
         <div class="header-content">
             <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>

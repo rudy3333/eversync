@@ -3,10 +3,24 @@ from django.db import models
 # Create your models here.
 from django.contrib.auth.models import User
 
+class UserStorage(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    storage_limit = models.BigIntegerField(default=5 * 1024 * 1024 * 1024)  # 5 GB
+    used_storage = models.BigIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.used_storage} / {self.storage_limit} bytes"
+
 class Document(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     file = models.FileField(upload_to="")
+    size = models.BigIntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        if self.file:
+            self.size = self.file.size  # automatically update size on save
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
