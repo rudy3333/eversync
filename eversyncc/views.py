@@ -119,20 +119,37 @@ def upload_file(request):
 @login_required
 def file_list(request):
     documents = Document.objects.filter(user=request.user)
-    return render(request, 'file_list.html', {'documents': documents})
+    user_storage = request.user.userstorage
 
+    used_mb = user_storage.used_storage / (1024 * 1024)
+    total_mb = user_storage.storage_limit / (1024 * 1024)
+    percent = (used_mb / total_mb) * 100 if total_mb else 0
+
+
+    return render(request, 'file_list.html', {
+        'documents': documents,
+        'used_mb': used_mb,
+        'total_mb': total_mb,
+        'percent': round(percent, 1)
+    })
 
 @login_required
 def delete_file(request, file_id):
     if request.method == 'DELETE':
         try:
-            file = Document.objects.get(id=file_id)
+            file = Document.objects.get(id=file_id, user=request.user)
             file_path = file.file.path
+            file_size = file.size
             try:
                 file.delete()
             except:
                 pass
             os.remove(file_path)
+
+            user_storage = request.user.userstorage
+            user_storage.used_storage = max(user_storage.used_storage - file_size, 0)
+            user_storage.save()
+
             return JsonResponse({'message' : 'Success.'})
         except Document.DoesNotExist:
             return JsonResponse({'error': 'Error.'}, status=404)
