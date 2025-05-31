@@ -47,8 +47,8 @@ class Notes(models.Model):
     
 class Embed(models.Model):
     url = models.URLField()
-    title = models.CharField(max_length=200)
-    provider = models.CharField(max_length=100)
+    title = models.CharField()
+    provider = models.CharField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True) 
     embed_html = models.TextField()
     added_at = models.DateField(auto_now_add=True)

@@ -15,7 +15,7 @@ sqlparse
 psycopg2-binary
 psycopg
 qrcode
-micawber
+bs4
 requests
 django-webpush
 icalendar

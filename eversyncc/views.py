@@ -12,7 +12,6 @@ from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
 from pathlib import Path
-import micawber
 import requests
 from django.views.decorators.clickjacking import xframe_options_exempt
 from webpush import send_user_notification
@@ -23,8 +22,7 @@ import tempfile
 from yt_dlp import YoutubeDL
 from django.db.models import Q
 from django.utils.timezone import now
-
-providers = micawber.bootstrap_basic()
+from .embed_utils import get_embed_info
 
 def logout_view(request):
     request.session.flush()
@@ -284,16 +282,18 @@ def pomodoro(request):
 def add_embed(request):
     if request.method == 'POST':
         url = request.POST["url"]
-        if "x.com" in url:
-            url = url.replace("x.com", "twitter.com")
-        info = providers.request(url)
-
-        embed = Embed.objects.create(
-            url=url,
-            title=info.get("title", "No title"),
-            embed_html=info.get("html", "")
-        )
-        return redirect("embed_list")
+        embed_info = get_embed_info(url)
+        
+        if embed_info:
+            embed = Embed.objects.create(
+                url=url,
+                title=embed_info.get("title", "No title"),
+                embed_html=embed_info.get("html", "")
+            )
+            return redirect("embed_list")
+        else:
+            messages.error(request, "Could not generate embed for this URL")
+            return redirect("add_embed")
     return render(request, "add_embed.html")
 
 @login_required
