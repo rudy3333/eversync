@@ -94,11 +94,39 @@
                 <button id="delete-toggle" style="padding: 6px 12px; background-color: #800080; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     ✖️ Toggle Delete Mode
                 </button>
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <button id="deleteAllBtn" style="padding: 8px 16px; background-color: #800080; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        🗑️ Delete All Strokes
+                    </button>
+                </div>
             </div>
-            <h2 style="text-align: center;">{{ whiteboard.title }}</h2>          
+            <h2 style="text-align: center;">{{ whiteboard.title }}</h2>   
+                   
             <canvas id="whiteboard" width="800" height="600"></canvas>
 
             <script>
+                document.getElementById('deleteAllBtn').addEventListener('click', function () {
+                    if (!confirm('Are you sure you want to delete all strokes?')) return;
+
+                    fetch(`/whiteboard/{{ whiteboard.id }}/delete-all-strokes/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            console.log('All strokes deleted!');
+                        } else {
+                            console.error('Error deleting all strokes:', data.error);
+                        }
+                    })
+                    .catch(err => console.error('Fetch error:', err));
+                });
+
+
                 function getCookie(name) {
                     let cookieValue = null;
                     if (document.cookie && document.cookie !== '') {

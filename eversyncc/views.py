@@ -710,3 +710,13 @@ def delete_stroke(request, whiteboard_id):
             return JsonResponse({'error': 'Invalid stroke index'}, status=400)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+@login_required        
+def delete_all_strokes(request, whiteboard_id):
+    if request.method == 'POST':
+        try:
+            whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
+            Stroke.objects.filter(whiteboard=whiteboard).delete()
+            return JsonResponse({'success': True})
+        except Whiteboard.DoesNotExist:
+            return JsonResponse({'error': 'Whiteboard not found'}, status=404)

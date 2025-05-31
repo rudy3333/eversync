@@ -59,6 +59,7 @@ urlpatterns = [
     path('whiteboard/create/', views.create_whiteboard, name='create_whiteboard'),
     path('whiteboard/<int:whiteboard_id>/', views.whiteboard_view, name='whiteboard'),
     path('whiteboard/<int:whiteboard_id>/delete-stroke/', views.delete_stroke, name='delete_stroke'),
+    path('whiteboard/<int:whiteboard_id>/delete-all-strokes/', views.delete_all_strokes, name='delete_all_strokes'),
 
 
 ]
