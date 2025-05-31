@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
+
+
+    <style>
+        .container {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.welcome-box {
+  flex: 0 0 auto;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 800px;
+}
+
+/* On mobile */
+@media (max-width: 700px) {
+  .container {
+    flex-direction: column;
+    align-items: center; 
+  }
+  .welcome-box {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 20px 0; 
+    padding: 15px;
+  }
+  .content-box {
+    width: 100%;
+  }
+  #whiteboard {
+    width: 100%;
+    height: auto;
+  }
+}
+
+#whiteboard {
+  border: 2px solid #4B0082;
+  border-radius: 8px;
+  background-color: white;
+}
+
+    </style>
+</head>
+    
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo" >eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-box">
+          
+            <canvas id="whiteboard" width="800" height="600"></canvas>
+
+            <script>
+                                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let cookie of cookies) {
+                            cookie = cookie.trim();
+                            if (cookie.startsWith(name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                    function saveStrokeToServer(stroke) {
+            fetch(`/whiteboard/{{ whiteboard_id }}/save-stroke/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),  // make sure to add this function below
+                },
+                body: JSON.stringify({ stroke }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Save stroke error:', data.error);
+                } else {
+                    console.log('Stroke saved!');
+                }
+            })
+            .catch(err => console.error('Fetch error:', err));
+            }
+
+            const canvas = document.getElementById('whiteboard');
+            const ctx = canvas.getContext('2d');
+
+            let drawing = false;
+            let currentStroke = [];
+
+            canvas.addEventListener('mousedown', (e) => {
+                drawing = true;
+                currentStroke = [{ x: e.offsetX, y: e.offsetY }];
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+                const point = { x: e.offsetX, y: e.offsetY };
+                currentStroke.push(point);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#4B0082'; // purple-ish
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                const prevPoint = currentStroke[currentStroke.length - 2];
+                ctx.moveTo(prevPoint.x, prevPoint.y);
+                ctx.lineTo(point.x, point.y);
+                ctx.stroke();
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                drawing = false;
+                console.log('Stroke points:', currentStroke);
+                saveStrokeToServer(currentStroke);
+            });
+
+                        canvas.addEventListener('mouseleave', () => {
+                if (drawing) {
+                    drawing = false;
+                    console.log('Stroke points:', currentStroke);
+                    saveStrokeToServer(currentStroke);
+                }
+            });
+            </script>
+            </div>
+
+
+        </div>
+    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        toggle.addEventListener('click', function () {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+</script>
+</body>
+</html>

@@ -93,3 +93,13 @@ class Thread(models.Model):
     def __str__(self):
         return " / ".join([u.username for u in self.participants.all()])
     
+class Whiteboard(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Stroke(models.Model):
+    whiteboard = models.ForeignKey(Whiteboard, related_name='strokes', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    data = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)

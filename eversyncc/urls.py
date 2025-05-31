@@ -54,6 +54,10 @@ urlpatterns = [
     path('music', views.music, name="music"),
     path('get_thumbnail/', views.get_thumbnail, name='get_thumbnail'),
     path('chat/<str:username>/', views.chat_with_user, name='chat_with_user'),
+    path('whiteboard/<int:whiteboard_id>/save-stroke/', views.save_stroke, name='save_stroke'),
+    path('whiteboard/', views.whiteboard_view, name='whiteboard'),
+
+
 
 ]
 

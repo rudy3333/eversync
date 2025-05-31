@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 # Create your views here.
 from django.contrib.auth import logout
@@ -23,6 +24,8 @@ from yt_dlp import YoutubeDL
 from django.db.models import Q
 from django.utils.timezone import now
 from .embed_utils import get_embed_info
+from .models import Whiteboard, Stroke
+
 
 def logout_view(request):
     request.session.flush()
@@ -634,3 +637,34 @@ def chat_with_user(request, username):
         'messages': messages,
         'other_user': other_user
     })
+
+@login_required
+def whiteboard_view(request):
+    return render(request, 'whiteboard.html')
+
+@csrf_exempt  
+@login_required
+def save_stroke(request, whiteboard_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            stroke_points = data.get('stroke') 
+            
+            if not stroke_points:
+                return JsonResponse({'error': 'No stroke data provided'}, status=400)
+            
+            whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
+
+            Stroke.objects.create(
+                whiteboard=whiteboard,
+                user=request.user,
+                data=stroke_points
+            )
+
+            return JsonResponse({'status': 'success'})
+        except Whiteboard.DoesNotExist:
+            return JsonResponse({'error': 'Whiteboard not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
