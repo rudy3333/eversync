@@ -280,7 +280,6 @@ def pomodoro(request):
     return render(request, "pomodoro.html")
 
 @login_required
-
 def add_embed(request):
     if request.method == 'POST':
         url = request.POST["url"]
@@ -296,7 +295,7 @@ def add_embed(request):
         return redirect("embed_list")
     return render(request, "add_embed.html")
 
-    
+@login_required
 def embed_list(request):
     embeds = Embed.objects.all()
     return render(request, "embed_list.html", {"embeds": embeds})
@@ -554,9 +553,11 @@ def delete_message(request, message_id):
         message.delete()
     return redirect('chat')
 
+@login_required
 def music(request):
     return render(request, 'music.html') 
 
+@login_required
 def stream_song(request):
     query = request.GET.get("query")
     if not query:
@@ -579,7 +580,8 @@ def stream_song(request):
             info = ytpdl.extract_info(f"ytsearch1:{query} audio", download=True)
             filepath = ytpdl.prepare_filename(info['entries'][0]).replace('.webm', '.mp3').replace('.m4a', '.mp3')
         return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
-        
+
+@login_required        
 def get_thumbnail(request):
     query = request.GET.get("query")
     if not query:
@@ -605,6 +607,7 @@ def get_thumbnail(request):
         "title": title
     })
 
+@login_required
 def chat_with_user(request, username):
     other_user = User.objects.get(username=username)
     messages = Message.objects.filter(

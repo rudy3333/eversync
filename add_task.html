@@ -141,7 +141,7 @@
             {% csrf_token %}
             {{ form.as_p }}
             <div style="display: flex; gap: 10px;">
-                <button type="submit" style="flex: 1; padding: 10px 0; font-size: 16px; border-radius: 6px;">Save</button>
+                <button type="submit" class="register-button" style="flex: 1; padding: 10px 0; font-size: 16px; border-radius: 6px; text-decoration: none;">Save</button>
                 <a href="{% url 'task_list' %}" class="register-button" style="flex: 1; text-align: center; text-decoration: none; color: white; padding: 10px 0; font-size: 16px; border-radius: 6px;">Back to Task List</a>
               </div>
               
