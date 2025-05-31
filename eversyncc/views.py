@@ -545,7 +545,18 @@ def chat_page(request):
     user_ids = set(sent) | set(received)
     users = User.objects.filter(id__in=user_ids).exclude(id=request.user.id)
 
-    return render(request, 'chat.html', {'users': users})
+    users_with_unseen = []
+    for user in users:
+        unseen_count = Message.objects.filter(
+            sender=user,
+            receiver=request.user,
+            seen=False
+        ).count()
+        users_with_unseen.append({
+            'username': user.username,
+            'unseen_count': unseen_count
+        })
+    return render(request, 'chat.html', {'users': users_with_unseen})
 
 @login_required
 def delete_message(request, message_id):

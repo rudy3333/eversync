@@ -120,11 +120,16 @@
         </form>
 
         <hr class="my-5">
-                <h2>Chats</h2>
+        <h2>Chats</h2>
         <ul>
-        {% for user in users %}
-            <li><a href="{% url 'chat_with_user' user.username %}">{{ user.username }}</a></li>
-        {% endfor %}
+            {% for user in users %}
+                <li>
+                    <a href="{% url 'chat_with_user' user.username %}"
+                       style="{% if user.unseen_count > 0 %}font-weight: bold;{% endif %}">
+                        {{ user.username }}{% if user.unseen_count > 0 %} ({{ user.unseen_count }}){% endif %}
+                    </a>
+                </li>
+            {% endfor %}
         </ul>
         <!--
         <hr class="my-5">

@@ -94,7 +94,7 @@
         {% for msg in messages %}
             <div style="margin: 10px 0; text-align: {% if msg.sender == request.user %}right{% else %}left{% endif %};">
                 <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
-                <small>{{ msg.timestamp }}</small>
+                <small data-timestamp="{{ msg.timestamp|date:'c' }}"></small>
                 {% if msg.sender == request.user %}
                     {% if msg.seen %}
                         <div style="font-size: 12px; color: #6c757d;">Seen</div>
@@ -175,20 +175,35 @@
     }, function (response) {
       $('#message-content').val('');
 
-      const now = new Date().toLocaleString();
+      const now = new Date();
+
+      const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+      const timeOptions = { hour: 'numeric', minute: 'numeric', hour12: true };
+
       const messageId = response.message_id;
-      
-      $('#chat-log').append(`
-        <div style="margin: 10px 0; text-align: right;">
-          <strong>{{ request.user.username }}</strong>: ${content}<br>
-          <small>${now}</small>
-          <form action="/delete/${messageId}/" method="post" style="display:inline;">
-            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-            <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
-          </form>
-              <div style="font-size: 12px; color: #6c757d;">Delivered</div>
-        </div>
-      `);
+
+      const datePart = now.toLocaleDateString(undefined, dateOptions);
+      let timePart = now.toLocaleTimeString(undefined, timeOptions)
+        .replace('AM', 'a.m.')
+        .replace('PM', 'p.m.');
+
+      // Combine with a comma, no "at"
+      const formattedDate = `${datePart}, ${timePart}`;
+
+
+
+  $('#chat-log').append(`
+    <div style="margin: 10px 0; text-align: right;">
+      <strong>{{ request.user.username }}</strong>: ${content}<br>
+      <small>${formattedDate}</small>
+      <div style="font-size: 12px; color: #6c757d;">Delivered</div>
+
+      <form action="/delete/${messageId}/" method="post" style="display:inline;">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+        <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+      </form>
+    </div>
+  `);
 
       $('#chat-log').scrollTop($('#chat-log')[0].scrollHeight);
     }).fail(function (xhr) {
@@ -210,6 +225,27 @@
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
     });
+
+    document.querySelectorAll('small[data-timestamp]').forEach(el => {
+  const serverTime = el.getAttribute('data-timestamp');
+  if (serverTime) {
+    const date = new Date(serverTime);
+    const options = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    };
+    let formatted = date.toLocaleString(undefined, options)
+      .replace('AM', 'a.m.')
+      .replace('PM', 'p.m.');
+    // Remove "at" if your locale adds it (some do)
+    formatted = formatted.replace(/\s?at\s?/, ', ');
+    el.textContent = formatted;
+  }
+});
 </script>
 </body>
 </html>
