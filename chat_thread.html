@@ -8,6 +8,8 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    <link rel="stylesheet" href="{% static 'login-style.css' %}" />
+
     {% block scripts %}
         {% include "sentry_replay.html" %}
     {% endblock %}
@@ -18,16 +20,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; 
+  height: 100vh;
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .welcome-box {
   flex: 0 0 100%;
-  max-width: 400px; 
+  max-width: 400px;
+  height: 600px;
   padding: 20px;
   border-radius: 8px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 700px) {
@@ -84,7 +90,7 @@
         <div class="welcome-box">
         <h2>Chat with {{ other_user.username }}</h2>
 
-        <div id="chat-log" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+        <div id="chat-log" style="flex: 1; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
         {% for msg in messages %}
             <div style="margin: 10px 0; text-align: {% if msg.sender == request.user %}right{% else %}left{% endif %};">
             <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
@@ -119,11 +125,11 @@
             ></textarea>
         
             <button
+                class="login-button"
                 type="submit"
                 style="
                     margin-top: 10px;
                     padding: 10px 20px;
-                    background-color: #9b59b6;
                     color: white;
                     border: none;
                     border-radius: 6px;
