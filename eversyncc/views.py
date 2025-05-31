@@ -590,7 +590,7 @@ def stream_song(request):
         }
 
         with YoutubeDL(ytpdl_options) as ytpdl:
-            info = ytpdl.extract_info(f"ytsearch1:{query} audio", download=True)
+            info = ytpdl.extract_info(f"ytsearch1:{query} topic", download=True)
             filepath = ytpdl.prepare_filename(info['entries'][0]).replace('.webm', '.mp3').replace('.m4a', '.mp3')
         return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
 
