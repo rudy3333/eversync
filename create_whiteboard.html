@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create New Whiteboard</title>
+</head>
+<body>
+    <h2>Create a New Whiteboard</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Whiteboard Name:</label>
+        <input type="text" id="name" name="name" placeholder="Untitled Whiteboard" required />
+        <button type="submit">Create</button>
+    </form>
+</body>
+</html>

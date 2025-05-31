@@ -56,6 +56,8 @@ urlpatterns = [
     path('chat/<str:username>/', views.chat_with_user, name='chat_with_user'),
     path('whiteboard/<int:whiteboard_id>/save-stroke/', views.save_stroke, name='save_stroke'),
     path('whiteboard/', views.whiteboard_view, name='whiteboard'),
+    path('whiteboard/create/', views.create_whiteboard, name='create_whiteboard'),
+    path('whiteboard/<int:whiteboard_id>/', views.whiteboard_view, name='whiteboard'),
 
 
 

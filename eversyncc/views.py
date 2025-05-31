@@ -639,8 +639,17 @@ def chat_with_user(request, username):
     })
 
 @login_required
-def whiteboard_view(request):
-    return render(request, 'whiteboard.html')
+def whiteboard_view(request, whiteboard_id):
+    whiteboard = get_object_or_404(Whiteboard, id=whiteboard_id, owner=request.user)
+    strokes = Stroke.objects.filter(whiteboard=whiteboard).order_by('created_at')  # or however you want to order
+    
+    stroke_data = [stroke.data for stroke in strokes]
+
+    context = {
+        'whiteboard': whiteboard,
+        'strokes_json': json.dumps(stroke_data),
+    }
+    return render(request, 'whiteboard.html', context)
 
 @csrf_exempt  
 @login_required
@@ -668,3 +677,11 @@ def save_stroke(request, whiteboard_id):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@login_required
+def create_whiteboard(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', 'Untitled Whiteboard')
+        new_board = Whiteboard.objects.create(owner=request.user, title=name)
+        return redirect('whiteboard', whiteboard_id=new_board.id)
+    return render(request, 'create_whiteboard.html')

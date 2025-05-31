@@ -90,11 +90,11 @@
     
     <div class="container">
         <div class="welcome-box">
-          
+            <h2 style="text-align: center;">{{ whiteboard.title }}</h2>          
             <canvas id="whiteboard" width="800" height="600"></canvas>
 
             <script>
-                                function getCookie(name) {
+                function getCookie(name) {
                     let cookieValue = null;
                     if (document.cookie && document.cookie !== '') {
                         const cookies = document.cookie.split(';');
@@ -108,68 +108,91 @@
                     }
                     return cookieValue;
                 }
-                    function saveStrokeToServer(stroke) {
-            fetch(`/whiteboard/{{ whiteboard_id }}/save-stroke/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),  // make sure to add this function below
-                },
-                body: JSON.stringify({ stroke }),
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Save stroke error:', data.error);
-                } else {
-                    console.log('Stroke saved!');
+            
+                // Parse saved strokes from Django context
+                const savedStrokes = JSON.parse('{{ strokes_json|escapejs }}');
+            
+                const canvas = document.getElementById('whiteboard');
+                const ctx = canvas.getContext('2d');
+            
+                // Function to draw a stroke (array of points)
+                function drawStroke(points) {
+                    if (points.length < 2) return;  // Need at least 2 points to draw a line
+            
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#4B0082';  // purple-ish
+                    ctx.lineCap = 'round';
+            
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y);
+                    }
+                    ctx.stroke();
                 }
-            })
-            .catch(err => console.error('Fetch error:', err));
-            }
-
-            const canvas = document.getElementById('whiteboard');
-            const ctx = canvas.getContext('2d');
-
-            let drawing = false;
-            let currentStroke = [];
-
-            canvas.addEventListener('mousedown', (e) => {
-                drawing = true;
-                currentStroke = [{ x: e.offsetX, y: e.offsetY }];
-            });
-
-            canvas.addEventListener('mousemove', (e) => {
-                if (!drawing) return;
-                const point = { x: e.offsetX, y: e.offsetY };
-                currentStroke.push(point);
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#4B0082'; // purple-ish
-                ctx.lineCap = 'round';
-
-                ctx.beginPath();
-                const prevPoint = currentStroke[currentStroke.length - 2];
-                ctx.moveTo(prevPoint.x, prevPoint.y);
-                ctx.lineTo(point.x, point.y);
-                ctx.stroke();
-            });
-
-            canvas.addEventListener('mouseup', () => {
-                drawing = false;
-                console.log('Stroke points:', currentStroke);
-                saveStrokeToServer(currentStroke);
-            });
-
-                        canvas.addEventListener('mouseleave', () => {
-                if (drawing) {
+            
+                // Draw all saved strokes when the page loads
+                savedStrokes.forEach(drawStroke);
+            
+                let drawing = false;
+                let currentStroke = [];
+            
+                canvas.addEventListener('mousedown', (e) => {
+                    drawing = true;
+                    currentStroke = [{ x: e.offsetX, y: e.offsetY }];
+                });
+            
+                canvas.addEventListener('mousemove', (e) => {
+                    if (!drawing) return;
+                    const point = { x: e.offsetX, y: e.offsetY };
+                    currentStroke.push(point);
+            
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#4B0082';  // purple-ish
+                    ctx.lineCap = 'round';
+            
+                    ctx.beginPath();
+                    const prevPoint = currentStroke[currentStroke.length - 2];
+                    ctx.moveTo(prevPoint.x, prevPoint.y);
+                    ctx.lineTo(point.x, point.y);
+                    ctx.stroke();
+                });
+            
+                canvas.addEventListener('mouseup', () => {
+                    if (!drawing) return;
                     drawing = false;
                     console.log('Stroke points:', currentStroke);
                     saveStrokeToServer(currentStroke);
+                });
+            
+                canvas.addEventListener('mouseleave', () => {
+                    if (drawing) {
+                        drawing = false;
+                        console.log('Stroke points:', currentStroke);
+                        saveStrokeToServer(currentStroke);
+                    }
+                });
+            
+                function saveStrokeToServer(stroke) {
+                    fetch(`/whiteboard/{{ whiteboard.id }}/save-stroke/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ stroke }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Save stroke error:', data.error);
+                        } else {
+                            console.log('Stroke saved!');
+                        }
+                    })
+                    .catch(err => console.error('Fetch error:', err));
                 }
-            });
             </script>
-            </div>
-
 
         </div>
     </div>
