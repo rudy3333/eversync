@@ -90,6 +90,11 @@
     
     <div class="container">
         <div class="welcome-box">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <button id="delete-toggle" style="padding: 6px 12px; background-color: #800080; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    ✖️ Toggle Delete Mode
+                </button>
+            </div>
             <h2 style="text-align: center;">{{ whiteboard.title }}</h2>          
             <canvas id="whiteboard" width="800" height="600"></canvas>
 
@@ -137,11 +142,61 @@
                 let drawing = false;
                 let currentStroke = [];
             
-                canvas.addEventListener('mousedown', (e) => {
-                    drawing = true;
-                    currentStroke = [{ x: e.offsetX, y: e.offsetY }];
+                let deleteMode = false;
+                const deleteButton = document.getElementById('delete-toggle');
+                deleteButton.addEventListener('click', () => {
+                    deleteMode = !deleteMode;
+                    deleteButton.textContent = deleteMode ? '✅ Delete Mode ON' : '✖️ Toggle Delete Mode';
                 });
-            
+                canvas.addEventListener('mousedown', (e) => {
+                const x = e.offsetX;
+                const y = e.offsetY;
+
+                if (deleteMode) {
+                    // Detect and delete stroke
+                    for (let i = 0; i < savedStrokes.length; i++) {
+                        const stroke = savedStrokes[i];
+                        for (const point of stroke.points || stroke) {
+                            const dx = point.x - x;
+                            const dy = point.y - y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 10) {
+                                deleteStrokeFromServer(i);
+                                return;
+                            }
+                        }
+                    }
+                    return;
+                }
+
+                drawing = true;
+                currentStroke = [{ x, y }];
+            });
+            function deleteStrokeFromServer(index) {
+                fetch(`/whiteboard/{{ whiteboard.id }}/delete-stroke/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ index }),
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        savedStrokes.splice(index, 1);
+                        redrawCanvas();
+                    } else {
+                        console.error('Delete stroke error:', data.error);
+                    }
+                })
+                .catch(err => console.error('Fetch error:', err));
+            }
+
+            function redrawCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                savedStrokes.forEach(drawStroke);
+            }
                 canvas.addEventListener('mousemove', (e) => {
                     if (!drawing) return;
                     const point = { x: e.offsetX, y: e.offsetY };

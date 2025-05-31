@@ -689,3 +689,24 @@ def create_whiteboard(request):
         new_board = Whiteboard.objects.create(owner=request.user, title=name)
         return redirect('whiteboard', whiteboard_id=new_board.id)
     return render(request, 'create_whiteboard.html')
+
+@login_required
+def delete_stroke(request, whiteboard_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            index = data.get('index')
+
+            whiteboard = Whiteboard.objects.get(id=whiteboard_id)
+            strokes = Stroke.objects.filter(whiteboard=whiteboard).order_by('created_at')
+
+            stroke_to_delete = strokes[index]
+            stroke_to_delete.delete()
+
+            return JsonResponse({'success': True})
+        except Whiteboard.DoesNotExist:
+            return JsonResponse({'error': 'Whiteboard not found'}, status=404)
+        except IndexError:
+            return JsonResponse({'error': 'Invalid stroke index'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
