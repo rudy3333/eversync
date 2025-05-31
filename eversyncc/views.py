@@ -673,7 +673,7 @@ def save_stroke(request, whiteboard_id):
                 user=request.user,
                 data=stroke_points
             )
-
+            whiteboard.save()
             return JsonResponse({'status': 'success'})
         except Whiteboard.DoesNotExist:
             return JsonResponse({'error': 'Whiteboard not found'}, status=404)
@@ -702,6 +702,8 @@ def delete_stroke(request, whiteboard_id):
 
             stroke_to_delete = strokes[index]
             stroke_to_delete.delete()
+            whiteboard.save()
+
 
             return JsonResponse({'success': True})
         except Whiteboard.DoesNotExist:
@@ -717,6 +719,7 @@ def delete_all_strokes(request, whiteboard_id):
         try:
             whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
             Stroke.objects.filter(whiteboard=whiteboard).delete()
+            whiteboard.save()
             return JsonResponse({'success': True})
         except Whiteboard.DoesNotExist:
             return JsonResponse({'error': 'Whiteboard not found'}, status=404)

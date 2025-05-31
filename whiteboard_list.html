@@ -90,7 +90,7 @@
                             <a href="{% url 'whiteboard' whiteboard.id %}">
                                 {{ whiteboard.title|default:"Untitled Whiteboard" }}
                             </a> 
-                            (Created on {{ whiteboard.created_at|date:"Y-m-d H:i" }})
+                            (Created on {{ whiteboard.created_at|date:"Y-m-d H:i" }}, updated on {{ whiteboard.updated_at|date:"Y-m-d H:i" }})
                         </span>
                         <form method="post" action="{% url 'delete_whiteboard' whiteboard.id %}" style="margin: 0;">
                             {% csrf_token %}
