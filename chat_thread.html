@@ -96,6 +96,13 @@
                 <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
                 <small>{{ msg.timestamp }}</small>
                 {% if msg.sender == request.user %}
+                    {% if msg.seen %}
+                        <div style="font-size: 12px; color: #6c757d;">Seen</div>
+                    {% else %}
+                        <div style="font-size: 12px; color: #6c757d;">Delivered</div>
+                    {% endif %}
+                {% endif %}
+                {% if msg.sender == request.user %}
                     <form action="/delete/{{ msg.id }}/" method="post" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
@@ -179,6 +186,7 @@
             <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
             <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
           </form>
+              <div style="font-size: 12px; color: #6c757d;">Delivered</div>
         </div>
       `);
 

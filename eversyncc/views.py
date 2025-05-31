@@ -22,6 +22,7 @@ import json
 import tempfile
 from yt_dlp import YoutubeDL
 from django.db.models import Q
+from django.utils.timezone import now
 
 providers = micawber.bootstrap_basic()
 
@@ -615,6 +616,8 @@ def chat_with_user(request, username):
         Q(sender=request.user, receiver=other_user) |
         Q(sender=other_user, receiver=request.user)
     ).order_by('timestamp')
+
+    Message.objects.filter(sender=other_user, receiver=request.user, seen=False).update(seen=True, seen_at=now())
 
     return render(request, 'chat_thread.html', {
         'messages': messages,
