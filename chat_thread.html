@@ -93,8 +93,14 @@
         <div id="chat-log" style="flex: 1; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
         {% for msg in messages %}
             <div style="margin: 10px 0; text-align: {% if msg.sender == request.user %}right{% else %}left{% endif %};">
-            <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
-            <small>{{ msg.timestamp }}</small>
+                <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
+                <small>{{ msg.timestamp }}</small>
+                {% if msg.sender == request.user %}
+                    <form action="/delete/{{ msg.id }}/" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+                    </form>
+                {% endif %}
             </div>
         {% endfor %}
         </div>
@@ -159,14 +165,20 @@
       receiver: receiver,
       content: content,
       csrfmiddlewaretoken: csrfToken
-    }, function () {
+    }, function (response) {
       $('#message-content').val('');
 
       const now = new Date().toLocaleString();
+      const messageId = response.message_id;
+      
       $('#chat-log').append(`
         <div style="margin: 10px 0; text-align: right;">
           <strong>{{ request.user.username }}</strong>: ${content}<br>
           <small>${now}</small>
+          <form action="/delete/${messageId}/" method="post" style="display:inline;">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+            <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+          </form>
         </div>
       `);
 

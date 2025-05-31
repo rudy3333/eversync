@@ -510,8 +510,8 @@ def send_message(request):
         reciever_username = request.POST.get('receiver')
         content =  request.POST.get('content')
         receiver = User.objects.get(username=reciever_username)
-        Message.objects.create(sender=request.user, receiver=receiver, content=content)
-        return JsonResponse({"message": "sent"})
+        message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
+        return JsonResponse({"message": "sent", "message_id": message.id})
     else:
         return JsonResponse({"message": "error"})
     
@@ -551,7 +551,8 @@ def delete_message(request, message_id):
     if request.method == "POST":
         message = get_object_or_404(Message, id=message_id, sender=request.user)
         message.delete()
-    return redirect('chat')
+        referer = request.META.get("HTTP_REFERER")
+    return redirect(referer)
 
 @login_required
 def music(request):

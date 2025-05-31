@@ -126,7 +126,7 @@
             <li><a href="{% url 'chat_with_user' user.username %}">{{ user.username }}</a></li>
         {% endfor %}
         </ul>
-
+        <!--
         <hr class="my-5">
 
         <h3>Inbox</h3>
@@ -137,7 +137,7 @@
         <h3>Outbox</h3>
         <button class="btn btn-secondary mb-3" onclick="loadOutbox()">Refresh</button>
         <ul id="outbox-messages" class="list-group"></ul>
-
+        -->
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -153,9 +153,6 @@
                         ul.append(`<li class="list-group-item">
                             <strong>${msg.sender}</strong>: ${msg.content}<br>
                             <small>${msg.timestamp}</small>
-                            <form action="/delete/${msg.id}/" method="post" style="display:inline;">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="${$('input[name="csrfmiddlewaretoken"]').val()}">
-                            <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px;">Delete</button>
                         </form>
                         </li>`);
                     });
@@ -173,7 +170,7 @@
                             <small>${msg.timestamp}</small>
                             <form action="/delete/${msg.id}/" method="post" style="display:inline;">
                                 <input type="hidden" name="csrfmiddlewaretoken" value="${$('input[name="csrfmiddlewaretoken"]').val()}">
-                                <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px;">Delete</button>
+                                <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
                             </form>
                         </li>`);
                     });
