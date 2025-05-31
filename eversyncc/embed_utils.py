@@ -7,14 +7,8 @@ import json
 def get_oembed_info(url):
     try:
         oembed_endpoints = [
-            f"https://api.instagram.com/oembed/?url={url}",
             f"https://www.tiktok.com/oembed?url={url}",
-            f"https://www.facebook.com/plugins/post/oembed.json/?url={url}",
-            f"https://api.spotify.com/oembed?url={url}",
             f"https://www.reddit.com/oembed?url={url}",
-            f"https://www.tumblr.com/oembed/1.0?url={url}",
-            f"https://www.flickr.com/services/oembed/?url={url}",
-            f"https://www.vimeo.com/api/oembed.json?url={url}",
             f"https://www.youtube.com/oembed?url={url}&format=json"
         ]
         
