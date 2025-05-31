@@ -98,16 +98,22 @@ def upload_file(request):
             document = form.save(commit=False)
             filename = document.file.name
             ext = os.path.splitext(filename)[1].lower()
+            file_size = document.file.size
+
 
             forbidden_extensions=['.html','.htm','.php','.exe','.js','.sh','.bat']
             if ext in forbidden_extensions:
                 request.session.flush()
                 logout(request)
                 return HttpResponse("<html><body><script>alert('Uploading possibly malicious files is forbidden. You have been logged out.'); location.reload();</script></body></html>")
+            user_storage = request.user.userstorage
+            if user_storage.used_storage + file_size > user_storage.storage_limit:
+              return HttpResponse(
+                    "<html><body><script>alert('Upload blocked: Storage limit exceeded. Please delete files.'); window.history.back();</script></body></html>"
+                )
+            
             document.user = request.user
             document.save()
-
-            user_storage = request.user.userstorage
             user_storage.used_storage += document.size
             user_storage.save()
 

@@ -98,7 +98,7 @@
                     {% with document.file.url|lower as file_url %}
                         {% with file_url|slice:"-4:" as slice4 %}
                             {% with file_url|slice:"-5:" as slice5 %}
-                                {% if slice4 == ".png" or slice4 == ".jpg" or slice4 == ".gif" or slice5 == ".jpeg" or slice5 == ".webp" %}
+                                {% if slice4 == ".png" or slice4 == ".jpg" or slice4 == ".pdf" or slice4 == ".gif" or slice5 == ".jpeg" or slice5 == ".webp" %}
                                     <img src="{{ document.file.url }}" class="file-thumbnail" style="max-height: 30%; max-width: 30%;"></img>
                                 {% else %}
                                     <img src="{% static 'newnew.png' %}" class="file-thumbnail"></img>
