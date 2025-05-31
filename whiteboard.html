@@ -271,6 +271,7 @@
                             console.error('Save stroke error:', data.error);
                         } else {
                             console.log('Stroke saved!');
+                            savedStrokes.push(stroke);
                         }
                     })
                     .catch(err => console.error('Fetch error:', err));
