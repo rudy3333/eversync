@@ -53,6 +53,8 @@ urlpatterns = [
     path('stream_song/', views.stream_song, name='stream_song'),
     path('music', views.music, name="music"),
     path('get_thumbnail/', views.get_thumbnail, name='get_thumbnail'),
+    path('chat/<str:username>/', views.chat_with_user, name='chat_with_user'),
+
 ]
 
 if settings.DEBUG:

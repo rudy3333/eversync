@@ -21,6 +21,7 @@ from django.utils.text import slugify
 import json
 import tempfile
 from yt_dlp import YoutubeDL
+from django.db.models import Q
 
 providers = micawber.bootstrap_basic()
 
@@ -539,7 +540,12 @@ def sent_messages(request):
     
 @login_required
 def chat_page(request):
-    return render(request, 'chat.html')
+    sent = Message.objects.filter(sender=request.user).values_list('receiver', flat=True)
+    received = Message.objects.filter(receiver=request.user).values_list('sender', flat=True)
+    user_ids = set(sent) | set(received)
+    users = User.objects.filter(id__in=user_ids).exclude(id=request.user.id)
+
+    return render(request, 'chat.html', {'users': users})
 
 @login_required
 def delete_message(request, message_id):
@@ -597,4 +603,16 @@ def get_thumbnail(request):
     return JsonResponse({
         "thumbnail": thumbnail_url,
         "title": title
+    })
+
+def chat_with_user(request, username):
+    other_user = User.objects.get(username=username)
+    messages = Message.objects.filter(
+        Q(sender=request.user, receiver=other_user) |
+        Q(sender=other_user, receiver=request.user)
+    ).order_by('timestamp')
+
+    return render(request, 'chat_thread.html', {
+        'messages': messages,
+        'other_user': other_user
     })

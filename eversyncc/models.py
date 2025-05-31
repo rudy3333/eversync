@@ -84,3 +84,10 @@ class Message(models.Model):
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver} at {self.timestamp}"
+    
+class Thread(models.Model):
+    participants = models.ManyToManyField(User)
+
+    def __str__(self):
+        return " / ".join([u.username for u in self.participants.all()])
+    

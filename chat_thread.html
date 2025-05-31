@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
+
+
+    <style>
+ .container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; 
+  padding: 20px;
+}
+
+.welcome-box {
+  flex: 0 0 100%;
+  max-width: 400px; 
+  padding: 20px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 700px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .welcome-box {
+    width: 90vw;
+    max-width: none;
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+
+  .content-box {
+    width: 100%;
+  }
+}
+    </style>
+</head>
+    
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo" >eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-box">
+        <h2>Chat with {{ other_user.username }}</h2>
+
+        <div id="chat-log" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+        {% for msg in messages %}
+            <div style="margin: 10px 0; text-align: {% if msg.sender == request.user %}right{% else %}left{% endif %};">
+            <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
+            <small>{{ msg.timestamp }}</small>
+            </div>
+        {% endfor %}
+        </div>
+
+        <form id="chat-form" style="margin-top: 15px;">
+            {% csrf_token %}
+            <input type="hidden" id="receiver" name="receiver" value="{{ other_user.username }}">
+        
+            <label for="message-content" style="display: block; margin-bottom: 5px; font-weight: 600; color: black;">
+                Your Message
+            </label>
+            <textarea
+                name="content"
+                id="message-content"
+                rows="3"
+                required
+                style="
+                    width: 100%;
+                    padding: 10px;
+                    border-radius: 6px;
+                    border: 1px solid #666;
+                    background-color: white;
+                    color: black;
+                    resize: vertical;
+                    box-sizing: border-box;
+                    font-size: 14px;
+                "
+            ></textarea>
+        
+            <button
+                type="submit"
+                style="
+                    margin-top: 10px;
+                    padding: 10px 20px;
+                    background-color: #9b59b6;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: background-color 0.3s ease;
+                "
+            >
+                Send
+            </button>
+        </form>
+        </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $('#chat-form').on('submit', function (e) {
+    e.preventDefault();
+
+    let content = $('#message-content').val().trim();
+    let receiver = $('#receiver').val();
+    let csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    if (!content) return;
+
+    $.post('/send/', {
+      receiver: receiver,
+      content: content,
+      csrfmiddlewaretoken: csrfToken
+    }, function () {
+      $('#message-content').val('');
+
+      const now = new Date().toLocaleString();
+      $('#chat-log').append(`
+        <div style="margin: 10px 0; text-align: right;">
+          <strong>{{ request.user.username }}</strong>: ${content}<br>
+          <small>${now}</small>
+        </div>
+      `);
+
+      $('#chat-log').scrollTop($('#chat-log')[0].scrollHeight);
+    }).fail(function (xhr) {
+      alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong.'));
+    });
+  });
+
+  // Scroll to bottom on load
+  $(document).ready(function () {
+    $('#chat-log').scrollTop($('#chat-log')[0].scrollHeight);
+  });
+</script>
+    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        toggle.addEventListener('click', function () {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+</script>
+</body>
+</html>
+

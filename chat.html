@@ -120,6 +120,14 @@
         </form>
 
         <hr class="my-5">
+                <h2>Chats</h2>
+        <ul>
+        {% for user in users %}
+            <li><a href="{% url 'chat_with_user' user.username %}">{{ user.username }}</a></li>
+        {% endfor %}
+        </ul>
+
+        <hr class="my-5">
 
         <h3>Inbox</h3>
         <button class="btn btn-secondary mb-3" onclick="loadMessages()">Refresh</button>
