@@ -639,19 +639,23 @@ def chat_with_user(request, username):
     })
 
 @login_required
-def whiteboard_view(request, whiteboard_id):
-    whiteboard = get_object_or_404(Whiteboard, id=whiteboard_id, owner=request.user)
-    strokes = Stroke.objects.filter(whiteboard=whiteboard).order_by('created_at')  # or however you want to order
-    
-    stroke_data = [stroke.data for stroke in strokes]
+def whiteboard_view(request, whiteboard_id=None):
+    if whiteboard_id:
+        whiteboard = get_object_or_404(Whiteboard, id=whiteboard_id, owner=request.user)
+        strokes = Stroke.objects.filter(whiteboard=whiteboard).order_by('created_at')
+        stroke_data = [stroke.data for stroke in strokes]
+        context = {
+            'whiteboard': whiteboard,
+            'strokes_json': json.dumps(stroke_data),
+        }
+        return render(request, 'whiteboard.html', context)
+    else:
+        whiteboards = Whiteboard.objects.filter(owner=request.user)
+        context = {
+            'whiteboards': whiteboards,
+        }
+        return render(request, 'whiteboard_list.html', context)
 
-    context = {
-        'whiteboard': whiteboard,
-        'strokes_json': json.dumps(stroke_data),
-    }
-    return render(request, 'whiteboard.html', context)
-
-@csrf_exempt  
 @login_required
 def save_stroke(request, whiteboard_id):
     if request.method == 'POST':

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Whiteboards</title>
+</head>
+<body>
+    <h1>Your Whiteboards</h1>
+
+    {% if whiteboards %}
+        <ul>
+            {% for whiteboard in whiteboards %}
+                <li>
+                    <a href="{% url 'whiteboard' whiteboard.id %}">
+                        {{ whiteboard.name|default:"Untitled Whiteboard" }}
+                    </a> 
+                    (Created on {{ whiteboard.created_at|date:"Y-m-d H:i" }})
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You don't have any whiteboards yet.</p>
+    {% endif %}
+</body>
+</html>
