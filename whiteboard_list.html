@@ -83,16 +83,30 @@
             <h1>Your Whiteboards</h1>
 
             {% if whiteboards %}
-                <ul>
-                    {% for whiteboard in whiteboards %}
-                        <li>
+            <ul>
+                {% for whiteboard in whiteboards %}
+                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>
                             <a href="{% url 'whiteboard' whiteboard.id %}">
                                 {{ whiteboard.title|default:"Untitled Whiteboard" }}
                             </a> 
                             (Created on {{ whiteboard.created_at|date:"Y-m-d H:i" }})
-                        </li>
-                    {% endfor %}
-                </ul>
+                        </span>
+                        <form method="post" action="{% url 'delete_whiteboard' whiteboard.id %}" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" style="
+                            background-color: #e74c3c;
+                            color: white;
+                            border: none;
+                            padding: 6px 10px;
+                            font-size: 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                        ">Delete</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
             {% else %}
                 <p>You don't have any whiteboards yet.</p>
             {% endif %}

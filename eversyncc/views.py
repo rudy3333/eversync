@@ -720,3 +720,12 @@ def delete_all_strokes(request, whiteboard_id):
             return JsonResponse({'success': True})
         except Whiteboard.DoesNotExist:
             return JsonResponse({'error': 'Whiteboard not found'}, status=404)
+
+
+@login_required
+def delete_whiteboard(request, whiteboard_id):
+    whiteboard = get_object_or_404(Whiteboard, id=whiteboard_id, owner=request.user)
+    if request.method == 'POST':
+        whiteboard.delete()
+        return redirect('whiteboard') 
+    return redirect('whiteboard')
