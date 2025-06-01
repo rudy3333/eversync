@@ -788,6 +788,7 @@ def update_email(request):
         if form.is_valid():
             request.user.email = form.cleaned_data['email']
             request.user.save()
+            send_email_confirmation(request, request.user)
             return redirect('account_email_verification_sent')
     else:
         form = EmailUpdateForm()
@@ -802,6 +803,6 @@ def login_redirect(request):
         return redirect('update_email') 
 
     if not EmailAddress.objects.filter(user=user, email=user.email, verified=True).exists():
-        return redirect('account_email_verification_sent')  # or your own custom page
+        return redirect('account_email_verification_sent')
 
     return redirect('/') 
