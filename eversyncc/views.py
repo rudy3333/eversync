@@ -14,6 +14,7 @@ from allauth.account.views import LoginView as AllauthLoginView
 import os
 from pathlib import Path
 import requests
+from allauth.account.models import EmailAddress
 from django.views.decorators.clickjacking import xframe_options_exempt
 from webpush import send_user_notification
 from icalendar import Calendar, Event as IcalEvent
@@ -27,6 +28,8 @@ from .embed_utils import get_embed_info
 from .models import Whiteboard, Stroke
 from eversyncc.email import verify_token
 from django.contrib.auth import get_user_model
+from .forms import EmailUpdateForm
+from allauth.account.utils import send_email_confirmation
 
 
 
@@ -774,3 +777,31 @@ def verify_email(request):
     user.save()
     
     return HttpResponse("Email verified successfully! You can now log in.")
+
+@login_required
+def update_email(request):
+    if request.user.email:
+        return('/')
+    
+    if request.method == 'POST':
+        form = EmailUpdateForm(request.POST)
+        if form.is_valid():
+            request.user.email = form.cleaned_data['email']
+            request.user.save()
+            return redirect('account_email_verification_sent')
+    else:
+        form = EmailUpdateForm()
+
+    return render(request, 'account/update_email.html', {'form': form}) 
+
+@login_required
+def login_redirect(request):
+    user = request.user
+
+    if not user.email:
+        return redirect('update_email') 
+
+    if not EmailAddress.objects.filter(user=user, email=user.email, verified=True).exists():
+        return redirect('account_email_verification_sent')  # or your own custom page
+
+    return redirect('/') 

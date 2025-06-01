@@ -1,0 +1,16 @@
+
+{% block content %}
+  <div class="max-w-md mx-auto p-6 bg-white shadow rounded">
+    <h1 class="text-xl font-semibold mb-4">Add Your Email</h1>
+    <p class="mb-4 text-gray-600">We need your email to continue. Please enter it below and we'll send a verification link.</p>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+        Submit Email
+      </button>
+    </form>
+  </div>
+{% endblock %}

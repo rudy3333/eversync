@@ -50,3 +50,7 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = ['title', 'completed']
         exclude = ['completed']
+
+
+class EmailUpdateForm(forms.Form):
+    email = forms.EmailField(label="Your email", required=True)

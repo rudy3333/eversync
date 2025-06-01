@@ -180,8 +180,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'files')
 STATIC_ROOT= os.path.join(BASE_DIR, 'eversyncc/static')
 
 ACCOUNT_MFA_ENABLED = True
-
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+LOGIN_REDIRECT_URL = '/redirect-after-login/'
 
 import sentry_sdk
 

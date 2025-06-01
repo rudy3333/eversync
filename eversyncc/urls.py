@@ -63,6 +63,9 @@ urlpatterns = [
     path('whiteboard/delete/<int:whiteboard_id>/', views.delete_whiteboard, name='delete_whiteboard'),
     path('delete_account/', views.delete_account, name="delete_account"),
     path('verify-email/', views.verify_email, name='verify_email'),
+    path('update-email/', views.update_email, name='update_email'),
+    path('redirect-after-login/', views.login_redirect, name='login_redirect'),
+
 
 
 
