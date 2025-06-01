@@ -7,6 +7,7 @@ class UserStorage(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     storage_limit = models.BigIntegerField(default=5 * 1024 * 1024 * 1024)  # 5 GB
     used_storage = models.BigIntegerField(default=0)
+    email_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.username} - {self.used_storage} / {self.storage_limit} bytes"

@@ -25,6 +25,10 @@ from django.db.models import Q
 from django.utils.timezone import now
 from .embed_utils import get_embed_info
 from .models import Whiteboard, Stroke
+from eversyncc.email import verify_token
+from django.contrib.auth import get_user_model
+
+
 
 
 def logout_view(request):
@@ -747,3 +751,26 @@ def delete_whiteboard(request, whiteboard_id):
         whiteboard.delete()
         return redirect('whiteboard') 
     return redirect('whiteboard')
+
+
+User = get_user_model()
+
+@login_required
+def verify_email(request):
+    token = request.GET.get('token')
+    if not token:
+        return HttpResponse("Invalid verification link.", status=400)
+    
+    email = verify_token(token)
+    if not email:
+        return HttpResponse("Verification link expired or invalid.", status=400)
+    
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return HttpResponse("User not found.", status=404)
+
+    user.email_verified = True
+    user.save()
+    
+    return HttpResponse("Email verified successfully! You can now log in.")

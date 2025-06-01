@@ -174,6 +174,8 @@ STATIC_ROOT= os.path.join(BASE_DIR, 'eversyncc/static')
 
 ACCOUNT_MFA_ENABLED = True
 
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
+
 import sentry_sdk
 
 sentry_sdk.init(
