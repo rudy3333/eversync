@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}">
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
+    <style>
+        .container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        .welcome-box {
+            width: 100%;
+            max-width: 600px;
+            padding: 32px 24px;
+            border-radius: 12px;
+            background: #fff;
+            margin: 60px auto 0 auto;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        @media (max-width: 700px) {
+            .container {
+                flex-direction: column;
+                align-items: center; 
+            }
+            .welcome-box {
+                max-width: 95vw;
+                padding: 16px 5vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo">eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="welcome-box">
+            {% load i18n %}
+            {% load account %}
+            {% load allauth %}
+            <h1>{% trans "Confirm Email Address" %}</h1>
+            {% if confirmation %}
+                {% user_display confirmation.email_address.user as user_display %}
+                {% if can_confirm %}
+                    <p>
+                        {% blocktrans with confirmation.email_address.email as email %}
+                            Please confirm that <a href="mailto:{{ email }}">{{ email }}</a> is an email address for user {{ user_display }}.
+                        {% endblocktrans %}
+                    </p>
+                    {% url 'account_confirm_email' confirmation.key as action_url %}
+                    <form method="post" action="{{ action_url }}">
+                        {% csrf_token %}
+                        {{ redirect_field }}
+                        <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                            {% trans 'Confirm' %}
+                        </button>
+                    </form>
+                {% else %}
+                    <p>
+                        {% blocktrans %}
+                            Unable to confirm {{ email }} because it is already confirmed by a different account.
+                        {% endblocktrans %}
+                    </p>
+                {% endif %}
+            {% else %}
+                {% url 'account_email' as email_url %}
+                <p>
+                    {% blocktrans %}
+                        This email confirmation link expired or is invalid.
+                        Please <a href="{{ email_url }}">issue a new email confirmation request</a>.
+                    {% endblocktrans %}
+                </p>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.querySelector('.dropdown-toggle');
+            const menu = document.querySelector('.dropdown-menu');
+            toggle.addEventListener('click', function () {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+    </script>
+</body>
+</html>
