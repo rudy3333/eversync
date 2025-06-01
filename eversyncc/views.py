@@ -838,8 +838,8 @@ def verify_email(request):
 
 @login_required
 def update_email(request):
-    if request.user.email:
-        return redirect('/')
+# if request.user.email:
+#    return redirect('/')
     
     if request.method == 'POST':
         form = EmailUpdateForm(request.POST)
