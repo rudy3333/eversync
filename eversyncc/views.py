@@ -31,6 +31,7 @@ from django.contrib.auth import get_user_model
 from .forms import EmailUpdateForm
 from allauth.account.utils import send_email_confirmation
 from functools import wraps
+from .forms import RegisterForm
 
 
 def email_verified_required(view_func):
@@ -57,12 +58,12 @@ def register(request):
             return redirect('/')
         
         if request.method == "POST":
-            form = UserCreationForm(request.POST)
+            form = RegisterForm(request.POST)
             if form.is_valid():
                 form.save()
                 return redirect("/")
         else:
-            form = UserCreationForm()
+            form = RegisterForm()
         return render(request, "register.html", {"form": form})
 
 @login_required

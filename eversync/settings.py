@@ -56,9 +56,13 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.mfa",
-    "webpush"
+    "webpush",
+    "django_recaptcha"
 
 ]
+RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY')
+RECAPTCHA_USE_SSL = True
 
 WEBPUSH_SETTINGS = {
     "VAPID_PUBLIC_KEY": "BArtoQuGwO4z_wyCZJ6cZpkCJVuEHt-YeiHtocH6cTmPNUHL8657te2gXhEiXjjfNMy0igo1PxrSGFokdOokzfA",
