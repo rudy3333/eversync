@@ -30,8 +30,21 @@ from eversyncc.email import verify_token
 from django.contrib.auth import get_user_model
 from .forms import EmailUpdateForm
 from allauth.account.utils import send_email_confirmation
+from functools import wraps
 
 
+def email_verified_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            try:
+                email_address = EmailAddress.objects.get(user=request.user, email=request.user.email)
+                if not email_address.verified:
+                    return redirect('account_email')  # or your custom "please verify" page
+            except EmailAddress.DoesNotExist:
+                return redirect('account_email')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 
 def logout_view(request):
@@ -114,7 +127,8 @@ class RedirectFromLogin(AllauthLoginView):
         if request.user.is_authenticated:
             return redirect('/') 
         return super().dispatch(request, *args, **kwargs)
-    
+
+@email_verified_required
 @login_required
 def upload_file(request):
     if request.method == 'POST':
@@ -164,6 +178,7 @@ def file_list(request):
         'percent': round(percent, 1)
     })
 
+@email_verified_required
 @login_required
 def delete_file(request, file_id):
     if request.method == 'DELETE':
@@ -200,6 +215,7 @@ def calendar_event_delete(request, event_id):
 
 
 
+@email_verified_required
 @login_required
 def calendar(request):
     events = Event.objects.filter(user=request.user)
@@ -213,6 +229,7 @@ def calendar(request):
     ]
     return render(request, 'calendar.html', {'events_data': events_data})
 
+@email_verified_required
 @login_required
 def calendar_events(request):
     events = Event.objects.filter(user=request.user)
@@ -228,6 +245,7 @@ def calendar_events(request):
     ]
     return JsonResponse(events_data, safe=False)
 
+@email_verified_required
 @login_required
 def calendar_event_create(request):
     if request.method == 'POST':
@@ -241,6 +259,7 @@ def calendar_event_create(request):
         return JsonResponse({'message': 'Error'}, status=400)
     
 
+@email_verified_required
 @login_required
 def note_add(request):
     if request.method == 'POST':
@@ -253,6 +272,7 @@ def note_add(request):
     else:
         return JsonResponse({'message': 'Error'}, status=400)
     
+@email_verified_required
 @login_required
 def note_list(request):
     notes = Notes.objects.filter(user_id=request.user)
@@ -267,6 +287,7 @@ def note_list(request):
     ]
     return JsonResponse(notes_data, safe=False)
 
+@email_verified_required
 @login_required
 def notes(request):
     notes = Notes.objects.filter(user_id=request.user)
@@ -280,6 +301,7 @@ def notes(request):
     return render(request, 'notes.html', {'notes_data': notes_data})
 
 
+@email_verified_required
 @login_required
 def download_calendar(request, event_id):
     eventz = Event.objects.get(id=event_id, user=request.user)
@@ -299,10 +321,12 @@ def download_calendar(request, event_id):
     return response
 
     
+@email_verified_required
 @login_required
 def pomodoro(request):
     return render(request, "pomodoro.html")
 
+@email_verified_required
 @login_required
 def add_embed(request):
     if request.method == 'POST':
@@ -321,11 +345,13 @@ def add_embed(request):
             return redirect("add_embed")
     return render(request, "add_embed.html")
 
+@email_verified_required
 @login_required
 def embed_list(request):
     embeds = Embed.objects.all()
     return render(request, "embed_list.html", {"embeds": embeds})
 
+@email_verified_required
 @login_required
 def delete_embed(request, id):
     if request.method == 'POST':
@@ -339,10 +365,12 @@ def delete_embed(request, id):
         except:
             return JsonResponse({'error': 'Error.'}, status=404)
         
+@email_verified_required
 @login_required
 def meeting(request):
     return render(request, 'meeting.html')
 
+@email_verified_required
 @login_required
 def weather_api(request, location):
     # Step 1: Geocode the location
@@ -409,15 +437,18 @@ def weather_api(request, location):
     }
     return JsonResponse(data)
 
+@email_verified_required
 @login_required
 @xframe_options_exempt
 def weather_view(request, location):
     return render(request, "weather.html", {"location": location})
 
+@email_verified_required
 @login_required
 def weather_pick(request):
     return render(request, "weather_pick.html")
 
+@email_verified_required
 @login_required
 def note_delete(request, note_id):
     if request.method == 'POST':
@@ -429,6 +460,7 @@ def note_delete(request, note_id):
             return JsonResponse({'error': 'Note not found'}, status=404)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+@email_verified_required
 @login_required
 def add_task(request):
     if request.method == 'POST':
@@ -442,11 +474,13 @@ def add_task(request):
         form = TaskForm()
     return render(request, 'add_task.html', {'form': form})
         
+@email_verified_required
 @login_required
 def task_list(request):
     tasks = Task.objects.filter(user=request.user)
     return render(request, 'task_list.html', {'tasks': tasks})
 
+@email_verified_required
 @login_required
 def delete_task(request, task_id):
     if request.method == 'POST':
@@ -458,6 +492,7 @@ def delete_task(request, task_id):
             return JsonResponse({'error': 'Task not found'}, status=404)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+@email_verified_required
 @login_required
 def task_complete(request, task_id):
     if request.method == 'POST':
@@ -478,15 +513,18 @@ def get_affirmation(request):
     except Exception:
         return JsonResponse({"affirmation": "You're doing great. Keep going!"})
 
-@login_required   
+@email_verified_required
+@login_required
 def thought_reframing(request):
         return render(request, 'thought_reframing.html')
 
+@email_verified_required
 @login_required
 def documents(request):
     return render(request, "documents.html")
 
 
+@email_verified_required
 @login_required
 def save_document(request):
     if request.method == 'POST':
@@ -503,17 +541,20 @@ def save_document(request):
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+@email_verified_required
 @login_required
 def document_list(request):
     documents = RichDocument.objects.filter(owner=request.user)
     return render(request, 'document_list.html', {'documents': documents})
 
 
+@email_verified_required
 @login_required
 def view_document(request, doc_id):
     document = get_object_or_404(RichDocument, id=doc_id, owner=request.user)
     return render(request, 'view_document.html', {'document': document})
 
+@email_verified_required
 @login_required
 def delete_document(request, doc_id):
     if request.method == "POST":
@@ -521,6 +562,7 @@ def delete_document(request, doc_id):
         doc.delete()
     return redirect('document_list')
 
+@email_verified_required
 @login_required
 def get_document(request, id=None):
     try:
@@ -529,6 +571,7 @@ def get_document(request, id=None):
     except RichDocument.DoesNotExist:
         return JsonResponse({"error": "Not found"}, status=404)
     
+@email_verified_required
 @login_required
 def send_message(request):
     users = User.objects.exclude(id=request.user.id)
@@ -541,6 +584,7 @@ def send_message(request):
     else:
         return JsonResponse({"message": "error"})
     
+@email_verified_required
 @login_required
 def inbox(request):
     messages = Message.objects.filter(receiver=request.user).select_related('receiver').order_by("-timestamp")
@@ -552,6 +596,7 @@ def inbox(request):
     } for msg in messages]
     return JsonResponse({"messages": data})
 
+@email_verified_required
 @login_required
 def sent_messages(request):
     messages = Message.objects.filter(sender=request.user).select_related('receiver').order_by("-timestamp")
@@ -563,6 +608,7 @@ def sent_messages(request):
     } for msg in messages]
     return JsonResponse({"messages": data})
     
+@email_verified_required
 @login_required
 def chat_page(request):
     sent = Message.objects.filter(sender=request.user).values_list('receiver', flat=True)
@@ -583,6 +629,7 @@ def chat_page(request):
         })
     return render(request, 'chat.html', {'users': users_with_unseen})
 
+@email_verified_required
 @login_required
 def delete_message(request, message_id):
     if request.method == "POST":
@@ -591,10 +638,12 @@ def delete_message(request, message_id):
         referer = request.META.get("HTTP_REFERER")
     return redirect(referer)
 
+@email_verified_required
 @login_required
 def music(request):
     return render(request, 'music.html') 
 
+@email_verified_required
 @login_required
 def stream_song(request):
     query = request.GET.get("query")
@@ -619,7 +668,8 @@ def stream_song(request):
             filepath = ytpdl.prepare_filename(info['entries'][0]).replace('.webm', '.mp3').replace('.m4a', '.mp3')
         return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
 
-@login_required        
+@email_verified_required
+@login_required       
 def get_thumbnail(request):
     query = request.GET.get("query")
     if not query:
@@ -645,6 +695,7 @@ def get_thumbnail(request):
         "title": title
     })
 
+@email_verified_required
 @login_required
 def chat_with_user(request, username):
     other_user = User.objects.get(username=username)
@@ -659,7 +710,7 @@ def chat_with_user(request, username):
         'messages': messages,
         'other_user': other_user
     })
-
+@email_verified_required
 @login_required
 def whiteboard_view(request, whiteboard_id=None):
     if whiteboard_id:
@@ -677,7 +728,7 @@ def whiteboard_view(request, whiteboard_id=None):
             'whiteboards': whiteboards,
         }
         return render(request, 'whiteboard_list.html', context)
-
+@email_verified_required
 @login_required
 def save_stroke(request, whiteboard_id):
     if request.method == 'POST':
@@ -704,6 +755,7 @@ def save_stroke(request, whiteboard_id):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@email_verified_required
 @login_required
 def create_whiteboard(request):
     if request.method == 'POST':
@@ -712,6 +764,7 @@ def create_whiteboard(request):
         return redirect('whiteboard', whiteboard_id=new_board.id)
     return render(request, 'create_whiteboard.html')
 
+@email_verified_required
 @login_required
 def delete_stroke(request, whiteboard_id):
     if request.method == 'POST':
@@ -735,7 +788,8 @@ def delete_stroke(request, whiteboard_id):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
-@login_required        
+@email_verified_required
+@login_required     
 def delete_all_strokes(request, whiteboard_id):
     if request.method == 'POST':
         try:
@@ -747,6 +801,7 @@ def delete_all_strokes(request, whiteboard_id):
             return JsonResponse({'error': 'Whiteboard not found'}, status=404)
 
 
+@email_verified_required
 @login_required
 def delete_whiteboard(request, whiteboard_id):
     whiteboard = get_object_or_404(Whiteboard, id=whiteboard_id, owner=request.user)
@@ -773,15 +828,18 @@ def verify_email(request):
     except User.DoesNotExist:
         return HttpResponse("User not found.", status=404)
 
-    user.email_verified = True
-    user.save()
+
+    email_address, created = EmailAddress.objects.get_or_create(user=user, email=email)
+    email_address.verified = True
+    email_address.primary = True
+    email_address.save()
     
     return HttpResponse("Email verified successfully! You can now log in.")
 
 @login_required
 def update_email(request):
     if request.user.email:
-        return('/')
+        return redirect('/')
     
     if request.method == 'POST':
         form = EmailUpdateForm(request.POST)
