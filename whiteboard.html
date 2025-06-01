@@ -91,20 +91,54 @@
     <div class="container">
         <div class="welcome-box">
             <div style="text-align: center; margin-bottom: 10px;">
-                <button id="delete-toggle" style="padding: 6px 12px; background-color: #800080; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                  <button id="delete-toggle" style="padding: 6px 12px; background-color: #800080; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     ✖️ Toggle Delete Mode
-                </button>
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <button id="deleteAllBtn" style="padding: 8px 16px; background-color: #800080; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                        🗑️ Delete All Strokes
-                    </button>
+                  </button>
+                  <button id="deleteAllBtn" style="padding: 8px 16px; background-color: #800080; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    🗑️ Delete All Strokes
+                  </button>
+                  <button id="export-png" style="padding: 8px 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Export as PNG
+                  </button>
                 </div>
-            </div>
+              </div>
             <h2 style="text-align: center;">{{ whiteboard.title }}</h2>   
-                   
             <canvas id="whiteboard" width="800" height="600"></canvas>
 
             <script>
+                document.getElementById('export-png').addEventListener('click', function() {
+                    const canvas = document.getElementById('whiteboard');
+                    if (!canvas) {
+                        alert('Canvas not found!');
+                        return;
+                    }
+                
+                    // Create a temporary canvas to add white background
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = canvas.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                
+                    // Fill white background
+                    tempCtx.fillStyle = '#ffffff';
+                    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                    // Draw your existing canvas content on top
+                    tempCtx.drawImage(canvas, 0, 0);
+                
+                    // Export the temp canvas as PNG
+                    const image = tempCanvas.toDataURL('image/png');
+                
+                    // Create a link and trigger download
+                    const link = document.createElement('a');
+                    link.href = image;
+                    link.download = 'whiteboard.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+
                 document.getElementById('deleteAllBtn').addEventListener('click', function () {
                     if (!confirm('Are you sure you want to delete all strokes?')) return;
 
