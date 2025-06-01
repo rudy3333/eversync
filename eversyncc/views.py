@@ -703,7 +703,7 @@ def chat_with_user(request, username):
     messages = Message.objects.filter(
         Q(sender=request.user, receiver=other_user) |
         Q(sender=other_user, receiver=request.user)
-    ).order_by('timestamp')
+    ).select_related('sender', 'receiver').order_by('timestamp')
 
     Message.objects.filter(sender=other_user, receiver=request.user, seen=False).update(seen=True, seen_at=now())
 
