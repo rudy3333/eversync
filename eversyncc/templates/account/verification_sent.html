@@ -18,35 +18,16 @@
             align-items: flex-start;
         }
         .welcome-box {
-            flex: 0 0 250px;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 250px; 
-        }
-        /* Center and widen welcome-box for the form */
-        .welcome-box {
-            max-width: 600px;
-            margin: 60px auto 0 auto;
             width: 100%;
+            max-width: 600px;
+            padding: 32px 24px;
+            border-radius: 12px;
             background: #fff;
+            margin: 60px auto 0 auto;
             box-shadow: 0 2px 16px rgba(0,0,0,0.08);
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-        .form-fields-group {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .submit-btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 16px;
-            width: 100%;
-            align-items: stretch;
         }
         @media (max-width: 700px) {
             .container {
@@ -54,30 +35,9 @@
                 align-items: center; 
             }
             .welcome-box {
-                flex: none;
-                width: auto;
                 max-width: 95vw;
-                margin: 0 0 20px 0; 
                 padding: 16px 5vw;
             }
-            .divider {
-            border-top: 1px solid #dadde1;
-            margin: 20px 0;
-            }
-            .login-button {
-              width: 100%;
-              padding: 12px;
-              background-color: #1877f2;
-              color: white;
-              border: none;
-              border-radius: 6px;
-              font-size: 18px;
-              font-weight: bold;
-              cursor: pointer;
-        }
-        .login-button:hover {
-            background-color: #166fe5;
-        }
         }
     </style>
 </head>
@@ -85,7 +45,7 @@
     <div class="header">
         <div class="header-content">
             <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
-            <a href="/" class="logo" >eversync</a>
+            <a href="/" class="logo">eversync</a>
             <div class="nav-links" style="position: relative;">
                 <div class="dropdown">
                     <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
@@ -107,21 +67,18 @@
     </div>
     <div class="container">
         <div class="welcome-box">
-            <h1 class="text-xl font-semibold mb-4">Add Your Email</h1>
-            <p class="mb-4 text-gray-600">We need your email to continue. Please enter it below and we'll send a verification link.</p>
-            <div class="divider"></div>
-
-            <form method="post">
-                {% csrf_token %}
-                <div class="form-fields-group">
-                    {{ form.as_p }}
-                </div>
-                <div class="submit-btn-group">
-                    <button type="submit" class="login-button">
-                        Submit Email
-                    </button>
-                </div>
-            </form>
+            {% load i18n %}
+            {% load allauth %}
+            <h1>Verify Your Email Address</h1>
+            <p>
+                {% blocktrans %}
+                </p>
+                <strong>We have sent an email to you for verification. Follow the link provided to finalize the signup process.</strong>
+               <p>&nbsp;</p>
+                <p>If you do not see the verification email in your main inbox, check your spam folder.
+                Please contact us if you do not receive the verification email within a few minutes.
+                {% endblocktrans %}
+            </p>
         </div>
     </div>
     <script>
