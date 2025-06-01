@@ -1,0 +1,10 @@
+Hi {{ user.get_username|default:"there" }},
+
+Thanks for signing up for eversync.fly.dev! Please verify your email address by clicking the link below:
+
+{{ activate_url }}
+
+If you didn't request this email, you can safely ignore it.
+
+Cheers,
+The eversync Team
