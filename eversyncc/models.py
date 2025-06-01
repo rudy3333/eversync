@@ -13,8 +13,8 @@ class UserStorage(models.Model):
 
 class Document(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=100)
-    file = models.FileField(upload_to="")
+    title = models.CharField(max_length=500)
+    file = models.FileField(upload_to="", max_length=500)
     size = models.BigIntegerField(default=0)
 
     def save(self, *args, **kwargs):

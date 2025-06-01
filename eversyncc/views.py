@@ -55,6 +55,21 @@ def manage(request):
     return render(request, "manage.html", {"password_form": form})
 
 @login_required
+def delete_account(request):
+    if request.method == "POST":
+        user = request.user
+        user_files = Document.objects.filter(user=user)
+
+        for doc in user_files:
+            if doc.file:
+                doc.file.delete(save=False)
+        user_files.delete()
+        
+        logout(request)
+        user.delete()
+        return redirect('index')
+
+@login_required
 def change_username(request):
     if request.method == 'POST':
         form = UsernameChangeForm(request.POST)
