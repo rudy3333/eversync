@@ -299,11 +299,28 @@
                 }
             });
 
-            const toggle = document.querySelector('.dropdown-toggle');
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
             const menu = document.querySelector('.dropdown-menu');
-            toggle.addEventListener('click', function () {
+            dropdownToggle.addEventListener('click', function () {
                 menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
             });
+            const themeToggle = document.getElementById("themeToggle");
+            const root = document.documentElement;
+
+            if (localStorage.getItem("theme") === "dark") {
+                root.classList.add("dark");
+            }
+
+            if (themeToggle) {
+                themeToggle.addEventListener("click", () => {
+                    root.classList.toggle("dark");
+                    if (root.classList.contains("dark")) {
+                        localStorage.setItem("theme", "dark");
+                    } else {
+                        localStorage.setItem("theme", "light");
+                    }
+                });
+            }
         });
 
         function copyToClipboard() {
@@ -345,22 +362,6 @@
             console.error(error);
         });
     }
-
-    const toggle = document.getElementById("themeToggle");
-        const root = document.documentElement;
-
-        if (localStorage.getItem("theme") === "dark") {
-        root.classList.add("dark");
-        }
-
-        toggle.addEventListener("click", () => {
-        root.classList.toggle("dark");
-        if (root.classList.contains("dark")) {
-            localStorage.setItem("theme", "dark");
-        } else {
-            localStorage.setItem("theme", "light");
-        }
-        });
     </script>
 </body>
 </html>
