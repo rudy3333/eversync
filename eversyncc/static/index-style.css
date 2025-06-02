@@ -4,6 +4,7 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
 }
+
 .header {
     background-color: #3b5998;
     height: 82px;
@@ -158,6 +159,18 @@ background-color: #03a9f4;
     background-color: #e07454;
 }
 
+.music {
+    background-color: #8ACE00;
+}
+
+.whiteboard {
+    background-color: white;
+}
+
+.timer {
+    background-color: white;
+}
+
 .service-button i {
 font-size: 70px;
 margin-bottom: 5px;
@@ -196,4 +209,54 @@ margin-bottom: 5px;
     top: 50%;             
     left: 50%; 
     transform: translate(-50%, -50%);
+}
+
+.dark body {
+    background-color: #18191a;
+    color: #e4e6eb;
+}
+
+.dark .header {
+    background-color: #242526;
+}
+
+.dark .logo {
+    color: #e4e6eb;
+}
+
+.dark .nav-links a {
+    color: #e4e6eb;
+}
+
+.dark .nav-links a:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* still okay */
+}
+
+.dark .welcome-box,
+.dark .content-box {
+    background-color: #242526;
+    color: #e4e6eb;
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.dark .welcome-box h1,
+.dark .content-box h2 {
+    color: #ffffff;
+}
+
+.dark .welcome-box p {
+    color: #b0b3b8;
+}
+
+.dark .logout-button {
+    background-color: #3a3b3c;
+    color: #e4e6eb;
+}
+
+.dark .logout-button:hover {
+    background-color: #4e4f50;
+}
+
+.dark .divider {
+    border-top: 1px solid #3e4042;
 }

@@ -124,3 +124,82 @@ body {
     border-radius: 6px;
     margin-bottom: 5px;
 }
+
+.dark body {
+    background-color: #18191a;
+    color: #e4e6eb;
+}
+
+.dark .header {
+    background-color: #242526;
+}
+
+.dark .logo {
+    color: #e4e6eb;
+}
+
+.dark .container {
+    background-color: #18191a;
+}
+
+.dark .register-box {
+    background-color: #242526;
+    color: #e4e6eb;
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.dark .register-box h2 {
+    color: #ffffff;
+}
+
+.dark .form-group label {
+    color: #e4e6eb;
+}
+
+.dark .form-group input {
+    background-color: #3a3b3c;
+    color: #e4e6eb;
+    border: 1px solid #555;
+}
+
+.dark .form-group input:focus {
+    border-color: #4599ff;
+    box-shadow: 0 0 0 2px rgba(70, 130, 180, 0.3);
+}
+
+.dark .register-button {
+    background-color: #4599ff;
+    color: white;
+}
+
+.dark .register-button:hover {
+    background-color: #357ce5;
+}
+
+.dark .divider {
+    border-top: 1px solid #3e4042;
+}
+
+.dark .login-link {
+    background-color: #3cb14a;
+    color: white;
+}
+
+.dark .login-link:hover {
+    background-color: #37a045;
+}
+
+.dark .error-message {
+    color: #ffb3b3;
+    background-color: #2a1a1a;
+    border: 1px solid #a33;
+}
+
+.dark .errorlist {
+    color: #ffb3b3;
+}
+
+.dark .errorlist li {
+    background-color: #2a1a1a;
+    border: 1px solid #a33;
+}

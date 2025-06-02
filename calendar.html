@@ -36,6 +36,7 @@
             <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
             <a href="/" class="logo" >eversync</a>
             <div class="nav-links" style="position: relative;">
+                <button id="themeToggle">🌙 Toggle Dark Mode</button>
                 <div class="dropdown">
                     <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
                         Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
@@ -258,6 +259,11 @@
             box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.2);
         }
 
+        .dark .modal-content {
+            background: #2a2a2a;
+            color: white;
+        }
+
         #close-modal {
             background-color: #007bff;
             color: white;
@@ -366,5 +372,21 @@
     };
     reader.readAsText(file);
 });
+
+        const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+        });
 </script>
 </html>    

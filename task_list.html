@@ -72,6 +72,7 @@
             </a>
             <a href="/" class="logo">eversync</a>
             <div class="nav-links" style="position: relative;">
+                <button id="themeToggle">🌙 Toggle Dark Mode</button>
                 <div class="dropdown">
                     <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
                         Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
@@ -124,6 +125,21 @@
             toggle.addEventListener('click', function () {
                 menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
             });
+        });
+        const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
         });
     </script>
 </body>

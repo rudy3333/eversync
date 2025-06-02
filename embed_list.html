@@ -57,6 +57,52 @@
   margin: auto;
   border-radius: 4px;
 }
+
+.dark .embed-card {
+  background-color: #242526;
+  color: #e4e6eb;
+  box-shadow: 0 4px 6px rgba(255, 255, 255, 0.05);
+}
+
+.dark .embed-card h3 {
+  color: #ffffff;
+}
+
+.dark .register-button {
+  background-color: #3cb14a !important;
+  color: white !important;
+}
+
+.dark .register-button:hover {
+  background-color: #37a045 !important;
+}
+
+.dark button[type="submit"] {
+  background-color: #b13c33 !important;
+}
+
+.dark .header {
+  background-color: #242526 !important;
+}
+
+.dark .logo {
+  color: #e4e6eb !important;
+}
+
+.dark .nav-links button,
+.dark .dropdown-toggle {
+  color: #e4e6eb !important;
+}
+
+.dark .dropdown-menu {
+  background-color: #3a3b3c;
+  border-color: #555;
+}
+
+.dark body {
+  background-color: #18191a;
+  color: #e4e6eb;
+}
 </style>
 </head>
     
@@ -67,6 +113,7 @@
             <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
             <a href="/" class="logo" >eversync</a>
             <div class="nav-links" style="position: relative;">
+                <button id="themeToggle">🌙 Toggle Dark Mode</button>
                 <div class="dropdown">
                     <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
                         Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
@@ -117,6 +164,22 @@
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
     });
+
+    const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+        });
 </script>
 </body>
 </html>
