@@ -34,6 +34,43 @@
             z-index: 1000;
         }
 
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin: 20px;
+        }
+
+        .dropdown-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            z-index: 1001;
+        }
+
+        .dropdown-menu a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f1f1f1;
+        }
+
         .weather-container {
             margin: 0 auto;
             display: block;
@@ -87,6 +124,14 @@
     </style>
 </head>
 <body>
+    <div class="dropdown">
+        <button class="dropdown-toggle">Menu</button>
+        <div class="dropdown-menu">
+            <a href="/">Home</a>
+            <a href="/weather">Weather</a>
+            <a href="/about">About</a>
+        </div>
+    </div>
     <div class="weather-container">
         <h1>Weather in {{ location }}</h1>
 
@@ -189,15 +234,22 @@
             });
 
             const forecastContainer = document.querySelector('.forecast');
-            data.hourly.forecast.forEach(hour => {
+            forecastContainer.innerHTML = '';
+            
+            for (let i = 0; i < 24; i++) {
+                const time = new Date(data.hourly.time[i]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const temp = data.hourly.temperature_2m[i];
+                const weatherCode = data.hourly.weathercode[i];
+                const condition = weatherDescriptions[weatherCode] || "Unknown";
+                
                 forecastContainer.innerHTML += `
                     <div class="forecast-card">
-                        <h3>${hour.time}</h3>
-                        <p>${hour.temp}°C</p>
-                        <p>${hour.condition}</p>
+                        <h3>${time}</h3>
+                        <p>${temp}°C</p>
+                        <p>${condition}</p>
                     </div>
                 `;
-            });
+            }
         });
     </script>
 <script>

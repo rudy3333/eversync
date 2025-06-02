@@ -588,7 +588,7 @@ def send_message(request):
 @email_verified_required
 @login_required
 def inbox(request):
-    messages = Message.objects.filter(receiver=request.user).select_related('receiver').order_by("-timestamp")
+    messages = Message.objects.filter(receiver=request.user).select_related('sender', 'receiver').order_by("-timestamp")
     data = [{
         "sender": msg.sender.username,
         "content": msg.content,
