@@ -260,12 +260,19 @@ textarea#message-content {
       <strong>{{ request.user.username }}</strong>: ${content}<br>
       <small>${formattedDate}</small>
       <div style="font-size: 12px; color: #6c757d;">Delivered</div>
-
+<form action="/pin/${messageId}/" method="post" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm" style="margin-left: 8px; background-color: #ffc107; color: black; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                        {% if msg.pinned %}Unpin{% else %}Pin{% endif %}
+                      </button>
+                    </form>
       <form action="/delete/${messageId}/" method="post" style="display:inline;">
         <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
         <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
       </form>
-    </div>
+    
+    
+      </div>
   `);
 
       $('#chat-log').scrollTop($('#chat-log')[0].scrollHeight);
@@ -325,6 +332,36 @@ const toggle = document.getElementById("themeToggle");
             localStorage.setItem("theme", "light");
         }
         });
+</script>
+<script>
+  const messageBox = document.getElementById("message-content");
+  const receiver = document.getElementById("receiver").value;
+  const draftKey = `draft-${receiver}`;
+
+  // Load draft on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    const saved = localStorage.getItem(draftKey);
+    if (saved) {
+      messageBox.value = saved;
+    }
+
+    const chatLog = document.getElementById("chat-log");
+    chatLog.scrollTop = chatLog.scrollHeight;
+  });
+
+  messageBox.addEventListener("input", () => {
+    localStorage.setItem(draftKey, messageBox.value);
+  });
+
+  $('#chat-form').on('submit', function (e) {
+    e.preventDefault();
+
+    let content = messageBox.value.trim();
+    let csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+
+    if (!content) return;
+
+  });
 </script>
 </body>
 </html>
