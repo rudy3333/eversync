@@ -704,12 +704,13 @@ def chat_with_user(request, username):
         Q(sender=request.user, receiver=other_user) |
         Q(sender=other_user, receiver=request.user)
     ).select_related('sender', 'receiver').order_by('timestamp')
-
+    pinned_message = Message.objects.filter(pinned=True, sender=request.user).order_by('-timestamp').first()
     Message.objects.filter(sender=other_user, receiver=request.user, seen=False).update(seen=True, seen_at=now())
 
     return render(request, 'chat_thread.html', {
         'messages': messages,
-        'other_user': other_user
+        'other_user': other_user,
+        'pinned_message': pinned_message
     })
 @email_verified_required
 @login_required
@@ -865,3 +866,14 @@ def login_redirect(request):
         return redirect('account_email_verification_sent')
 
     return redirect('/') 
+
+@email_verified_required
+@login_required
+def pin_message(request, message_id):
+    msg = get_object_or_404(Message, id=message_id)
+    
+    Message.objects.filter(sender=request.user, pinned=True).update(pinned=False)
+    
+    msg.pinned = not msg.pinned
+    msg.save()
+    return redirect('chat_with_user', username=msg.receiver.username if msg.sender == request.user else msg.sender.username)

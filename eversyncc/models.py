@@ -84,6 +84,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     seen = models.BooleanField(default=False)
     seen_at = models.DateTimeField(null=True, blank=True)
+    pinned = models.BooleanField(default=False)
 
     def __str__(self):
         return f"From {self.sender} to {self.receiver} at {self.timestamp}"

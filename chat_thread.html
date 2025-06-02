@@ -96,6 +96,25 @@ textarea#message-content {
   color: #e4e6eb;
   border: 1px solid #555;
 }
+
+.pinned-message {
+    background-color: #ffeeba;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border: 1px solid #f0ad4e;
+    color: #000;
+}
+
+.dark .pinned-message {
+    background-color: #2d2a1e;
+    border-color: #665c3d;
+    color: #e4e6eb;
+}
+
+.dark .pinned-message strong {
+    color: #e4e6eb;
+}
     </style>
 </head>
     
@@ -128,10 +147,15 @@ textarea#message-content {
             </div>
         </div>
     </div>
-    
+
     <div class="container">
         <div class="welcome-box">
         <h2>Chat with {{ other_user.username }}</h2>
+        {% if pinned_message %}
+            <div class="pinned-message">
+              📌 <strong>{{ pinned_message.sender.username }}</strong>: {{ pinned_message.content }}
+            </div>
+        {% endif %}
 
         <div id="chat-log" style="flex: 1; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
         {% for msg in messages %}
@@ -146,6 +170,12 @@ textarea#message-content {
                     {% endif %}
                 {% endif %}
                 {% if msg.sender == request.user %}
+                    <form action="/pin/{{ msg.id }}/" method="post" style="display:inline;">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm" style="margin-left: 8px; background-color: #ffc107; color: black; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                        {% if msg.pinned %}Unpin{% else %}Pin{% endif %}
+                      </button>
+                    </form>
                     <form action="/delete/{{ msg.id }}/" method="post" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
