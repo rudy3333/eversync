@@ -72,7 +72,6 @@
             </a>
             <a href="/" class="logo">eversync</a>
             <div class="nav-links" style="position: relative;">
-                <button id="themeToggle">🌙 Toggle Dark Mode</button>
                 <div class="dropdown">
                     <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
                         Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
@@ -86,6 +85,7 @@
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
                     </div>
                 </div>
             </div>
