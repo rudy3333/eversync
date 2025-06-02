@@ -36,6 +36,21 @@
   max-width: 250px; 
 }
 
+/* Dark mode styles */
+:root.dark .thought-input {
+  color: white;
+  background-color: #333;
+  border-color: #555;
+}
+
+:root.dark .thought-input::placeholder {
+  color: #aaa;
+}
+
+:root.dark .instruction-text {
+  color: white;
+}
+
 /* On mobile */
 @media (max-width: 700px) {
   .container {
@@ -79,7 +94,8 @@
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
-                        
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
+
                     </div>
                 </div>
             </div>
@@ -89,10 +105,11 @@
     <div class="container">
         <div class="welcome-box">
             <h1>Thought Reframing</h1>
-            <p style="color: black;">Type your negative thought below and let’s reframe it 💜</p>
+            <p class="instruction-text">Type your negative thought below and let's reframe it 💜</p>
           
             <input type="text" id="negativeThought" placeholder="I'm not good enough..." 
-                   style="width: 100%;  margin-top: 10px; border-radius: 6px; border: 1px solid #aaa; font-size: 16px;">
+                   style="width: 100%;  margin-top: 10px; border-radius: 6px; border: 1px solid #aaa; font-size: 16px;"
+                   class="thought-input">
             
             <button onclick="sendThought()" 
                     style="margin-top: 10px; padding: 10px 20px; font-size: 16px; background-color: #6a0dad; color: white; border: none; border-radius: 6px; cursor: pointer;">
@@ -133,7 +150,7 @@
                     messages: [
                         {
                             role: "user",
-                            content: `Reframe the following negative thought by gently acknowledging the feeling behind it and then offering a compassionate, realistic shift in perspective. The response should feel authentic, warm, and human—like a kind friend helping someone see their feelings in a more understanding and hopeful light. Avoid overly formal or cliché affirmations. Do not simply reverse the thought; instead, help reframe it in a way that respects the original emotion and encourages self-kindness and acceptance. Return only one or two clear, natural sentences. Negative thought: “${input}”`
+                            content: `Reframe the following negative thought by gently acknowledging the feeling behind it and then offering a compassionate, realistic shift in perspective. The response should feel authentic, warm, and human—like a kind friend helping someone see their feelings in a more understanding and hopeful light. Avoid overly formal or cliché affirmations. Do not simply reverse the thought; instead, help reframe it in a way that respects the original emotion and encourages self-kindness and acceptance. Return only one or two clear, natural sentences. Negative thought: "${input}"`
                         }
                     ]
                 })
@@ -148,6 +165,22 @@
             console.error("API Error:", error);
         }
     }
+
+    const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+        });
     </script>
 </body>
 </html>

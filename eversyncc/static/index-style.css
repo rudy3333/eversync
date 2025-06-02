@@ -211,52 +211,52 @@ margin-bottom: 5px;
     transform: translate(-50%, -50%);
 }
 
-.dark body {
+body.dark {
     background-color: #18191a;
     color: #e4e6eb;
 }
 
-.dark .header {
+body.dark .header {
     background-color: #242526;
 }
 
-.dark .logo {
+body.dark .logo {
     color: #e4e6eb;
 }
 
-.dark .nav-links a {
+body.dark .nav-links a {
     color: #e4e6eb;
 }
 
-.dark .nav-links a:hover {
-    background-color: rgba(255, 255, 255, 0.1); /* still okay */
+body.dark .nav-links a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.dark .welcome-box,
-.dark .content-box {
+body.dark .welcome-box,
+body.dark .content-box {
     background-color: #242526;
     color: #e4e6eb;
     box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
 }
 
-.dark .welcome-box h1,
-.dark .content-box h2 {
+body.dark .welcome-box h1,
+body.dark .content-box h2 {
     color: #ffffff;
 }
 
-.dark .welcome-box p {
+body.dark .welcome-box p {
     color: #b0b3b8;
 }
 
-.dark .logout-button {
+body.dark .logout-button {
     background-color: #3a3b3c;
     color: #e4e6eb;
 }
 
-.dark .logout-button:hover {
+body.dark .logout-button:hover {
     background-color: #4e4f50;
 }
 
-.dark .divider {
+body.dark .divider {
     border-top: 1px solid #3e4042;
 }
