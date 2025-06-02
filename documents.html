@@ -26,6 +26,11 @@
         body {
             display: flex;
             flex-direction: column;
+            background-color: #fff; /* Light mode background */
+        }
+
+        :root.dark body {
+            background-color: #18191a; /* Dark mode background */
         }
 
         .header {
@@ -36,8 +41,8 @@
         #editor-container {
             flex: 1;
             margin: 20px;
-            background-color: white;
-            color: black;
+            background-color: #fff;
+            color: #444;
         }
 
         .editor-controls {
@@ -61,6 +66,143 @@
         .dropdown-menu {
             z-index: 100;
         }
+
+        /* Custom styles for Quill toolbar */
+        /* Default light mode styles */
+        .ql-container.ql-snow {
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        .ql-editor {
+            background-color: #fff;
+            color: #444;
+        }
+
+        .ql-editor::before {
+            color: #999 !important;
+        }
+
+        .ql-toolbar.ql-snow {
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #444;
+        }
+
+        .ql-toolbar.ql-snow .ql-formats {
+            margin-right: 15px;
+            border-right: 1px solid #ccc;
+            padding-right: 15px;
+        }
+
+        .ql-toolbar.ql-snow .ql-formats:last-child {
+            border-right: none;
+            padding-right: 0;
+            margin-right: 0;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker {
+            color: #444;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-label {
+            color: #444;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-arrow {
+            border-color: #444 transparent transparent transparent;
+        }
+
+        .ql-snow .ql-stroke {
+            stroke: #444;
+        }
+
+        .ql-snow .ql-fill {
+            fill: #444;
+        }
+
+        .ql-snow .ql-picker.ql-expanded .ql-picker-options {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        .ql-snow .ql-picker-options .ql-picker-item {
+            color: #444;
+        }
+
+        /* Dark mode styles */
+        :root.dark {
+            #editor-container {
+                background-color: #18191a;
+                color: white;
+            }
+
+            .ql-container.ql-snow {
+                border: 1px solid #18191a;
+            }
+
+            .ql-toolbar.ql-snow {
+                border: 1px solid #18191a;
+                border-bottom: 1px solid #18191a;
+                background-color: #333;
+                color: white;
+            }
+
+            .ql-editor {
+                background-color: #18191a;
+                color: white;
+            }
+
+            .ql-toolbar.ql-snow .ql-formats {
+                margin-right: 15px;
+                border-right: 1px solid #18191a;
+                padding-right: 15px;
+            }
+
+            .ql-toolbar.ql-snow .ql-formats:last-child {
+                border-right: none;
+                padding-right: 0;
+                margin-right: 0;
+            }
+
+            .ql-toolbar.ql-snow .ql-picker {
+                color: white;
+                border: 1px solid #18191a;
+                background-color: #444;
+            }
+
+            .ql-toolbar.ql-snow .ql-picker-label {
+                color: white;
+            }
+
+            .ql-toolbar.ql-snow .ql-picker-arrow {
+                border-color: white transparent transparent transparent;
+            }
+
+            .ql-snow .ql-stroke {
+                stroke: white;
+            }
+
+            .ql-snow .ql-fill {
+                fill: white;
+            }
+
+            .ql-snow .ql-picker.ql-expanded .ql-picker-options {
+                background-color: #444;
+                border: 1px solid #18191a;
+            }
+
+            .ql-snow .ql-picker-options .ql-picker-item {
+                color: white;
+            }
+
+            #editor-container .ql-editor::before {
+                color: white !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -82,6 +224,8 @@
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
+
                     </div>
                 </div>
             </div>
@@ -201,6 +345,22 @@
             console.error(error);
         });
     }
+
+    const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+        });
     </script>
 </body>
 </html>
