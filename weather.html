@@ -124,13 +124,6 @@
     </style>
 </head>
 <body>
-    <div class="dropdown">
-        <button class="dropdown-toggle">Menu</button>
-        <div class="dropdown-menu">
-            <a href="/">Home</a>
-            <a href="/weather">Weather</a>
-            <a href="/about">About</a>
-        </div>
     </div>
     <div class="weather-container">
         <h1>Weather in {{ location }}</h1>
@@ -260,6 +253,22 @@
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
     });
+    
+    const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+        });
 </script>
 </body>
 </html>

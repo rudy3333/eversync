@@ -36,7 +36,8 @@
                         <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
-                        </form>
+                          </form>
+                          <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
                         
                     </div>
                 </div>
@@ -221,10 +222,36 @@
     });
   </script>
   <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #333;
+      --note-bg: #fff6cc;
+      --note-border: #ffe066;
+      --input-bg: #ffffff;
+      --input-border: #ddd;
+      --modal-bg: #ffffff;
+      --modal-border: #888;
+    }
+
+    .dark {
+      --bg-color: #1a1a1a;
+      --text-color: #ffffff;
+      --note-bg: #2d2d2d;
+      --note-border: #404040;
+      --input-bg: #333333;
+      --input-border: #404040;
+      --modal-bg: #2d2d2d;
+      --modal-border: #404040;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
 
     h1 {
       text-align: center;
-      color: #333;
+      color: var(--text-color);
     }
 
     form {
@@ -236,9 +263,11 @@
       width: 80%;
       padding: 10px;
       margin-bottom: 10px;
-      border: 1px solid #ddd;
+      border: 1px solid var(--input-border);
       border-radius: 5px;
       font-size: 1em;
+      background-color: var(--input-bg);
+      color: var(--text-color);
     }
 
     button {
@@ -250,9 +279,15 @@
       cursor: pointer;
     }
 
+    .dark button {
+      background-color: #404040;
+      border: 1px solid #505050;
+      color: #ffffff;
+    }
+
     #notes-container > div {
-      background-color: #fff6cc;
-      border: 2px solid #ffe066;
+      background-color: var(--note-bg);
+      border: 2px solid var(--note-border);
       border-radius: 10px;
       padding: 15px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
@@ -262,6 +297,26 @@
 
     #notes-container h3 {
       margin-top: 0;
+      color: var(--text-color);
+    }
+
+    #notes-container p {
+      color: var(--text-color);
+    }
+
+    #ocrModal > div, #voiceModal > div {
+      background-color: var(--modal-bg);
+      border: 1px solid var(--modal-border);
+      color: var(--text-color);
+    }
+
+    .delete-note-btn {
+      background-color: #e74c3c !important;
+      color: white !important;
+    }
+
+    .dark .delete-note-btn {
+      background-color: #c0392b !important;
     }
   </style>
 </head>
@@ -277,7 +332,7 @@
   </form>
 
   <div id="ocrModal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-    <div style="background-color: #fff; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 300px; text-align: center; border-radius: 10px;">
+    <div style="background-color: var(--modal-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--modal-border); width: 300px; text-align: center; border-radius: 10px; color: var(--text-color);">
       <h3>Select an Image</h3>
       <input type="file" id="ocrImageInput" accept="image/*"><br><br>
       <button onclick="performOCR()">Extract</button>
@@ -298,10 +353,26 @@ document.addEventListener('DOMContentLoaded', function () {
         menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
     });
 });
+
+const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+        });
 </script>
 </body>
   <div id="voiceModal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-    <div style="background-color: #fff; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 300px; text-align: center; border-radius: 10px;">
+    <div style="background-color: var(--modal-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--modal-border); width: 300px; text-align: center; border-radius: 10px; color: var(--text-color);">
       <h3>Speak now...</h3>
       <button onclick="stopVoiceRecognition()">❌ Cancel</button>
     </div>

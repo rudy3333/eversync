@@ -46,6 +46,7 @@
     </style>
 </head>
 <body>
+    
     <div id="pomodoro-box" style="display: none;">
         <h3>Focus Timer</h3>
         <p id="timer-display">25:00</p>
@@ -82,6 +83,8 @@
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
+
                         
                     </div>
                 </div>
@@ -146,6 +149,22 @@
             dropdownToggle.addEventListener('click', () => {
                 dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
             });
+        });
+
+        const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
         });
     </script>
 </body>

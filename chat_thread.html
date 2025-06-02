@@ -54,6 +54,48 @@
     width: 100%;
   }
 }
+label[for="message-content"] {
+  font-weight: 600;
+  color: black;
+}
+.dark label[for="message-content"] {
+  color: #e4e6eb;
+}
+textarea#message-content {
+  background-color: white;
+  color: black;
+  border: 1px solid #666;
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.dark textarea#message-content {
+  background-color: #2a2b2d;
+  color: #e4e6eb;
+  border: 1px solid #555;
+}
+
+.message-box {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #666;
+  background-color: white;
+  color: black;
+  resize: vertical;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.dark .message-box {
+  background-color: #2a2b2d;
+  color: #e4e6eb;
+  border: 1px solid #555;
+}
     </style>
 </head>
     
@@ -79,6 +121,7 @@
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
                         
                     </div>
                 </div>
@@ -116,7 +159,7 @@
             {% csrf_token %}
             <input type="hidden" id="receiver" name="receiver" value="{{ other_user.username }}">
         
-            <label for="message-content" style="display: block; margin-bottom: 5px; font-weight: 600; color: black;">
+            <label for="message-content">
                 Your Message
             </label>
             <textarea
@@ -124,17 +167,7 @@
                 id="message-content"
                 rows="3"
                 required
-                style="
-                    width: 100%;
-                    padding: 10px;
-                    border-radius: 6px;
-                    border: 1px solid #666;
-                    background-color: white;
-                    color: black;
-                    resize: vertical;
-                    box-sizing: border-box;
-                    font-size: 14px;
-                "
+                class="message-box"
             ></textarea>
         
             <button
@@ -246,7 +279,22 @@
     el.textContent = formatted;
   }
 });
+
+const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+        });
 </script>
 </body>
 </html>
-

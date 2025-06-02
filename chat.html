@@ -76,6 +76,59 @@
             display: block;
             margin-bottom: 6px;
         }
+
+        .dark #chat-log {
+        background-color: #1f1f1f;
+        border-color: #444;
+        color: #e4e6eb;
+        }
+
+        .dark #chat-log strong {
+        color: #ffffff;
+        }
+
+        .dark #chat-log .btn-danger {
+        background-color: #a72828;
+        }
+
+        input.form-control {
+        background-color: white;
+        color: black;
+        border: 1px solid #666;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 14px;
+        box-sizing: border-box;
+        }
+
+        .dark input.form-control {
+        background-color: #2a2b2d;
+        color: #e4e6eb;
+        border: 1px solid #555;
+        }
+
+        textarea.form-control {
+        background-color: white;
+        color: black;
+        border: 1px solid #666;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 14px;
+        resize: vertical;
+        box-sizing: border-box;
+        }
+
+        .dark textarea.form-control {
+        background-color: #2a2b2d;
+        color: #e4e6eb;
+        border: 1px solid #555;
+        }
+
+        textarea.form-control:focus {
+        outline: none;
+        border-color: #4599ff;
+        box-shadow: 0 0 0 2px rgba(70, 130, 180, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -97,6 +150,7 @@
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
                     </div>
                 </div>
             </div>
@@ -210,6 +264,22 @@
                     alert('Error: ' + (xhr.responseJSON?.message || 'Something went wrong.'));
                 });
             });
+        });
+
+        const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
         });
     </script>
 </body>
