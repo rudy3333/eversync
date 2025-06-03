@@ -106,6 +106,12 @@
                   <label for="imageUpload" style="padding: 8px 12px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; display: inline-block;">
                     📷 Upload Image
                   </label>
+                  <button id="undoBtn" style="padding: 8px 12px; background-color: #6666ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    ⬅️ Undo
+                  </button>
+                  <button id="redoBtn" style="padding: 8px 12px; background-color: #9999ff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    ➡️ Redo
+                  </button>
                   <input type="file" id="imageUpload" accept="image/*" style="display: none;" />
                 </div>
               </div>
@@ -120,6 +126,9 @@
                 let scalingImage = null;
                 const resizeMargin = 10;
                 let saveTimeout = null;
+
+                let undoStack = [];
+                let redoStack = [];
 
                 function debouncedSave() {
                     if (saveTimeout) {
@@ -481,6 +490,9 @@
 
             
                 function saveStrokeToServer(stroke) {
+                    undoStack.push([...savedStrokes]);
+                    redoStack = [];
+
                     fetch(`/whiteboard/{{ whiteboard.id }}/save-stroke/`, {
                         method: 'POST',
                         headers: {
@@ -541,6 +553,24 @@
         });
     });
 
+    document.getElementById('undoBtn').addEventListener('click', () => {
+        if (undoStack.length === 0) return;
+        redoStack.push([...savedStrokes]);
+        const previous = undoStack.pop();
+        savedStrokes.length = 0;
+        savedStrokes.push(...previous);
+        redrawCanvas();
+    });
+
+    document.getElementById('redoBtn').addEventListener('click', () => {
+        if (redoStack.length === 0) return;
+        undoStack.push([...savedStrokes]);
+        const next = redoStack.pop();
+        savedStrokes.length = 0;
+        savedStrokes.push(...next);
+        redrawCanvas();
+});
+
     const toggle = document.getElementById("themeToggle");
         const root = document.documentElement;
 
@@ -555,6 +585,18 @@
         } else {
             localStorage.setItem("theme", "light");
         }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                document.getElementById('undoBtn').click();
+            }
+
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) {
+                e.preventDefault();
+                document.getElementById('redoBtn').click();
+            }
         });
 </script>
 </body>
