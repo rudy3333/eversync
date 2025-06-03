@@ -100,7 +100,8 @@ class Whiteboard(models.Model):
     title = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    images = models.JSONField(default=list, blank=True)  
+    
 class Stroke(models.Model):
     whiteboard = models.ForeignKey(Whiteboard, related_name='strokes', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

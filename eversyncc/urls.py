@@ -66,6 +66,9 @@ urlpatterns = [
     path('update-email/', views.update_email, name='update_email'),
     path('redirect-after-login/', views.login_redirect, name='login_redirect'),
     path('pin/<int:message_id>/', views.pin_message, name='pin_message'),
+    path('whiteboard/<int:whiteboard_id>/save-images/', views.save_images, name='save_images'),
+    path('whiteboard/<int:whiteboard_id>/upload-image/', views.upload_image, name='upload_image'),
+
 
 
 

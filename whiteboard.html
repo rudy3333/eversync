@@ -103,35 +103,59 @@
                   <button id="export-png" style="padding: 8px 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     Export as PNG
                   </button>
+                  <label for="imageUpload" style="padding: 8px 12px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; display: inline-block;">
+                    📷 Upload Image
+                  </label>
+                  <input type="file" id="imageUpload" accept="image/*" style="display: none;" />
                 </div>
               </div>
             <h2 style="text-align: center;">{{ whiteboard.title }}</h2>   
             <canvas id="whiteboard" width="800" height="600"></canvas>
-            <input type="file" id="imageUpload" accept="image/*" />
 
             <script>
                 let imagesOnCanvas = []; // Stores added image objects
                 let draggingImage = null;
                 let dragOffsetX = 0;
                 let dragOffsetY = 0;
+                let scalingImage = null;
+                const resizeMargin = 10;
 
                 document.getElementById('imageUpload').addEventListener('change', function (e) {
-                const file = e.target.files[0];
-                if (!file) return;
+                    const file = e.target.files[0];
+                    if (!file) return;
 
-                const img = new Image();
-                img.onload = () => {
-                    const imageObj = {
-                    img,
-                    x: 100,
-                    y: 100,
-                    width: img.width * 0.3,
-                    height: img.height * 0.3,
-                    };
-                    imagesOnCanvas.push(imageObj);
-                    redrawCanvas();
-                };
-                img.src = URL.createObjectURL(file);
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    fetch(`/whiteboard/{{ whiteboard.id }}/upload-image/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: formData,
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Image upload failed: ' + data.error);
+                        } else {
+                            const imageObj = {
+                                img: new Image(),
+                                x: 100,
+                                y: 100,
+                                width: 200,
+                                height: 200,
+                                id: data.image_id,
+                            };
+                            imageObj.img.onload = () => {
+                                redrawCanvas();
+                                saveImagesToServer();
+                            };
+                            imageObj.img.src = data.image_url;
+                            imagesOnCanvas.push(imageObj);
+                        }
+                    })
+                    .catch(err => alert('Upload error: ' + err));
                 });
                     document.getElementById('export-png').addEventListener('click', function() {
                     const canvas = document.getElementById('whiteboard');
@@ -202,8 +226,8 @@
                     return cookieValue;
                 }
             
-                // Parse saved strokes from Django context
                 const savedStrokes = JSON.parse('{{ strokes_json|escapejs }}');
+                const savedImages = JSON.parse('{{ images_json|escapejs }}');
             
                 const canvas = document.getElementById('whiteboard');
                 const ctx = canvas.getContext('2d');
@@ -223,9 +247,28 @@
                     }
                     ctx.stroke();
                 }
+
+                function loadSavedImages() {
+                    savedImages.forEach(imgData => {
+                        const img = new Image();
+                        img.onload = () => {
+                            imagesOnCanvas.push({
+                                img: img,
+                                x: imgData.x,
+                                y: imgData.y,
+                                width: imgData.width,
+                                height: imgData.height,
+                                id: imgData.id
+                            });
+                            redrawCanvas();
+                        };
+                        img.src = imgData.url;
+                    });
+                }
             
                 // Draw all saved strokes when the page loads
                 savedStrokes.forEach(drawStroke);
+                loadSavedImages();
             
                 let drawing = false;
                 let currentStroke = [];
@@ -264,16 +307,25 @@
 
                     for (let i = imagesOnCanvas.length - 1; i >= 0; i--) {
                         const img = imagesOnCanvas[i];
-                        if (
-                        x >= img.x &&
-                        x <= img.x + img.width &&
-                        y >= img.y &&
-                        y <= img.y + img.height
-                        ) {
-                        draggingImage = img;
-                        dragOffsetX = x - img.x;
-                        dragOffsetY = y - img.y;
-                        return; // Don’t start drawing if dragging an image
+                        const withinX = x >= img.x && x <= img.x + img.width;
+                        const withinY = y >= img.y && y <= img.y + img.height;
+
+                        const nearBottomRight = (
+                            x >= img.x + img.width - resizeMargin &&
+                            x <= img.x + img.width &&
+                            y >= img.y + img.height - resizeMargin &&
+                            y <= img.y + img.height
+                        );
+
+                        if (withinX && withinY) {
+                            if (nearBottomRight && e.shiftKey) {
+                                scalingImage = img;
+                            } else {
+                                draggingImage = img;
+                                dragOffsetX = x - img.x;
+                                dragOffsetY = y - img.y;
+                            }
+                            return;
                         }
                     }
 
@@ -307,6 +359,14 @@
             // Draw images
             for (const imgObj of imagesOnCanvas) {
                 ctx.drawImage(imgObj.img, imgObj.x, imgObj.y, imgObj.width, imgObj.height);
+                // Draw resize handle
+                ctx.fillStyle = '#800080';
+                ctx.fillRect(
+                    imgObj.x + imgObj.width - resizeMargin,
+                    imgObj.y + imgObj.height - resizeMargin,
+                    resizeMargin,
+                    resizeMargin
+                );
             }
 
             // Draw strokes
@@ -323,6 +383,16 @@
                     return;
                 }
 
+                if (scalingImage) {
+                    const newWidth = x - scalingImage.x;
+                    const newHeight = y - scalingImage.y;
+                    if (newWidth > 10 && newHeight > 10) {
+                        scalingImage.width = newWidth;
+                        scalingImage.height = newHeight;
+                        redrawCanvas();
+                    }
+                    return;
+                }
                 if (!drawing) return;
 
                 const point = { x, y };
@@ -340,6 +410,8 @@
                 });
             
                 canvas.addEventListener('mouseup', () => {
+                draggingImage = null;
+                scalingImage = null;
                 if (draggingImage) {
                     draggingImage = null;
                     return;
@@ -348,9 +420,12 @@
                 if (!drawing) return;
                 drawing = false;
                 saveStrokeToServer(currentStroke);
+                saveImagesToServer();
                 });
 
                 canvas.addEventListener('mouseleave', () => {
+                draggingImage = null;
+                scalingImage = null;
                 if (draggingImage) {
                     draggingImage = null;
                     return;
@@ -383,6 +458,34 @@
                     })
                     .catch(err => console.error('Fetch error:', err));
                 }
+            // Save images metadata to server
+            function saveImagesToServer() {
+                const imagesData = imagesOnCanvas.map(imgObj => ({
+                    id: imgObj.id || null,
+                    x: imgObj.x,
+                    y: imgObj.y,
+                    width: imgObj.width,
+                    height: imgObj.height,
+                }));
+
+                fetch(`/whiteboard/{{ whiteboard.id }}/save-images/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ images: imagesData }),
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Save images error:', data.error);
+                    } else {
+                        console.log('Images saved!');
+                    }
+                })
+                .catch(err => console.error('Fetch error:', err));
+            }
             </script>
 
         </div>

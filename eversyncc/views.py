@@ -32,6 +32,9 @@ from .forms import EmailUpdateForm
 from allauth.account.utils import send_email_confirmation
 from functools import wraps
 from .forms import RegisterForm
+from django.core.files.storage import FileSystemStorage
+import uuid
+from django.conf import settings
 
 
 def email_verified_required(view_func):
@@ -718,10 +721,20 @@ def whiteboard_view(request, whiteboard_id=None):
     if whiteboard_id:
         whiteboard = get_object_or_404(Whiteboard, id=whiteboard_id, owner=request.user)
         strokes = Stroke.objects.filter(whiteboard=whiteboard).order_by('created_at')
+        
+        # Process images to include full URLs
+        images = []
+        for img_data in whiteboard.images:
+            if isinstance(img_data, dict) and 'id' in img_data:
+                img_data['url'] = request.build_absolute_uri(settings.MEDIA_URL + img_data['id'])
+                images.append(img_data)
+        
+        images_json = json.dumps(images)
         stroke_data = [stroke.data for stroke in strokes]
         context = {
             'whiteboard': whiteboard,
             'strokes_json': json.dumps(stroke_data),
+            'images_json': images_json
         }
         return render(request, 'whiteboard.html', context)
     else:
@@ -877,3 +890,51 @@ def pin_message(request, message_id):
     msg.pinned = not msg.pinned
     msg.save()
     return redirect('chat_with_user', username=msg.receiver.username if msg.sender == request.user else msg.sender.username)
+
+@email_verified_required
+@login_required
+def save_images(request, whiteboard_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            images = data.get('images', [])
+            whiteboard = Whiteboard.objects.get(id=whiteboard_id)
+            whiteboard.images = images
+            whiteboard.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid method'})
+
+@email_verified_required
+@login_required
+def upload_image(request, whiteboard_id):
+    if request.method == 'POST':
+        try:
+            whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
+            image = request.FILES.get('image')
+            
+            if not image:
+                return JsonResponse({'error': 'No image provided'}, status=400)
+                
+            # Generate a unique filename
+            ext = os.path.splitext(image.name)[1]
+            filename = f'whiteboard_{whiteboard_id}_{uuid.uuid4().hex}{ext}'
+            
+            # Save the image
+            fs = FileSystemStorage()
+            filename = fs.save(f'whiteboard_images/{filename}', image)
+            image_url = fs.url(filename)
+            
+            return JsonResponse({
+                'success': True,
+                'image_url': image_url,
+                'image_id': filename
+            })
+            
+        except Whiteboard.DoesNotExist:
+            return JsonResponse({'error': 'Whiteboard not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+            
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
