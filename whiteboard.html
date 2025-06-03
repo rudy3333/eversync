@@ -119,6 +119,16 @@
                 let dragOffsetY = 0;
                 let scalingImage = null;
                 const resizeMargin = 10;
+                let saveTimeout = null;
+
+                function debouncedSave() {
+                    if (saveTimeout) {
+                        clearTimeout(saveTimeout);
+                    }
+                    saveTimeout = setTimeout(() => {
+                        saveImagesToServer();
+                    }, 500);
+                }
 
                 document.getElementById('imageUpload').addEventListener('change', function (e) {
                     const file = e.target.files[0];
@@ -290,17 +300,30 @@
                         return;
                     }
                     if (deleteMode) {
-                        for (let i = 0; i < savedStrokes.length; i++) {
-                        const stroke = savedStrokes[i];
-                        for (const point of stroke.points || stroke) {
-                            const dx = point.x - x;
-                            const dy = point.y - y;
-                            const dist = Math.sqrt(dx * dx + dy * dy);
-                            if (dist < 10) {
-                            deleteStrokeFromServer(i);
-                            return;
+                        for (let i = imagesOnCanvas.length - 1; i >= 0; i--) {
+                            const img = imagesOnCanvas[i];
+                            const withinX = x >= img.x && x <= img.x + img.width;
+                            const withinY = y >= img.y && y <= img.y + img.height;
+                            
+                            if (withinX && withinY) {
+                                deleteImageFromServer(img.id);
+                                imagesOnCanvas.splice(i, 1);
+                                redrawCanvas();
+                                return;
                             }
                         }
+                        
+                        for (let i = 0; i < savedStrokes.length; i++) {
+                            const stroke = savedStrokes[i];
+                            for (const point of stroke.points || stroke) {
+                                const dx = point.x - x;
+                                const dy = point.y - y;
+                                const dist = Math.sqrt(dx * dx + dy * dy);
+                                if (dist < 10) {
+                                    deleteStrokeFromServer(i);
+                                    return;
+                                }
+                            }
                         }
                         return;
                     }
@@ -353,6 +376,26 @@
                 .catch(err => console.error('Fetch error:', err));
             }
 
+            function deleteImageFromServer(imageId) {
+                fetch(`/whiteboard/{{ whiteboard.id }}/delete-image/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ image_id: imageId }),
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Image deleted successfully');
+                    } else {
+                        console.error('Delete image error:', data.error);
+                    }
+                })
+                .catch(err => console.error('Fetch error:', err));
+            }
+
             function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -380,6 +423,7 @@
                     draggingImage.x = x - dragOffsetX;
                     draggingImage.y = y - dragOffsetY;
                     redrawCanvas();
+                    debouncedSave();
                     return;
                 }
 
@@ -390,6 +434,7 @@
                         scalingImage.width = newWidth;
                         scalingImage.height = newHeight;
                         redrawCanvas();
+                        debouncedSave(); 
                     }
                     return;
                 }
@@ -410,31 +455,28 @@
                 });
             
                 canvas.addEventListener('mouseup', () => {
-                draggingImage = null;
-                scalingImage = null;
-                if (draggingImage) {
+                    if (draggingImage || scalingImage) {
+                        saveImagesToServer();
+                    }
                     draggingImage = null;
-                    return;
-                }
+                    scalingImage = null;
 
-                if (!drawing) return;
-                drawing = false;
-                saveStrokeToServer(currentStroke);
-                saveImagesToServer();
+                    if (!drawing) return;
+                    drawing = false;
+                    saveStrokeToServer(currentStroke);
                 });
 
                 canvas.addEventListener('mouseleave', () => {
-                draggingImage = null;
-                scalingImage = null;
-                if (draggingImage) {
+                    if (draggingImage || scalingImage) {
+                        saveImagesToServer(); 
+                    }
                     draggingImage = null;
-                    return;
-                }
+                    scalingImage = null;
 
-                if (drawing) {
-                    drawing = false;
-                    saveStrokeToServer(currentStroke);
-                }
+                    if (drawing) {
+                        drawing = false;
+                        saveStrokeToServer(currentStroke);
+                    }
                 });
 
             

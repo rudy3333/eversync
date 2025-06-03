@@ -938,3 +938,34 @@ def upload_image(request, whiteboard_id):
             return JsonResponse({'error': str(e)}, status=500)
             
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@email_verified_required
+@login_required
+def delete_image(request, whiteboard_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            image_id = data.get('image_id')
+            
+            if not image_id:
+                return JsonResponse({'error': 'No image ID provided'}, status=400)
+            
+            whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
+            
+            whiteboard.images = [img for img in whiteboard.images if img.get('id') != image_id]
+            whiteboard.save()
+            
+            fs = FileSystemStorage()
+            try:
+                fs.delete(f'whiteboard_images/{image_id}')
+            except:
+                pass  
+                
+            return JsonResponse({'success': True})
+            
+        except Whiteboard.DoesNotExist:
+            return JsonResponse({'error': 'Whiteboard not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+            
+    return JsonResponse({'error': 'Invalid request method'}, status=405)

@@ -68,6 +68,7 @@ urlpatterns = [
     path('pin/<int:message_id>/', views.pin_message, name='pin_message'),
     path('whiteboard/<int:whiteboard_id>/save-images/', views.save_images, name='save_images'),
     path('whiteboard/<int:whiteboard_id>/upload-image/', views.upload_image, name='upload_image'),
+    path('whiteboard/<int:whiteboard_id>/delete-image/', views.delete_image, name='delete_image'),
 
 
 
