@@ -8,6 +8,7 @@
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     {% block scripts %}
         {% include "sentry_replay.html" %}
     {% endblock %}
@@ -106,9 +107,33 @@
               </div>
             <h2 style="text-align: center;">{{ whiteboard.title }}</h2>   
             <canvas id="whiteboard" width="800" height="600"></canvas>
+            <input type="file" id="imageUpload" accept="image/*" />
 
             <script>
-                document.getElementById('export-png').addEventListener('click', function() {
+                let imagesOnCanvas = []; // Stores added image objects
+                let draggingImage = null;
+                let dragOffsetX = 0;
+                let dragOffsetY = 0;
+
+                document.getElementById('imageUpload').addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const img = new Image();
+                img.onload = () => {
+                    const imageObj = {
+                    img,
+                    x: 100,
+                    y: 100,
+                    width: img.width * 0.3,
+                    height: img.height * 0.3,
+                    };
+                    imagesOnCanvas.push(imageObj);
+                    redrawCanvas();
+                };
+                img.src = URL.createObjectURL(file);
+                });
+                    document.getElementById('export-png').addEventListener('click', function() {
                     const canvas = document.getElementById('whiteboard');
                     if (!canvas) {
                         alert('Canvas not found!');
@@ -212,29 +237,49 @@
                     deleteButton.textContent = deleteMode ? '✅ Delete Mode ON' : '✖️ Toggle Delete Mode';
                 });
                 canvas.addEventListener('mousedown', (e) => {
-                const x = e.offsetX;
-                const y = e.offsetY;
-
-                if (deleteMode) {
-                    // Detect and delete stroke
-                    for (let i = 0; i < savedStrokes.length; i++) {
+                    const x = e.offsetX;
+                    const y = e.offsetY;
+                    
+                    if (draggingImage) {
+                        draggingImage.x = x - dragOffsetX;
+                        draggingImage.y = y - dragOffsetY;
+                        redrawCanvas(); // re-renders images and strokes
+                        return;
+                    }
+                    if (deleteMode) {
+                        for (let i = 0; i < savedStrokes.length; i++) {
                         const stroke = savedStrokes[i];
                         for (const point of stroke.points || stroke) {
                             const dx = point.x - x;
                             const dy = point.y - y;
                             const dist = Math.sqrt(dx * dx + dy * dy);
                             if (dist < 10) {
-                                deleteStrokeFromServer(i);
-                                return;
+                            deleteStrokeFromServer(i);
+                            return;
                             }
                         }
+                        }
+                        return;
                     }
-                    return;
-                }
 
-                drawing = true;
-                currentStroke = [{ x, y }];
-            });
+                    for (let i = imagesOnCanvas.length - 1; i >= 0; i--) {
+                        const img = imagesOnCanvas[i];
+                        if (
+                        x >= img.x &&
+                        x <= img.x + img.width &&
+                        y >= img.y &&
+                        y <= img.y + img.height
+                        ) {
+                        draggingImage = img;
+                        dragOffsetX = x - img.x;
+                        dragOffsetY = y - img.y;
+                        return; // Don’t start drawing if dragging an image
+                        }
+                    }
+
+                    drawing = true;
+                    currentStroke = [{ x, y }];
+                    });
             function deleteStrokeFromServer(index) {
                 fetch(`/whiteboard/{{ whiteboard.id }}/delete-stroke/`, {
                     method: 'POST',
@@ -257,39 +302,66 @@
             }
 
             function redrawCanvas() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                savedStrokes.forEach(drawStroke);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw images
+            for (const imgObj of imagesOnCanvas) {
+                ctx.drawImage(imgObj.img, imgObj.x, imgObj.y, imgObj.width, imgObj.height);
             }
-                canvas.addEventListener('mousemove', (e) => {
-                    if (!drawing) return;
-                    const point = { x: e.offsetX, y: e.offsetY };
-                    currentStroke.push(point);
-            
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#4B0082';  // purple-ish
-                    ctx.lineCap = 'round';
-            
-                    ctx.beginPath();
-                    const prevPoint = currentStroke[currentStroke.length - 2];
-                    ctx.moveTo(prevPoint.x, prevPoint.y);
-                    ctx.lineTo(point.x, point.y);
-                    ctx.stroke();
+
+            // Draw strokes
+            savedStrokes.forEach(drawStroke);
+            }
+            canvas.addEventListener('mousemove', (e) => {
+                const x = e.offsetX;
+                const y = e.offsetY;
+
+                if (draggingImage) {
+                    draggingImage.x = x - dragOffsetX;
+                    draggingImage.y = y - dragOffsetY;
+                    redrawCanvas();
+                    return;
+                }
+
+                if (!drawing) return;
+
+                const point = { x, y };
+                currentStroke.push(point);
+
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#4B0082';  // purple-ish
+                ctx.lineCap = 'round';
+
+                ctx.beginPath();
+                const prevPoint = currentStroke[currentStroke.length - 2];
+                ctx.moveTo(prevPoint.x, prevPoint.y);
+                ctx.lineTo(point.x, point.y);
+                ctx.stroke();
                 });
             
                 canvas.addEventListener('mouseup', () => {
-                    if (!drawing) return;
-                    drawing = false;
-                    console.log('Stroke points:', currentStroke);
-                    saveStrokeToServer(currentStroke);
+                if (draggingImage) {
+                    draggingImage = null;
+                    return;
+                }
+
+                if (!drawing) return;
+                drawing = false;
+                saveStrokeToServer(currentStroke);
                 });
-            
+
                 canvas.addEventListener('mouseleave', () => {
-                    if (drawing) {
-                        drawing = false;
-                        console.log('Stroke points:', currentStroke);
-                        saveStrokeToServer(currentStroke);
-                    }
+                if (draggingImage) {
+                    draggingImage = null;
+                    return;
+                }
+
+                if (drawing) {
+                    drawing = false;
+                    saveStrokeToServer(currentStroke);
+                }
                 });
+
             
                 function saveStrokeToServer(stroke) {
                     fetch(`/whiteboard/{{ whiteboard.id }}/save-stroke/`, {
