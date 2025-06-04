@@ -38,6 +38,9 @@ import uuid
 from django.conf import settings
 from fcm import send_push_notification
 from .models import UserNotifs
+import aiohttp
+import asyncio
+from asgiref.sync import sync_to_async
 
 def email_verified_required(view_func):
     @wraps(view_func)
@@ -379,69 +382,81 @@ def meeting(request):
 @email_verified_required
 @login_required
 def weather_api(request, location):
-    # Step 1: Geocode the location
-    url = f'https://nominatim.openstreetmap.org/search?q={location}&format=json'
-    headers = {
-        'User-Agent': 'my-weather-app'
-    }
-    geo_response = requests.get(url, headers=headers).json()
+    async def fetch_weather_data():
+        async with aiohttp.ClientSession() as session:
+            geo_url = f'https://nominatim.openstreetmap.org/search?q={location}&format=json'
+            headers = {'User-Agent': 'eversync'}
+            
+            async with session.get(geo_url, headers=headers) as response:
+                geo_response = await response.json()
+                
+                if not geo_response:
+                    return {'error': 'Location not found'}, 404
 
-    if not geo_response:
-        return JsonResponse({'error': 'Location not found'}, status=404)
+                lat = geo_response[0]["lat"]
+                lon = geo_response[0]["lon"]
 
-    lat = geo_response[0]["lat"]
-    lon = geo_response[0]["lon"]
+                weather_url = "https://api.open-meteo.com/v1/forecast"
+                params = {
+                    "latitude": lat,
+                    "longitude": lon,
+                    "hourly": "temperature_2m,weathercode,precipitation_probability,wind_speed_10m",
+                    "daily": "temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode",
+                    "current_weather": "true",
+                    "timezone": "auto"
+                }
 
-    # Step 2: Call Open-Meteo's raw JSON API
-    weather_url = "https://api.open-meteo.com/v1/forecast"
-    params = {
-        "latitude": lat,
-        "longitude": lon,
-        "hourly": "temperature_2m,weathercode,precipitation_probability,wind_speed_10m",
-        "daily": "temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode",
-        "current_weather": True,
-        "timezone": "auto"
-    }
+                async with session.get(weather_url, params=params) as response:
+                    weather_response = await response.json()
 
-    weather_response = requests.get(weather_url, params=params).json()
+                    hourly = weather_response["hourly"]
+                    daily = weather_response["daily"]
+                    current = weather_response["current_weather"]
 
-    # Construct response
-    hourly = weather_response["hourly"]
-    daily = weather_response["daily"]
-    current = weather_response["current_weather"]
+                    data = {
+                        "current": {
+                            "temperature": current["temperature"],
+                            "wind_speed": current["windspeed"],
+                            "weathercode": current["weathercode"]
+                        },
+                        "summary": {
+                            "today": {
+                                "max_temp": daily["temperature_2m_max"][0],
+                                "min_temp": daily["temperature_2m_min"][0],
+                                "sunrise": daily["sunrise"][0],
+                                "sunset": daily["sunset"][0],
+                                "weathercode": daily["weathercode"][0]
+                            }
+                        },
+                        "hourly": {
+                            "time": hourly["time"],
+                            "temperature_2m": hourly["temperature_2m"],
+                            "weathercode": hourly["weathercode"],
+                            "precipitation_probability": hourly["precipitation_probability"],
+                            "wind_speed_10m": hourly["wind_speed_10m"]
+                        },
+                        "daily": {
+                            "time": daily["time"],
+                            "temperature_max": daily["temperature_2m_max"],
+                            "temperature_min": daily["temperature_2m_min"],
+                            "sunrise": daily["sunrise"],
+                            "sunset": daily["sunset"],
+                            "weathercode": daily["weathercode"]
+                        }
+                    }
+                    return data, 200
 
-    data = {
-        "current": {
-            "temperature": current["temperature"],
-            "wind_speed": current["windspeed"],
-            "weathercode": current["weathercode"]
-        },
-        "summary": {
-            "today": {
-                "max_temp": daily["temperature_2m_max"][0],
-                "min_temp": daily["temperature_2m_min"][0],
-                "sunrise": daily["sunrise"][0],
-                "sunset": daily["sunset"][0],
-                "weathercode": daily["weathercode"][0]
-            }
-        },
-        "hourly": {
-            "time": hourly["time"],
-            "temperature_2m": hourly["temperature_2m"],
-            "weathercode": hourly["weathercode"],
-            "precipitation_probability": hourly["precipitation_probability"],
-            "wind_speed_10m": hourly["wind_speed_10m"]
-        },
-        "daily": {
-            "time": daily["time"],
-            "temperature_max": daily["temperature_2m_max"],
-            "temperature_min": daily["temperature_2m_min"],
-            "sunrise": daily["sunrise"],
-            "sunset": daily["sunset"],
-            "weathercode": daily["weathercode"]
-        }
-    }
-    return JsonResponse(data)
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        data, status = loop.run_until_complete(fetch_weather_data())
+        loop.close()
+        
+        if status == 404:
+            return JsonResponse(data, status=404)
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({'error': f'Weather service error: {str(e)}'}, status=500)
 
 @email_verified_required
 @login_required

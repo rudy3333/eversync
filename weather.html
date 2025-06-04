@@ -7,10 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
-    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
-    {% block scripts %}
-        {% include "sentry_replay.html" %}
-    {% endblock %}
+    <link rel="stylesheet" href="{% static 'index-style.css' %}" "> 
 
 </head>
     
@@ -135,7 +132,7 @@
         </div>
 
         <canvas id="weatherChart" width="800" height="400"></canvas>
-
+<!--
         <div class="forecast">
             {% for hour in hourly_forecast %}
                 <div class="forecast-card">
@@ -145,6 +142,7 @@
                 </div>
             {% endfor %}
         </div>
+        -->
     </div>
 
     <script>
@@ -246,14 +244,7 @@
         });
     </script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggle = document.querySelector('.dropdown-toggle');
-        const menu = document.querySelector('.dropdown-menu');
-        toggle.addEventListener('click', function () {
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        });
-    });
-    
+
     const toggle = document.getElementById("themeToggle");
         const root = document.documentElement;
 
@@ -261,14 +252,6 @@
         root.classList.add("dark");
         }
 
-        toggle.addEventListener("click", () => {
-        root.classList.toggle("dark");
-        if (root.classList.contains("dark")) {
-            localStorage.setItem("theme", "dark");
-        } else {
-            localStorage.setItem("theme", "light");
-        }
-        });
 </script>
 </body>
 </html>
