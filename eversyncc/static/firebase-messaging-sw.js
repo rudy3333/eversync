@@ -16,8 +16,16 @@ messaging.onBackgroundMessage(function(payload) {
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
+    click_action: 'https://eversync.fly.dev'
   };
 
   self.registration.showNotification(notificationTitle,
     notificationOptions);
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow('https://eversync.fly.dev')
+  );
 });

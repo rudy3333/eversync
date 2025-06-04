@@ -125,6 +125,27 @@
 }
   firebase.initializeApp(firebaseConfig);
   const messaging = firebase.messaging();
+  
+  {% if request.user.is_authenticated %}
+  navigator.serviceWorker.register('/static/firebase-messaging-sw.js')
+    .then((registration) => {
+      messaging.getToken({
+        vapidKey: 'BKJsJ3Bn5G9aMrF0pzN3cJsgQvclDPhSzpMcl3MS3lzgeXL4M1nuZrT1-7HLsnR4bq86SckhxTiyoISYQUZhuOY',
+        serviceWorkerRegistration: registration
+      }).then((currentToken) => {
+        if (currentToken) {
+          console.log('FCM token:', currentToken);
+          sendTokenToBackend(currentToken);
+        } else {
+          console.log('No registration token available on script load.');
+        }
+      }).catch((err) => {
+        console.error('An error occurred while retrieving token on script load.', err);
+      });
+    }).catch((err) => {
+      console.error('Service worker registration failed on script load:', err);
+    });
+  {% endif %}
 
   function sendTokenToBackend(token) {
   fetch('/api/update_device_token/', {
