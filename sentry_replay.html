@@ -6,6 +6,63 @@
     }
   </script>
 {% endif %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+
+<style>
+  #notif-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #notif-box {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-align: center;
+    font-family: sans-serif;
+  }
+
+  #enable-notifs-btn {
+    margin-top: 12px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    background: #6d6dfb;
+    color: white;
+    cursor: pointer;
+  }
+
+  #notif-box.dark {
+  background-color: #222;
+  color: #eee;
+}
+</style>
+
+
+
+{% if request.user.is_authenticated %}
+<div id="notif-overlay">
+  <div id="notif-box">
+    <p>Would you like to enable notifications? We won’t ask again if you say no!</p>
+    <button id="enable-notifs-btn">Enable Notifications</button>
+  </div>
+</div>
+{% endif %}
+<script>
+  const notifBox = document.getElementById('notif-box');
+  if (localStorage.getItem("theme") === "dark" && notifBox) {
+    notifBox.classList.add("dark");
+  }
+  </script>
 
 <script
   src="https://browser.sentry-cdn.com/9.23.0/bundle.tracing.replay.min.js"
@@ -51,71 +108,120 @@
     messagingSenderId: "546896423149",
     appId: "1:546896423149:web:c06d07957a7080965144e4",
   };
-
-  // Initialize Firebase app
+ 
+  function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
   firebase.initializeApp(firebaseConfig);
-
-  // Get Firebase messaging instance
   const messaging = firebase.messaging();
 
-  // Request permission to send notifications and get FCM token
+  function sendTokenToBackend(token) {
+  fetch('/api/update_device_token/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCookie('csrftoken'), 
+    },
+    body: JSON.stringify({ device_token: token }),
+    credentials: 'include',
+  })
+  .then(response => response.json())
+  .then(data => console.log('Token saved on backend:', data))
+  .catch(console.error);
+}
+
   function requestPermissionAndGetToken() {
     Notification.requestPermission().then((permission) => {
       if (permission === 'granted') {
-        messaging.getToken({ vapidKey: 'BKJsJ3Bn5G9aMrF0pzN3cJsgQvclDPhSzpMcl3MS3lzgeXL4M1nuZrT1-7HLsnR4bq86SckhxTiyoISYQUZhuOY' }).then((currentToken) => {
-          if (currentToken) {
-            console.log('FCM token:', currentToken);
-            sendTokenToBackend(currentToken);
-          } else {
-            console.log('No registration token available. Request permission to generate one.');
-          }
-        }).catch((err) => {
-          console.error('An error occurred while retrieving token. ', err);
-        });
+        navigator.serviceWorker.register('/static/firebase-messaging-sw.js')
+          .then((registration) => {
+            // Pass the registration to getToken so Firebase uses this SW
+            messaging.getToken({ vapidKey: 'BKJsJ3Bn5G9aMrF0pzN3cJsgQvclDPhSzpMcl3MS3lzgeXL4M1nuZrT1-7HLsnR4bq86SckhxTiyoISYQUZhuOY', serviceWorkerRegistration: registration })
+              .then((currentToken) => {
+                if (currentToken) {
+                  console.log('FCM token:', currentToken);
+                  sendTokenToBackend(currentToken);
+                } else {
+                  console.log('No registration token available. Request permission to generate one.');
+                }
+              })
+              .catch((err) => {
+                console.error('An error occurred while retrieving token. ', err);
+              });
+          }).catch((err) => {
+            console.error('Service worker registration failed:', err);
+          });
       } else {
         console.log('Notification permission denied.');
       }
     });
   }
 
-  // Send the token to your backend to save it
-  function sendTokenToBackend(token) {
-    fetch('/api/update_device_token/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken'), // Django’s CSRF token
-      },
-      body: JSON.stringify({ device_token: token }),
-      credentials: 'include', // send cookies for auth if needed
-    })
-    .then(response => response.json())
-    .then(data => console.log('Token saved on backend:', data))
-    .catch(console.error);
-  }
 
-  // Helper to get the CSRF token cookie for Django
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-
-  // Call this on page load or after user logs in
-  requestPermissionAndGetToken();
-
-  // Optional: listen for foreground messages
   messaging.onMessage((payload) => {
     console.log('Message received in foreground: ', payload);
-    // You can show a custom notification or UI update here
   });
+
 </script>
+
+{% if request.user.is_authenticated %}
+<script>
+// Notification overlay logic
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof Notification !== "undefined" && Notification.permission === 'default') {
+    document.getElementById('notif-overlay').style.display = 'flex';
+  }
+});
+
+document.getElementById('enable-notifs-btn').addEventListener('click', () => {
+  if (typeof Notification !== "undefined") {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          document.getElementById('notif-overlay').style.display = 'none';
+          document.getElementById('notif-box').style.display = 'none';
+          navigator.serviceWorker.register('/static/firebase-messaging-sw.js')
+            .then((registration) => {
+              messaging.getToken({
+                vapidKey: 'BKJsJ3Bn5G9aMrF0pzN3cJsgQvclDPhSzpMcl3MS3lzgeXL4M1nuZrT1-7HLsnR4bq86SckhxTiyoISYQUZhuOY',
+                serviceWorkerRegistration: registration
+              }).then((currentToken) => {
+                if (currentToken) {
+                  console.log('FCM token:', currentToken);
+                  sendTokenToBackend(currentToken);
+                }
+
+              });
+            }).catch((err) => {
+              console.error('Service worker registration failed:', err);
+              document.getElementById('notif-overlay').style.display = 'none';
+              document.getElementById('notif-box').style.display = 'none';
+
+            });
+        } else {
+          console.log('Notification permission denied or dismissed.');
+          document.getElementById('notif-overlay').style.display = 'none';
+          document.getElementById('notif-box').style.display = 'none';
+
+        }
+      });
+    } else {
+      console.log('Permission already decided: ' + Notification.permission);
+      document.getElementById('notif-box').style.display = 'none';
+      document.getElementById('notif-overlay').style.display = 'none';
+    }
+  }
+});
+</script>
+{% endif %}

@@ -29,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
-FCM_SERVICE_ACCOUNT = str(BASE_DIR / "file.json")
+FCM_SERVICE_ACCOUNT = str(BASE_DIR / "fcm_secret.json")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

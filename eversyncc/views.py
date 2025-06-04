@@ -13,6 +13,7 @@ from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
 from pathlib import Path
+from eversyncc.models import UserNotifs
 import requests
 from allauth.account.models import EmailAddress
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -585,10 +586,15 @@ def send_message(request):
         content =  request.POST.get('content')
         receiver = User.objects.get(username=reciever_username)
         message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
-        if hasattr(receiver, 'device_token') and receiver.device_token:
-            token = receiver.device_token
+        try:
+            user_notifs = UserNotifs.objects.get(user=receiver)
+            token = user_notifs.device_token
+        except UserNotifs.DoesNotExist:
+            token = None
+        
+        if token:
             title = f"New message from {request.user.username}"
-            body = content[:100] 
+            body = content[:100]
             send_push_notification(token, title, body)
         
         return JsonResponse({"message": "sent", "message_id": message.id})
