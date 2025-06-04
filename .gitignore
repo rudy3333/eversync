@@ -97,3 +97,5 @@ fly.toml
 fly-deploy.yml
 Dockerfile
 cookies.txt
+
+fcm_secret.json

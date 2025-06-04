@@ -69,6 +69,8 @@ urlpatterns = [
     path('whiteboard/<int:whiteboard_id>/save-images/', views.save_images, name='save_images'),
     path('whiteboard/<int:whiteboard_id>/upload-image/', views.upload_image, name='upload_image'),
     path('whiteboard/<int:whiteboard_id>/delete-image/', views.delete_image, name='delete_image'),
+    path('api/update_device_token/', views.update_device_token, name='update_device_token'),
+
 
 
 

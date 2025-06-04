@@ -35,7 +35,8 @@ from .forms import RegisterForm
 from django.core.files.storage import FileSystemStorage
 import uuid
 from django.conf import settings
-
+from fcm import send_push_notification
+from .models import UserNotifs
 
 def email_verified_required(view_func):
     @wraps(view_func)
@@ -584,6 +585,12 @@ def send_message(request):
         content =  request.POST.get('content')
         receiver = User.objects.get(username=reciever_username)
         message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
+        if hasattr(receiver, 'device_token') and receiver.device_token:
+            token = receiver.device_token
+            title = f"New message from {request.user.username}"
+            body = content[:100] 
+            send_push_notification(token, title, body)
+        
         return JsonResponse({"message": "sent", "message_id": message.id})
     else:
         return JsonResponse({"message": "error"})
@@ -969,3 +976,19 @@ def delete_image(request, whiteboard_id):
             return JsonResponse({'error': str(e)}, status=500)
             
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def update_device_token(request):
+    try:
+        data = json.loads(request.body)
+        token = data.get('device_token', '').strip()
+        if not token:
+            return JsonResponse({"error": "No device_token provided"}, status=400)
+
+        user_notifs, created = UserNotifs.objects.get_or_create(user=request.user)
+        user_notifs.device_token = token
+        user_notifs.save()
+
+        return JsonResponse({"message": "Device token updated"})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

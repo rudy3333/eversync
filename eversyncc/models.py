@@ -3,6 +3,13 @@ from django.db import models
 # Create your models here.
 from django.contrib.auth.models import User
 
+class UserNotifs(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    device_token = models.CharField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s notif token: {self.device_token[:8]}..."
+
 class UserStorage(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     storage_limit = models.BigIntegerField(default=5 * 1024 * 1024 * 1024)  # 5 GB

@@ -38,3 +38,84 @@
   const replay = Sentry.getReplay();
   replay.start();
 </script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCR9FFFiNFt6ORYu7KJHv_fT-aD2fW7bIg",
+    authDomain: "eversync333.firebaseapp.com",
+    projectId: "eversync333",
+    messagingSenderId: "546896423149",
+    appId: "1:546896423149:web:c06d07957a7080965144e4",
+  };
+
+  // Initialize Firebase app
+  firebase.initializeApp(firebaseConfig);
+
+  // Get Firebase messaging instance
+  const messaging = firebase.messaging();
+
+  // Request permission to send notifications and get FCM token
+  function requestPermissionAndGetToken() {
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        messaging.getToken({ vapidKey: 'BKJsJ3Bn5G9aMrF0pzN3cJsgQvclDPhSzpMcl3MS3lzgeXL4M1nuZrT1-7HLsnR4bq86SckhxTiyoISYQUZhuOY' }).then((currentToken) => {
+          if (currentToken) {
+            console.log('FCM token:', currentToken);
+            sendTokenToBackend(currentToken);
+          } else {
+            console.log('No registration token available. Request permission to generate one.');
+          }
+        }).catch((err) => {
+          console.error('An error occurred while retrieving token. ', err);
+        });
+      } else {
+        console.log('Notification permission denied.');
+      }
+    });
+  }
+
+  // Send the token to your backend to save it
+  function sendTokenToBackend(token) {
+    fetch('/api/update_device_token/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'), // Django’s CSRF token
+      },
+      body: JSON.stringify({ device_token: token }),
+      credentials: 'include', // send cookies for auth if needed
+    })
+    .then(response => response.json())
+    .then(data => console.log('Token saved on backend:', data))
+    .catch(console.error);
+  }
+
+  // Helper to get the CSRF token cookie for Django
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Call this on page load or after user logs in
+  requestPermissionAndGetToken();
+
+  // Optional: listen for foreground messages
+  messaging.onMessage((payload) => {
+    console.log('Message received in foreground: ', payload);
+    // You can show a custom notification or UI update here
+  });
+</script>
