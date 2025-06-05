@@ -620,13 +620,14 @@ def send_message(request):
 @login_required
 def inbox(request):
     messages = Message.objects.filter(receiver=request.user).select_related('sender', 'receiver').order_by("-timestamp")
+    has_unseen = messages.filter(seen=False).exists()
     data = [{
         "sender": msg.sender.username,
         "content": msg.content,
         "timestamp": msg.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
         "id": msg.id
     } for msg in messages]
-    return JsonResponse({"messages": data})
+    return JsonResponse({"messages": data, "has_unseen": has_unseen})
 
 @email_verified_required
 @login_required

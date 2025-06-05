@@ -89,14 +89,32 @@
             <a href="/thought_reframing" style="font-style: italic; margin-top: 20px; display: block;">
                 thought reframing tool
             </a>
+            <div id="message-notification" style="display: none; background-color: #ffeb3b; padding: 10px; border-radius: 4px; margin-top: 10px; text-align: center;">
+                <a href="/chat" style="text-decoration: none; color: black;">
+                    <i class="fa-solid fa-envelope"></i> You have unread messages
+                </a>
+            </div>
             <script>
                 async function fetchAffirmation() {
                     const res = await fetch("/api/affirmation/");
                     const data = await res.json();
                     document.getElementById("affirmation-box").innerText = data.affirmation;
                 }
+
+                async function checkUnseenMessages() {
+                    const res = await fetch("/inbox/");
+                    const data = await res.json();
+                    const notification = document.getElementById("message-notification");
+                    if (data.has_unseen) {
+                        notification.style.display = "block";
+                    } else {
+                        notification.style.display = "none";
+                    }
+                }
             
                 fetchAffirmation();
+                checkUnseenMessages();
+                setInterval(checkUnseenMessages, 10000);
             </script>
         </div>
         
