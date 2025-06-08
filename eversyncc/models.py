@@ -120,5 +120,4 @@ class WebArchive(models.Model):
     url = models.URLField()  
     title = models.CharField(max_length=255)  
     screenshot = models.ImageField(upload_to='web_archives/')
-    content = models.TextField(blank=True, default='')  # Make it optional with default empty string
     created_at = models.DateTimeField(auto_now_add=True)

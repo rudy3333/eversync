@@ -1,133 +1,224 @@
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}">
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
 
-{% block content %}
-<div class="container">
+    <style>
+        .container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .welcome-box {
+            flex: 1 1 0;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 900px;
+            background: none;
+        }
+
+
+        .archives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .archive-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .archive-screenshot {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .archive-content {
+            padding: 15px;
+        }
+
+        .archive-url {
+            color: #666;
+            font-size: 0.9em;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+
+        .archive-date {
+            color: #888;
+            font-size: 0.8em;
+        }
+
+        .archive-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .no-archives {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        /* On mobile */
+        @media (max-width: 700px) {
+            .container {
+                flex-direction: column;
+                align-items: center; 
+            }
+            .welcome-box {
+                flex: none;
+                width: auto;
+                max-width: 90vw; 
+                margin: 0 0 20px 0; 
+                padding: 15px;
+            }
+            .archives-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
     <div class="header">
-        <h1>Web Archives</h1>
-        <a href="{% url 'save_web_archive' %}" class="btn btn-primary">
-            <i class="fa-solid fa-plus"></i> New Archive
-        </a>
-    </div>
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo" >eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
 
-    <div class="archives-grid">
-        {% for archive in archives %}
-        <div class="archive-card">
-            {% if archive.screenshot %}
-            <img src="{{ archive.screenshot.url }}" alt="Archived page" class="archive-screenshot">
-            {% endif %}
-            <div class="archive-content">
-                <p class="archive-url">{{ archive.url }}</p>
-                <p class="archive-date">{{ archive.created_at|date:"F j, Y" }}</p>
-                <div class="archive-actions">
-                    <a href="{{ archive.url }}" target="_blank" class="btn btn-secondary">
-                        <i class="fa-solid fa-external-link"></i> Visit
-                    </a>
-                    <form action="{% url 'delete_web_archive' archive.id %}" method="POST" class="delete-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fa-solid fa-trash"></i> Delete
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
-        {% empty %}
-        <div class="no-archives">
-            <p>No archived pages yet. Start by archiving your first page!</p>
-        </div>
-        {% endfor %}
     </div>
-</div>
+    
+    <div class="container">
+        <div class="welcome-box">
+            <div class="container">
+                <h1>Web Archives</h1>
+                <a href="{% url 'save_web_archive' %}" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> New Archive
+                </a>
+            </div>
 
-<style>
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
+            <div class="archives-grid">
+                {% for archive in archives %}
+                <div class="archive-card">
+                    {% if archive.screenshot %}
+                    <img src="{{ archive.screenshot.url }}" alt="Archived page" class="archive-screenshot">
+                    {% endif %}
+                    <div class="archive-content">
+                        <p class="archive-url">{{ archive.url }}</p>
+                        <p class="archive-date">{{ archive.created_at|date:"F j, Y" }}</p>
+                        <div class="archive-actions">
+                            <a href="{{ archive.url }}" target="_blank" class="btn btn-secondary">
+                                <i class="fa-solid fa-external-link"></i> Visit
+                            </a>
+                            <form action="{% url 'delete_web_archive' archive.id %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this archive?')">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="no-archives">
+                    <p>No archived pages yet. Start by archiving your first page!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        toggle.addEventListener('click', function () {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
+    const toggle = document.getElementById("themeToggle");
+    const root = document.documentElement;
 
-.archives-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
+    if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+    }
 
-.archive-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.archive-screenshot {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-}
-
-.archive-content {
-    padding: 15px;
-}
-
-.archive-url {
-    color: #666;
-    font-size: 0.9em;
-    margin: 5px 0;
-    word-break: break-all;
-}
-
-.archive-date {
-    color: #888;
-    font-size: 0.8em;
-}
-
-.archive-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.btn {
-    padding: 8px 15px;
-    border-radius: 4px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9em;
-    cursor: pointer;
-    border: none;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-danger {
-    background: #dc3545;
-    color: white;
-}
-
-.no-archives {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 40px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-</style>
-{% endblock %} 
+    toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+    });
+</script>
+</body>
+</html>

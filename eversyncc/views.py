@@ -20,6 +20,7 @@ from eversyncc.models import UserNotifs
 import requests
 from allauth.account.models import EmailAddress
 from django.views.decorators.clickjacking import xframe_options_exempt
+from selenium.webdriver.support.ui import WebDriverWait
 from webpush import send_user_notification
 from icalendar import Calendar, Event as IcalEvent
 from django.utils.text import slugify
@@ -44,6 +45,8 @@ from .models import UserNotifs
 import aiohttp
 import asyncio
 from asgiref.sync import sync_to_async
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 import selenium
 
 def email_verified_required(view_func):
@@ -1033,13 +1036,43 @@ def save_web_archive(request):
                 chrome_options.add_argument('--no-sandbox')
                 chrome_options.add_argument('--disable-dev-shm-usage')
                 chrome_options.add_argument('--disable-gpu')
+                chrome_options.add_argument("--lang=en-US") 
+                chrome_options.add_experimental_option("prefs", {
+                    "intl.accept_languages": "en,en_US",
+                    "profile.default_content_setting_values.geolocation": 2, 
+
+                })
                 
+                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                chrome_options.add_argument(f"user-agent={user_agent}")
+                chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+
+
+
                 # Initialize Chrome driver
                 driver = webdriver.Chrome(options=chrome_options)
                 url = form.cleaned_data['url']
                 print(f"Attempting to access URL: {url}")
                 
                 driver.get(url)
+
+                try:
+                    cookie_button = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((
+                            By.XPATH,
+                            "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'accept') or " +
+                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'agree') or " +
+                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'allow')]"))
+                    )
+                    cookie_button.click()
+
+                    WebDriverWait(driver, 5).until_not(EC.presence_of_element_located((By.XPATH,
+                                            "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'accept') or " +
+                                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'agree') or " +
+                                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'allow')]"))
+                    )
+                except:
+                    print("No cookie banner found or clickable :3")
                 print("Successfully loaded page")
                 
                 # Get page title and content
@@ -1088,3 +1121,24 @@ def save_web_archive(request):
 def web_archive(request):
     archives = WebArchive.objects.filter(user=request.user)
     return render(request, 'web_archive.html', {'archives': archives})
+
+@email_verified_required
+@login_required
+def delete_web_archive(request, archive_id):
+    if request.method == 'POST':
+        try:
+            archive = get_object_or_404(WebArchive, id=archive_id, user=request.user)
+            
+            if archive.screenshot:
+                try:
+                    archive.screenshot.delete(save=False)
+                except:
+                    pass 
+            
+            archive.delete()
+            
+        except Exception as e:
+            messages.error(request, f"Error deleting archive: {str(e)}")
+            
+    return redirect('web_archive')
+
