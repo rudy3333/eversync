@@ -72,7 +72,8 @@ urlpatterns = [
     path('api/update_device_token/', views.update_device_token, name='update_device_token'),
     path('web_archive/', views.web_archive, name='web_archive'),
     path('web_archive/save/', views.save_web_archive, name='save_web_archive'),
-    path('web_archive/delete/<int:archive_id>', views.delete_web_archive, name='delete_web_archive')
+    path('web_archive/delete/<int:archive_id>', views.delete_web_archive, name='delete_web_archive'),
+    path('web_archive/view/<int:archive_id>', views.view_web_archive, name='view_web_archive')
 ]   
 
 if settings.DEBUG:

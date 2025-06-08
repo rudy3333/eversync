@@ -1040,14 +1040,11 @@ def save_web_archive(request):
                 chrome_options.add_experimental_option("prefs", {
                     "intl.accept_languages": "en,en_US",
                     "profile.default_content_setting_values.geolocation": 2, 
-
                 })
                 
                 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
                 chrome_options.add_argument(f"user-agent={user_agent}")
                 chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-
-
 
                 # Initialize Chrome driver
                 driver = webdriver.Chrome(options=chrome_options)
@@ -1073,11 +1070,18 @@ def save_web_archive(request):
                     )
                 except:
                     print("No cookie banner found or clickable :3")
-                print("Successfully loaded page")
-                
+
+                WebDriverWait(driver, 10).until(
+                    lambda driver: driver.execute_script('return document.readyState') == 'complete'
+                )
+
                 # Get page title and content
                 title = driver.title or url
-                content = driver.page_source
+                
+                content = driver.execute_script("""
+                    return new XMLSerializer().serializeToString(document);
+                """)
+                
                 print(f"Page title: {title}")
                 
                 # Take screenshot
@@ -1085,7 +1089,8 @@ def save_web_archive(request):
                 print("Screenshot taken successfully")
                 
                 # Create archive instance with user
-                archive = form.save(commit=False, user=request.user)
+                archive = form.save(commit=False)
+                archive.user = request.user
                 archive.title = title
                 archive.content = content
                 archive.save()
@@ -1141,4 +1146,10 @@ def delete_web_archive(request, archive_id):
             messages.error(request, f"Error deleting archive: {str(e)}")
             
     return redirect('web_archive')
+
+@email_verified_required
+@login_required
+def view_web_archive(request, archive_id):
+    archive = get_object_or_404(WebArchive, id=archive_id, user=request.user)
+    return render(request, 'view_web_archive.html', {'archive': archive})
 

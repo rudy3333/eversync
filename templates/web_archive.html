@@ -175,6 +175,9 @@
                         <p class="archive-url">{{ archive.url }}</p>
                         <p class="archive-date">{{ archive.created_at|date:"F j, Y" }}</p>
                         <div class="archive-actions">
+                            <a href="{% url 'view_web_archive' archive.id %}" class="btn btn-primary">
+                                <i class="fa-solid fa-eye"></i> View
+                            </a>
                             <a href="{{ archive.url }}" target="_blank" class="btn btn-secondary">
                                 <i class="fa-solid fa-external-link"></i> Visit
                             </a>

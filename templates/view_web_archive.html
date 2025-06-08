@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}">
+    <style>
+        .archive-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .archive-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .archive-title {
+            font-size: 24px;
+            color: #333;
+        }
+        .archive-meta {
+            color: #666;
+            font-size: 14px;
+        }
+        .archive-content {
+            margin-top: 20px;
+        }
+        .archive-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .archive-frame {
+            width: 100%;
+            height: 800px;
+            border: none;
+            margin-top: 20px;
+        }
+        .view-toggle {
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+        }
+        .raw-html {
+            display: none;
+            background: #282c34;
+            padding: 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-top: 20px;
+            position: relative;
+        }
+        .raw-html.active {
+            display: block;
+        }
+        .archive-frame.active {
+            display: block;
+        }
+        .archive-frame.hidden {
+            display: none;
+        }
+        .html-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .html-controls button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .html-controls button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .code-block {
+            margin: 0;
+            padding: 0;
+        }
+        .hljs {
+            background: transparent !important;
+            padding: 0 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo" >eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="archive-container">
+        <div class="archive-header">
+            <div>
+                <h1 class="archive-title">{{ archive.title }}</h1>
+                <p class="archive-meta">
+                    Archived on {{ archive.created_at|date:"F j, Y" }} from 
+                    <a href="{{ archive.url }}" target="_blank">{{ archive.url }}</a>
+                </p>
+            </div>
+            <div class="archive-actions">
+                <a href="{% url 'web_archive' %}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Archives
+                </a>
+            </div>
+        </div>
+
+        {% if archive.screenshot %}
+        <img src="{{ archive.screenshot.url }}" alt="Archive screenshot" style="max-width: 100%; height: auto; margin-bottom: 20px;">
+        {% endif %}
+
+        <div class="view-toggle">
+            <button class="btn btn-primary" onclick="toggleView()">
+                <i class="fa-solid fa-code"></i> Toggle Raw HTML
+            </button>
+            <button class="btn btn-secondary" onclick="copyHtml()">
+                <i class="fa-solid fa-copy"></i> Copy HTML
+            </button>
+        </div>
+
+        <div class="archive-content">
+            <iframe srcdoc="{{ archive.content }}" class="archive-frame"></iframe>
+            <div class="raw-html">
+                <div class="html-controls">
+                    <button onclick="copyHtml()">
+                        <i class="fa-solid fa-copy"></i> Copy
+                    </button>
+                    <button onclick="downloadHtml()">
+                        <i class="fa-solid fa-download"></i> Download
+                    </button>
+                </div>
+                <pre class="code-block"><code class="language-html">{{ archive.content }}</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        function toggleView() {
+            const iframe = document.querySelector('.archive-frame');
+            const rawHtml = document.querySelector('.raw-html');
+            
+            iframe.classList.toggle('active');
+            iframe.classList.toggle('hidden');
+            rawHtml.classList.toggle('active');
+            
+            if (rawHtml.classList.contains('active')) {
+                hljs.highlightAll();
+            }
+        }
+
+        function copyHtml() {
+            const htmlContent = `{{ archive.content|escapejs }}`;
+            navigator.clipboard.writeText(htmlContent).then(() => {
+                alert('HTML copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy HTML:', err);
+            });
+        }
+
+        function downloadHtml() {
+            const htmlContent = `{{ archive.content|escapejs }}`;
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'archive.html';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        // Initialize syntax highlighting when the page loads
+        document.addEventListener('DOMContentLoaded', (event) => {
+            hljs.highlightAll();
+        });
+    </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggle = document.querySelector('.dropdown-toggle');
+        const menu = document.querySelector('.dropdown-menu');
+        toggle.addEventListener('click', function () {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+    });
+
+    const toggle = document.getElementById("themeToggle");
+    const root = document.documentElement;
+
+    if (localStorage.getItem("theme") === "dark") {
+        root.classList.add("dark");
+    }
+
+    toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+        if (root.classList.contains("dark")) {
+            localStorage.setItem("theme", "dark");
+        } else {
+            localStorage.setItem("theme", "light");
+        }
+    });
+</script>
+</body>
+</html> 
