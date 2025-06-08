@@ -1,0 +1,103 @@
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>Archive Web Page</h1>
+        <a href="{% url 'web_archive' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Back to Archives
+        </a>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" class="archive-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.url.id_for_label }}">URL to Archive</label>
+                {{ form.url }}
+                {% if form.url.errors %}
+                <div class="error-message">{{ form.url.errors }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-camera"></i> Take Screenshot
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.form-container {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.archive-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+</style>
+{% endblock %} 

@@ -70,12 +70,8 @@ urlpatterns = [
     path('whiteboard/<int:whiteboard_id>/upload-image/', views.upload_image, name='upload_image'),
     path('whiteboard/<int:whiteboard_id>/delete-image/', views.delete_image, name='delete_image'),
     path('api/update_device_token/', views.update_device_token, name='update_device_token'),
-
-
-
-
-
-
+    path('web_archive/', views.web_archive, name='web_archive'),
+    path('web_archive/save/', views.save_web_archive, name='save_web_archive'),
 ]
 
 if settings.DEBUG:

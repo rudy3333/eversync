@@ -3,12 +3,15 @@ from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.core.files import File
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 # Create your views here.
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm, TaskForm
-from .models import Document, Event, Notes, Embed, Task, RichDocument, Message
+from .models import Document, Event, Notes, Embed, Task, RichDocument, Message, WebArchive
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
@@ -29,7 +32,7 @@ from .embed_utils import get_embed_info
 from .models import Whiteboard, Stroke
 from eversyncc.email import verify_token
 from django.contrib.auth import get_user_model
-from .forms import EmailUpdateForm
+from .forms import EmailUpdateForm, WebArchiveForm
 from allauth.account.utils import send_email_confirmation
 from functools import wraps
 from .forms import RegisterForm
@@ -41,6 +44,7 @@ from .models import UserNotifs
 import aiohttp
 import asyncio
 from asgiref.sync import sync_to_async
+import selenium
 
 def email_verified_required(view_func):
     @wraps(view_func)
@@ -1014,3 +1018,73 @@ def update_device_token(request):
         return JsonResponse({"message": "Device token updated"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+    
+@email_verified_required
+@login_required
+def save_web_archive(request):
+    if request.method == 'POST':
+        form = WebArchiveForm(request.POST)
+        if form.is_valid():
+            driver = None
+            try:
+                # Set up Chrome options
+                chrome_options = Options()
+                chrome_options.add_argument('--headless=new')
+                chrome_options.add_argument('--no-sandbox')
+                chrome_options.add_argument('--disable-dev-shm-usage')
+                chrome_options.add_argument('--disable-gpu')
+                
+                # Initialize Chrome driver
+                driver = webdriver.Chrome(options=chrome_options)
+                url = form.cleaned_data['url']
+                print(f"Attempting to access URL: {url}")
+                
+                driver.get(url)
+                print("Successfully loaded page")
+                
+                # Get page title and content
+                title = driver.title or url
+                content = driver.page_source
+                print(f"Page title: {title}")
+                
+                # Take screenshot
+                screenshot = driver.get_screenshot_as_png()
+                print("Screenshot taken successfully")
+                
+                # Create archive instance with user
+                archive = form.save(commit=False, user=request.user)
+                archive.title = title
+                archive.content = content
+                archive.save()
+                print("Archive saved successfully")
+                
+                # Now save the screenshot
+                with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+                    tmp.write(screenshot)
+                    print(f"Saving screenshot to: {tmp.name}")
+                    archive.screenshot.save(f'archive_{archive.id}.png', File(open(tmp.name, 'rb')))
+                    archive.save()
+                
+                messages.success(request, "Page archived successfully!")
+                return redirect('web_archive')
+                
+            except Exception as e:
+                print(f"Error in save_web_archive: {str(e)}")
+                messages.error(request, f"Error archiving page: {str(e)}")
+                return redirect('web_archive')
+            finally:
+                if driver:
+                    try:
+                        driver.quit()
+                        print("Chrome driver closed successfully")
+                    except Exception as e:
+                        print(f"Error closing Chrome driver: {str(e)}")
+    else:
+        form = WebArchiveForm()
+    return render(request, 'save_web_archive.html', {'form': form})
+
+@email_verified_required
+@login_required
+def web_archive(request):
+    archives = WebArchive.objects.filter(user=request.user)
+    return render(request, 'web_archive.html', {'archives': archives})

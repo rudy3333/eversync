@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import Document, Event, Notes, Task
+from .models import Document, Event, Notes, Task, WebArchive
 from django_recaptcha.fields import ReCaptchaField
 from django_recaptcha.widgets import ReCaptchaV2Checkbox
 
@@ -57,3 +57,19 @@ class TaskForm(forms.ModelForm):
 
 class EmailUpdateForm(forms.Form):
     email = forms.EmailField(label="Your email", required=True)
+
+class WebArchiveForm(forms.ModelForm):
+    class Meta:
+        model = WebArchive
+        fields = ['url']
+        widgets = {
+            'url': forms.URLInput(attrs={'placeholder': 'Enter URL to archive'})
+        }
+
+    def save(self, commit=True, user=None):
+        instance = super().save(commit=False)
+        if user:
+            instance.user = user
+        if commit:
+            instance.save()
+        return instance
