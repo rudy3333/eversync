@@ -73,6 +73,7 @@ WEBPUSH_SETTINGS = {
 
 
 MIDDLEWARE = [
+    'eversyncc.middleware.tor_blocker.BlockTorMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -80,8 +81,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
-    'eversyncc.middleware.tor_blocker.BlockTorMiddleware'
+    "allauth.account.middleware.AccountMiddleware"
 ]
 
 ROOT_URLCONF = 'eversync.urls'
@@ -202,3 +202,6 @@ sentry_sdk.init(
     profile_lifecycle="trace"
 
 )
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

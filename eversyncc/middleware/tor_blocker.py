@@ -1,29 +1,46 @@
 import requests
 from django.http import HttpResponse
-
-def load_tor_exit_nodes():
-    try:
-        response = requests.get("https://check.torproject.org/torbulkexitlist")
-        if response.status_code == 200:
-            return set(response.text.strip().split("\n"))
-    except Exception:
-        pass
-    return set()
-
-TOR_EXIT_NODES = load_tor_exit_nodes()
-
-def is_tor_ip(ip):
-    return ip in TOR_EXIT_NODES
+import ipaddress
 
 class BlockTorMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
+        self.tor_ips = self.fetch_tor_exit_nodes()
 
     def __call__(self, request):
-        ip = request.META.get('REMOTE_ADDR')
-        if ip and is_tor_ip(ip):
-            return HttpResponse(
-                "<html><body><h1>🐾 Access Denied</h1><p>We don’t allow connections from Tor exit nodes. Please try again without Tor. Love you!</p></body></html>",
-                status=403
-            )
+        ip_list = self.get_client_ips(request)
+        normalized_ips = [self.normalize_ip(ip) for ip in ip_list]
+
+        for ip in normalized_ips:
+            if ip in self.tor_ips:
+                return HttpResponse(
+                    "<html><body><h1>Access Denied</h1><p>You're accessing from a Tor exit node. No onions here.</p></body></html>",
+                    status=403
+                )
+
         return self.get_response(request)
+
+    def fetch_tor_exit_nodes(self):
+        try:
+            print("Fetching Tor exit node list...")
+            response = requests.get("https://www.dan.me.uk/torlist/")
+            if response.status_code == 200:
+                raw_ips = response.text.strip().splitlines()
+                nodes = set(str(ipaddress.ip_address(ip.strip())) for ip in raw_ips)
+                print(f"Loaded {len(nodes)} normalized Tor exit IPs")
+                return nodes
+        except Exception as e:
+            print(f"Error fetching Tor list: {e}")
+        return set()
+
+    def get_client_ips(self, request):
+        forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
+        if forwarded:
+            return [ip.strip() for ip in forwarded.split(",")]
+        return [request.META.get("REMOTE_ADDR", "")]
+
+    def normalize_ip(self, ip):
+        try:
+            return str(ipaddress.ip_address(ip))
+        except ValueError:
+            return ip

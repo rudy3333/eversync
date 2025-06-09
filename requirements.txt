@@ -26,3 +26,4 @@ django-recaptcha
 google-auth
 selenium
 pyclamd
+ipaddress
