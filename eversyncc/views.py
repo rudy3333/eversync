@@ -695,17 +695,14 @@ def stream_song(request):
             'format': 'bestaudio[ext=m4a]/bestaudio/best',
             'noplaylist': 'true',
             'outtmpl': f'{tmpdir}/%(title)s.%(ext)s',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-            }],
+            'postprocessors': [],
             'quiet': True,
             'cookiefile': '/code/cookies.txt'
         }
 
         with YoutubeDL(ytpdl_options) as ytpdl:
             info = ytpdl.extract_info(f"ytsearch1:{query} topic", download=True)
-            filepath = ytpdl.prepare_filename(info['entries'][0]).replace('.webm', '.mp3').replace('.m4a', '.mp3')
+            filepath = ytpdl.prepare_filename(info['entries'][0]).replace('.webm', '.mp3')
         return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
 
 @email_verified_required

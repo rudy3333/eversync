@@ -24,3 +24,4 @@ yt-dlp
 sendgrid
 django-recaptcha
 google-auth
+selenium
