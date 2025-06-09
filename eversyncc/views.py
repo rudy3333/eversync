@@ -48,6 +48,24 @@ from asgiref.sync import sync_to_async
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import selenium
+import pyclamd
+
+def scan_file_with_clamav(file_path):
+    try:
+        cd = pyclamd.ClamdNetworkSocket(host='127.0.0.1', port=3310)
+
+        # Try to ping the daemon first! 🐱
+        if cd.ping():
+            print("ClamAV is alive~ :3")
+            result = cd.scan_file(file_path)
+            return result or None  # clean = None, infected = dict!
+        else:
+            print("ClamAV didn't respond :c")
+            return {"error": "ClamAV not responding"}
+    except pyclamd.ConnectionError as e:
+        return {"error": f"ConnectionError: {str(e)}"}
+    except Exception as e:
+        return {"error": f"Unexpected error: {str(e)}"}
 
 def email_verified_required(view_func):
     @wraps(view_func)
@@ -161,6 +179,36 @@ def upload_file(request):
                 request.session.flush()
                 logout(request)
                 return HttpResponse("<html><body><script>alert('Uploading possibly malicious files is forbidden. You have been logged out.'); location.reload();</script></body></html>")
+            
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                for chunk in document.file.chunks():
+                    temp_file.write(chunk)
+                temp_file.flush()
+                temp_file_path = temp_file.name
+
+            os.chmod(temp_file_path, 0o644)
+
+            scan_result = scan_file_with_clamav(temp_file_path)
+
+            os.remove(temp_file_path)
+            if scan_result is not None:
+                if isinstance(scan_result, dict):
+                    if "error" in scan_result:
+                        error_message = f"ClamAV error: {scan_result['error']}"
+                    else:
+                        # infection detected
+                        file_name, (status, virus_name) = next(iter(scan_result.items()))
+                        error_message = f"File is infected with: {virus_name}"
+                else:
+                    error_message = "File blocked for unknown reason."
+
+                return HttpResponse(f"""
+                <html><body><script>
+                    alert('Upload blocked: {error_message}');
+                    window.history.back();
+                </script></body></html>
+                """)
+        
             user_storage = request.user.userstorage
             if user_storage.used_storage + file_size > user_storage.storage_limit:
               return HttpResponse(

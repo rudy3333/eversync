@@ -25,3 +25,4 @@ sendgrid
 django-recaptcha
 google-auth
 selenium
+pyclamd
