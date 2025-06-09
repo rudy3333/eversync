@@ -95,18 +95,29 @@
                 </a>
             </div>
             <script>
+                const meowAudio = new Audio("{% static 'sounds/meow.mp3' %}");
+                let userInteracted = false;
+            
+                document.addEventListener("click", () => {
+                    userInteracted = true;
+                });
+            
                 async function fetchAffirmation() {
                     const res = await fetch("/api/affirmation/");
                     const data = await res.json();
                     document.getElementById("affirmation-box").innerText = data.affirmation;
                 }
-
+            
                 async function checkUnseenMessages() {
                     const res = await fetch("/inbox/");
                     const data = await res.json();
                     const notification = document.getElementById("message-notification");
+                    const wasVisible = notification.style.display === "block";
                     if (data.has_unseen) {
                         notification.style.display = "block";
+                        if (!wasVisible && userInteracted) {
+                            meowAudio.play();
+                        }
                     } else {
                         notification.style.display = "none";
                     }

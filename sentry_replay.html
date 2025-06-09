@@ -200,18 +200,28 @@
 <script>
 // Notification overlay logic
 document.addEventListener('DOMContentLoaded', () => {
-  if (typeof Notification !== "undefined" && Notification.permission === 'default') {
-    document.getElementById('notif-overlay').style.display = 'flex';
+  const overlay = document.getElementById('notif-overlay');
+  const userDenied = localStorage.getItem('notifDenied') === 'true';
+
+  if (typeof Notification !== "undefined") {
+    if (Notification.permission === 'default' && !userDenied) {
+      overlay.style.display = 'flex';
+    } else {
+      overlay.style.display = 'none';
+      console.log('Notification permission is:', Notification.permission);
+    }
   }
 });
 
 document.getElementById('enable-notifs-btn').addEventListener('click', () => {
+  const overlay = document.getElementById('notif-overlay');
+
   if (typeof Notification !== "undefined") {
     if (Notification.permission === 'default') {
       Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
-          document.getElementById('notif-overlay').style.display = 'none';
-          document.getElementById('notif-box').style.display = 'none';
+          overlay.style.display = 'none';
+          localStorage.setItem('notifDenied', 'false');
           navigator.serviceWorker.register('/static/firebase-messaging-sw.js')
             .then((registration) => {
               messaging.getToken({
@@ -222,25 +232,20 @@ document.getElementById('enable-notifs-btn').addEventListener('click', () => {
                   console.log('FCM token:', currentToken);
                   sendTokenToBackend(currentToken);
                 }
-
               });
             }).catch((err) => {
               console.error('Service worker registration failed:', err);
-              document.getElementById('notif-overlay').style.display = 'none';
-              document.getElementById('notif-box').style.display = 'none';
-
             });
         } else {
           console.log('Notification permission denied or dismissed.');
-          document.getElementById('notif-overlay').style.display = 'none';
-          document.getElementById('notif-box').style.display = 'none';
-
+          overlay.style.display = 'none';
+          localStorage.setItem('notifDenied', 'true');
         }
       });
     } else {
-      console.log('Permission already decided: ' + Notification.permission);
-      document.getElementById('notif-box').style.display = 'none';
-      document.getElementById('notif-overlay').style.display = 'none';
+      console.log('Permission already decided:', Notification.permission);
+      overlay.style.display = 'none';
+      localStorage.setItem('notifDenied', 'false');
     }
   }
 });
