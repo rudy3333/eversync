@@ -45,6 +45,7 @@ urlpatterns = [
     path('save-document/', views.save_document, name='save_document'),
     path('documents/<int:doc_id>/', views.view_document, name='view_document'),
     path('documents/<int:doc_id>/delete/', views.delete_document, name='delete_document'),
+    path('documents/<int:doc_id>/edit/', views.edit_document, name='edit_document'),
     path('send/', views.send_message, name='send_message'),
     path('inbox/', views.inbox, name='inbox'),
     path('outbox/', views.sent_messages, name="outbox"),

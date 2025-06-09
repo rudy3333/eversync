@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Document - Eversync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    {% load static %}
+    <link rel="icon" href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    {% block scripts %}
+        {% include "sentry_replay.html" %}
+    {% endblock %}
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+        }
+
+        :root.dark body {
+            background-color: #18191a;
+        }
+
+        .header {
+            height: 80px;
+            flex-shrink: 0;
+        }
+
+        #editor-container {
+            flex: 1;
+            margin: 20px;
+            background-color: #fff;
+            color: #444;
+        }
+
+        .editor-controls {
+            margin: 0 20px 20px;
+        }
+
+        .editor-controls button {
+            margin-right: 10px;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #3a3a3a;
+            color: white;
+        }
+
+        .editor-controls button:hover {
+            background-color: #555;
+        }
+
+        .dropdown-menu {
+            z-index: 100;
+        }
+
+        /* Custom styles for Quill toolbar */
+        .ql-container.ql-snow {
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        .ql-editor {
+            background-color: #fff;
+            color: #444;
+        }
+
+        .ql-editor::before {
+            color: #999 !important;
+        }
+
+        .ql-toolbar.ql-snow {
+            border: 1px solid #ccc;
+            background-color: #fff;
+            color: #444;
+        }
+
+        .ql-toolbar.ql-snow .ql-formats {
+            margin-right: 15px;
+            border-right: 1px solid #ccc;
+            padding-right: 15px;
+        }
+
+        .ql-toolbar.ql-snow .ql-formats:last-child {
+            border-right: none;
+            padding-right: 0;
+            margin-right: 0;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker {
+            color: #444;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-label {
+            color: #444;
+        }
+
+        .ql-toolbar.ql-snow .ql-picker-arrow {
+            border-color: #444 transparent transparent transparent;
+        }
+
+        .ql-snow .ql-stroke {
+            stroke: #444;
+        }
+
+        .ql-snow .ql-fill {
+            fill: #444;
+        }
+
+        .ql-snow .ql-picker.ql-expanded .ql-picker-options {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        .ql-snow .ql-picker-options .ql-picker-item {
+            color: #444;
+        }
+
+        /* Dark mode styles */
+        :root.dark {
+            #editor-container {
+                background-color: #18191a;
+                color: white;
+            }
+
+            .ql-container.ql-snow {
+                border: 1px solid #18191a;
+            }
+
+            .ql-toolbar.ql-snow {
+                border: 1px solid #18191a;
+                border-bottom: 1px solid #18191a;
+                background-color: #333;
+                color: white;
+            }
+
+            .ql-editor {
+                background-color: #18191a;
+                color: white;
+            }
+
+            .ql-toolbar.ql-snow .ql-formats {
+                margin-right: 15px;
+                border-right: 1px solid #18191a;
+                padding-right: 15px;
+            }
+
+            .ql-toolbar.ql-snow .ql-formats:last-child {
+                border-right: none;
+                padding-right: 0;
+                margin-right: 0;
+            }
+
+            .ql-toolbar.ql-snow .ql-picker {
+                color: white;
+                border: 1px solid #18191a;
+                background-color: #444;
+            }
+
+            .ql-toolbar.ql-snow .ql-picker-label {
+                color: white;
+            }
+
+            .ql-toolbar.ql-snow .ql-picker-arrow {
+                border-color: white transparent transparent transparent;
+            }
+
+            .ql-snow .ql-stroke {
+                stroke: white;
+            }
+
+            .ql-snow .ql-fill {
+                fill: white;
+            }
+
+            .ql-snow .ql-picker.ql-expanded .ql-picker-options {
+                background-color: #444;
+                border: 1px solid #18191a;
+            }
+
+            .ql-snow .ql-picker-options .ql-picker-item {
+                color: white;
+            }
+
+            #editor-container .ql-editor::before {
+                color: white !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="/"><img src="{% static 'eversync2.png' %}" alt="Eversync Logo" style="height: 80px; margin-right: 10px; display: flex; align-items: center; gap: 5px;"></a>
+            <a href="/" class="logo">eversync</a>
+            <div class="nav-links" style="position: relative;">
+                <div class="dropdown">
+                    <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                        Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
+                        <form action="{% url 'manage' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
+                        </form>
+                        <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
+                        </form>
+                        <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toolbar-container">
+        <span class="ql-formats">
+            <select class="ql-font"></select>
+            <select class="ql-size"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+            <button class="ql-strike"></button>
+        </span>
+        <span class="ql-formats">
+            <select class="ql-color"></select>
+            <select class="ql-background"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+            <select class="ql-align"></select>
+        </span>
+        <span class="ql-formats">
+            <button class="ql-link"></button>
+            <button class="ql-image"></button>
+            <button class="ql-code-block"></button>
+        </span>
+    </div>
+
+    <div id="editor-container"></div>
+
+    <div class="editor-controls">
+        <form id="document-form" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="title" id="document-title" value="{{ document.title }}">
+            <input type="hidden" name="content" id="document-content">
+            <button type="submit" class="save-button">Save Changes</button>
+            <a href="{% url 'document_list' %}" class="cancel-button">Cancel</a>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.querySelector('.dropdown-toggle');
+            const menu = document.querySelector('.dropdown-menu');
+            toggle.addEventListener('click', function () {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // Initialize Quill
+            var quill = new Quill('#editor-container', {
+                modules: {
+                    toolbar: '#toolbar-container'
+                },
+                placeholder: 'Start writing...',
+                theme: 'snow'
+            });
+
+            // Set initial content
+            quill.root.innerHTML = `{{ document.content|safe }}`;
+
+            // Handle form submission
+            document.getElementById('document-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                document.getElementById('document-content').value = quill.root.innerHTML;
+                this.submit();
+            });
+        });
+
+        const toggle = document.getElementById("themeToggle");
+        const root = document.documentElement;
+
+        if (localStorage.getItem("theme") === "dark") {
+            root.classList.add("dark");
+        }
+
+        toggle.addEventListener("click", () => {
+            root.classList.toggle("dark");
+            if (root.classList.contains("dark")) {
+                localStorage.setItem("theme", "dark");
+            } else {
+                localStorage.setItem("theme", "light");
+            }
+        });
+    </script>
+</body>
+</html> 

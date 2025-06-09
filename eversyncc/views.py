@@ -640,6 +640,19 @@ def delete_document(request, doc_id):
 
 @email_verified_required
 @login_required
+def edit_document(request, doc_id):
+    document = get_object_or_404(RichDocument, id=doc_id, owner=request.user)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        document.title = title
+        document.content = content
+        document.save()
+        return redirect('document_list')
+    return render(request, 'edit_document.html', {'document': document})
+
+@email_verified_required
+@login_required
 def get_document(request, id=None):
     try:
         doc = RichDocument.objects.get(pk=id)

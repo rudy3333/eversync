@@ -98,18 +98,30 @@
                             <a href="{% url 'view_document' doc.id %}" style="font-weight: bold;">{{ doc.title }}</a>
                             <div style="font-size: 12px; color: #555;">Last edited: {{ doc.updated_at|date:"F j, Y, g:i a" }}</div>
                         </div>
-                        <form method="post" action="{% url 'delete_document' doc.id %}">
-                            {% csrf_token %}
-                            <button type="submit" style="
-                                background-color: #e74c3c;
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{% url 'edit_document' doc.id %}" style="
+                                background-color: #3498db;
                                 color: white;
                                 border: none;
                                 padding: 6px 10px;
                                 font-size: 12px;
                                 border-radius: 4px;
                                 cursor: pointer;
-                            ">Delete</button>
-                        </form>
+                                text-decoration: none;
+                            ">Edit</a>
+                            <form method="post" action="{% url 'delete_document' doc.id %}">
+                                {% csrf_token %}
+                                <button type="submit" style="
+                                    background-color: #e74c3c;
+                                    color: white;
+                                    border: none;
+                                    padding: 6px 10px;
+                                    font-size: 12px;
+                                    border-radius: 4px;
+                                    cursor: pointer;
+                                ">Delete</button>
+                            </form>
+                        </div>
                     </div>
                     <div class="divider"></div>
                 </div>
