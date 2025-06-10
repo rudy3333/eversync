@@ -74,7 +74,8 @@ urlpatterns = [
     path('web_archive/', views.web_archive, name='web_archive'),
     path('web_archive/save/', views.save_web_archive, name='save_web_archive'),
     path('web_archive/delete/<int:archive_id>', views.delete_web_archive, name='delete_web_archive'),
-    path('web_archive/view/<int:archive_id>', views.view_web_archive, name='view_web_archive')
+    path('web_archive/view/<int:archive_id>', views.view_web_archive, name='view_web_archive'),
+    path('update_profile_picture/', views.update_profile_picture, name='update_profile_picture'),
 ]   
 
 if settings.DEBUG:

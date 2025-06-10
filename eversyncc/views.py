@@ -1211,3 +1211,18 @@ def view_web_archive(request, archive_id):
     archive = get_object_or_404(WebArchive, id=archive_id, user=request.user)
     return render(request, 'view_web_archive.html', {'archive': archive})
 
+@email_verified_required
+@login_required
+def update_profile_picture(request):
+    if request.method == 'POST':
+        if 'profile_picture' in request.FILES:
+            if request.user.profile.profile_picture:
+                request.user.profile.profile_picture.delete()
+            
+            request.user.profile.profile_picture = request.FILES['profile_picture']
+            request.user.profile.save()
+            messages.success(request, "Profile picture updated successfully!")
+        else:
+            messages.error(request, "No image file provided.")
+    return redirect('manage')
+

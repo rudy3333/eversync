@@ -71,6 +71,24 @@
 
         <div class="welcome-section" style="display: flex; gap: 20px;">
             <div class="welcome-box" style="width: 20%;">
+                <h2>Profile Picture</h2>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 10px;">
+                    {% else %}
+                        <div style="width: 150px; height: 150px; border-radius: 50%; background-color: #e0e0e0; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto;">
+                            <i class="fas fa-user" style="font-size: 60px; color: #666;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <form method="post" action="{% url 'update_profile_picture' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="file" name="profile_picture" accept="image/*" style="margin-bottom: 10px; width: 90%;" required>
+                    <button type="submit" style="background-color: #4CAF50; color: white; border: 1px solid #4CAF50; padding: 8px 16px; border-radius: 4px; cursor: pointer; width: auto; font-size: 14px;">Update Picture</button>
+                </form>
+            </div>
+
+            <div class="welcome-box" style="width: 20%;">
                 <h2>Change Username</h2>
                 <form method="post" action="{% url 'change_username' %}">
                     {% csrf_token %}
