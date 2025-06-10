@@ -10,13 +10,44 @@
     <link rel="icon" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href="{% static 'index-style.css' %}">
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --border-color: #dddddd;
+            --shadow-color: rgba(0,0,0,0.1);
+            --meta-color: #666666;
+            --link-color: #007bff;
+            --code-bg: #282c34;
+            --code-controls-bg: rgba(255, 255, 255, 0.1);
+            --code-controls-hover: rgba(255, 255, 255, 0.2);
+        }
+
+        .dark {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+            --shadow-color: rgba(0,0,0,0.3);
+            --meta-color: #b0b0b0;
+            --link-color: #4dabff;
+            --code-bg: #1e1e1e;
+            --code-controls-bg: rgba(255, 255, 255, 0.1);
+            --code-controls-hover: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
         .archive-container {
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
-            background: white;
+            background: var(--card-bg);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px var(--shadow-color);
         }
         .archive-header {
             display: flex;
@@ -24,15 +55,23 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
         }
         .archive-title {
             font-size: 24px;
-            color: #333;
+            color: var(--text-color);
         }
         .archive-meta {
-            color: #666;
+            color: var(--meta-color);
             font-size: 14px;
+        }
+        .archive-meta a {
+            color: var(--link-color);
+            text-decoration: none;
+        }
+
+        .archive-meta a:hover {
+            text-decoration: underline;
         }
         .archive-content {
             margin-top: 20px;
@@ -51,6 +90,11 @@
             font-size: 0.9em;
             cursor: pointer;
             border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
         }
         .btn-primary {
             background: #007bff;
@@ -65,6 +109,7 @@
             height: 800px;
             border: none;
             margin-top: 20px;
+            background: var(--bg-color);
         }
         .view-toggle {
             margin: 10px 0;
@@ -73,7 +118,7 @@
         }
         .raw-html {
             display: none;
-            background: #282c34;
+            background: var(--code-bg);
             padding: 20px;
             border-radius: 4px;
             overflow-x: auto;
@@ -97,16 +142,17 @@
             gap: 5px;
         }
         .html-controls button {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--code-controls-bg);
             border: none;
             color: white;
             padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.8em;
+            transition: background-color 0.2s;
         }
         .html-controls button:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--code-controls-hover);
         }
         .code-block {
             margin: 0;
@@ -197,27 +243,36 @@
         function toggleView() {
             const iframe = document.querySelector('.archive-frame');
             const rawHtml = document.querySelector('.raw-html');
-            
-            iframe.classList.toggle('active');
-            iframe.classList.toggle('hidden');
-            rawHtml.classList.toggle('active');
+            const toggleBtn = document.querySelector('.view-toggle .btn-primary');
             
             if (rawHtml.classList.contains('active')) {
+                // Switch to iframe view
+                iframe.classList.add('active');
+                iframe.classList.remove('hidden');
+                rawHtml.classList.remove('active');
+                toggleBtn.innerHTML = '<i class="fa-solid fa-code"></i> Toggle Raw HTML';
+            } else {
+                // Switch to raw HTML view
+                iframe.classList.remove('active');
+                iframe.classList.add('hidden');
+                rawHtml.classList.add('active');
+                toggleBtn.innerHTML = '<i class="fa-solid fa-eye"></i> View Page';
                 hljs.highlightAll();
             }
         }
 
         function copyHtml() {
-            const htmlContent = `{{ archive.content|escapejs }}`;
+            const htmlContent = document.querySelector('.code-block code').textContent;
             navigator.clipboard.writeText(htmlContent).then(() => {
                 alert('HTML copied to clipboard!');
             }).catch(err => {
                 console.error('Failed to copy HTML:', err);
+                alert('Failed to copy HTML. Please try again.');
             });
         }
 
         function downloadHtml() {
-            const htmlContent = `{{ archive.content|escapejs }}`;
+            const htmlContent = document.querySelector('.code-block code').textContent;
             const blob = new Blob([htmlContent], { type: 'text/html' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -231,6 +286,13 @@
 
         // Initialize syntax highlighting when the page loads
         document.addEventListener('DOMContentLoaded', (event) => {
+            const iframe = document.querySelector('.archive-frame');
+            const rawHtml = document.querySelector('.raw-html');
+            
+            iframe.classList.add('active');
+            iframe.classList.remove('hidden');
+            rawHtml.classList.remove('active');
+            
             hljs.highlightAll();
         });
     </script>

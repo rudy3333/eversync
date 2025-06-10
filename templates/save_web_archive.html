@@ -13,6 +13,33 @@
     {% endblock %}
 
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --border-color: #dddddd;
+            --shadow-color: rgba(0,0,0,0.1);
+            --input-bg: #ffffff;
+            --input-border: #dddddd;
+            --error-color: #dc3545;
+        }
+
+        .dark {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+            --shadow-color: rgba(0,0,0,0.3);
+            --input-bg: #2d2d2d;
+            --input-border: #404040;
+            --error-color: #ff6b6b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
         .container {
             display: flex;
             gap: 30px;
@@ -30,13 +57,11 @@
             background: none;
         }
 
-
-
         .form-container {
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px var(--shadow-color);
         }
 
         .archive-form {
@@ -53,17 +78,25 @@
 
         .form-group label {
             font-weight: 500;
+            color: var(--text-color);
         }
 
         .form-group input {
             padding: 8px 12px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--input-border);
             border-radius: 4px;
             font-size: 1em;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
         }
 
         .error-message {
-            color: #dc3545;
+            color: var(--error-color);
             font-size: 0.9em;
             margin-top: 5px;
         }
@@ -78,6 +111,11 @@
             font-size: 1em;
             cursor: pointer;
             border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
         }
 
         .btn-primary {

@@ -13,6 +13,33 @@
     {% endblock %}
 
     <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --border-color: #dddddd;
+            --shadow-color: rgba(0,0,0,0.1);
+            --url-color: #666666;
+            --date-color: #888888;
+            --no-archives-bg: #f8f9fa;
+        }
+
+        .dark {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+            --border-color: #404040;
+            --shadow-color: rgba(0,0,0,0.3);
+            --url-color: #b0b0b0;
+            --date-color: #808080;
+            --no-archives-bg: #2d2d2d;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
         .container {
             display: flex;
             gap: 30px;
@@ -30,7 +57,6 @@
             background: none;
         }
 
-
         .archives-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -38,11 +64,11 @@
         }
 
         .archive-card {
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--card-bg);
+            box-shadow: 0 2px 4px var(--shadow-color);
         }
 
         .archive-screenshot {
@@ -56,14 +82,14 @@
         }
 
         .archive-url {
-            color: #666;
+            color: var(--url-color);
             font-size: 0.9em;
             margin: 5px 0;
             word-break: break-all;
         }
 
         .archive-date {
-            color: #888;
+            color: var(--date-color);
             font-size: 0.8em;
         }
 
@@ -83,6 +109,11 @@
             font-size: 0.9em;
             cursor: pointer;
             border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
         }
 
         .btn-primary {
@@ -104,8 +135,9 @@
             grid-column: 1 / -1;
             text-align: center;
             padding: 40px;
-            background: #f8f9fa;
+            background: var(--no-archives-bg);
             border-radius: 8px;
+            color: var(--text-color);
         }
 
         /* On mobile */
