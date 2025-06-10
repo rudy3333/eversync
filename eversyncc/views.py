@@ -886,6 +886,16 @@ def delete_stroke(request, whiteboard_id):
 
             stroke_to_delete = strokes[index]
             stroke_to_delete.delete()
+
+            fs = FileSystemStorage()
+            for img_data in whiteboard.images:
+                if isinstance(img_data, dict) and 'id' in img_data:
+                    try:
+                        fs.delete(f'whiteboard_images/{img_data["id"]}')
+                    except:
+                        pass
+            
+            whiteboard.images = []
             whiteboard.save()
 
 
@@ -904,7 +914,17 @@ def delete_all_strokes(request, whiteboard_id):
         try:
             whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
             Stroke.objects.filter(whiteboard=whiteboard).delete()
-            whiteboard.save()
+            
+            fs = FileSystemStorage()
+            for img_data in whiteboard.images:
+                if isinstance(img_data, dict) and 'id' in img_data:
+                    try:
+                        fs.delete(f'whiteboard_images/{img_data["id"]}')
+                    except:
+                        pass
+            
+            whiteboard.images = []
+            whiteboard.save()            
             return JsonResponse({'success': True})
         except Whiteboard.DoesNotExist:
             return JsonResponse({'error': 'Whiteboard not found'}, status=404)

@@ -209,7 +209,7 @@
                 });
 
                 document.getElementById('deleteAllBtn').addEventListener('click', function () {
-                    if (!confirm('Are you sure you want to delete all strokes?')) return;
+                    if (!confirm('Are you sure you want to delete all strokes and images?')) return;
 
                     fetch(`/whiteboard/{{ whiteboard.id }}/delete-all-strokes/`, {
                         method: 'POST',
@@ -221,7 +221,9 @@
                     .then(data => {
                         if (data.success) {
                             ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            console.log('All strokes deleted!');
+                            savedStrokes.length = 0;
+                            imagesOnCanvas.length = 0;
+                            console.log('All strokes and images deleted!');
                         } else {
                             console.error('Error deleting all strokes:', data.error);
                         }
@@ -377,6 +379,7 @@
                 .then(data => {
                     if (data.success) {
                         savedStrokes.splice(index, 1);
+                        imagesOnCanvas.length = 0;
                         redrawCanvas();
                     } else {
                         console.error('Delete stroke error:', data.error);
