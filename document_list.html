@@ -96,7 +96,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <a href="{% url 'view_document' doc.id %}" style="font-weight: bold;">{{ doc.title }}</a>
-                            <div style="font-size: 12px; color: #555;">Last edited: {{ doc.updated_at|date:"F j, Y, g:i a" }}</div>
+                            <div style="font-size: 12px; color: #555;">Last edited: <span class="local-time" data-utc="{{ doc.updated_at|date:'c' }}">{{ doc.updated_at|date:"F j, Y, g:i a" }}</span></div>
                         </div>
                         <div style="display: flex; gap: 8px;">
                             <a href="{% url 'edit_document' doc.id %}" style="
@@ -132,6 +132,20 @@
     </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Convert UTC times to local time
+        document.querySelectorAll('.local-time').forEach(function(element) {
+            const utcTime = element.getAttribute('data-utc');
+            const localTime = new Date(utcTime).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+            element.textContent = localTime;
+        });
+
         const toggle = document.querySelector('.dropdown-toggle');
         const menu = document.querySelector('.dropdown-menu');
         toggle.addEventListener('click', function () {
@@ -140,20 +154,20 @@
     });
 
     const toggle = document.getElementById("themeToggle");
-        const root = document.documentElement;
+    const root = document.documentElement;
 
-        if (localStorage.getItem("theme") === "dark") {
+    if (localStorage.getItem("theme") === "dark") {
         root.classList.add("dark");
-        }
+    }
 
-        toggle.addEventListener("click", () => {
+    toggle.addEventListener("click", () => {
         root.classList.toggle("dark");
         if (root.classList.contains("dark")) {
             localStorage.setItem("theme", "dark");
         } else {
             localStorage.setItem("theme", "light");
         }
-        });
+    });
 </script>
 </body>
 </html>
