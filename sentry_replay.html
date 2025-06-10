@@ -42,17 +42,71 @@
   }
 
   #notif-box.dark {
-  background-color: #222;
-  color: #eee;
-}
+    background-color: #222;
+    color: #eee;
+  }
+
+  .profile-pic {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid white;
+    box-shadow: #ccc 0px 0px 0px 1px;
+    margin-right: 8px;
+    position: relative;
+    top: -1px;
+  }
+
+  .profile-pic-default {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background-color: rgb(156, 163, 175);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+    box-shadow: #ccc 0px 0px 0px 1px;
+    margin-right: 8px;
+    position: relative;
+    top: -1px;
+  }
+
+  .profile-pic-default i {
+    font-size: 14px;
+    color: white;
+  }
+
+  .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
 </style>
 
-
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dropdownToggle = document.querySelector('.dropdown-toggle');
+    if (dropdownToggle) {
+      const username = dropdownToggle.textContent.trim().replace('Welcome, ', '').replace(' ▼', '');
+      const profilePicHtml = `{% if user.profile.profile_picture %}
+        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="profile-pic">
+      {% else %}
+        <div class="profile-pic-default">
+          <i class="fas fa-user"></i>
+        </div>
+      {% endif %}`;
+      
+      dropdownToggle.innerHTML = profilePicHtml + ' Welcome, ' + username + ' <i class="fas fa-caret-down"></i>';
+    }
+  });
+</script>
 
 {% if request.user.is_authenticated %}
 <div id="notif-overlay">
   <div id="notif-box">
-    <p>Would you like to enable notifications? We won’t ask again if you say no!</p>
+    <p>Would you like to enable notifications? We won't ask again if you say no!</p>
     <button id="enable-notifs-btn">Enable Notifications</button>
   </div>
 </div>
@@ -110,19 +164,19 @@
   };
  
   function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
       }
     }
+    return cookieValue;
   }
-  return cookieValue;
-}
   firebase.initializeApp(firebaseConfig);
   const messaging = firebase.messaging();
   
@@ -148,19 +202,19 @@
   {% endif %}
 
   function sendTokenToBackend(token) {
-  fetch('/api/update_device_token/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCookie('csrftoken'), 
-    },
-    body: JSON.stringify({ device_token: token }),
-    credentials: 'include',
-  })
-  .then(response => response.json())
-  .then(data => console.log('Token saved on backend:', data))
-  .catch(console.error);
-}
+    fetch('/api/update_device_token/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'), 
+      },
+      body: JSON.stringify({ device_token: token }),
+      credentials: 'include',
+    })
+    .then(response => response.json())
+    .then(data => console.log('Token saved on backend:', data))
+    .catch(console.error);
+  }
 
   function requestPermissionAndGetToken() {
     Notification.requestPermission().then((permission) => {
@@ -188,7 +242,6 @@
       }
     });
   }
-
 
   messaging.onMessage((payload) => {
     console.log('Message received in foreground: ', payload);
