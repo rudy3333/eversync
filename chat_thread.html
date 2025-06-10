@@ -171,28 +171,39 @@ textarea#message-content {
 
         <div id="chat-log" style="flex: 1; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
         {% for msg in messages %}
-            <div style="margin: 10px 0; text-align: {% if msg.sender == request.user %}right{% else %}left{% endif %};">
-                <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
-                <small data-timestamp="{{ msg.timestamp|date:'c' }}"></small>
-                {% if msg.sender == request.user %}
-                    {% if msg.seen %}
-                        <div style="font-size: 12px; color: #6c757d;">Seen</div>
+            <div style="margin: 10px 0; display: flex; align-items: start; {% if msg.sender == request.user %}flex-direction: row-reverse;{% endif %} gap: 8px;">
+                <div style="width: 32px; height: 32px; flex-shrink: 0;">
+                    {% if msg.sender.profile.profile_picture %}
+                        <img src="{{ msg.sender.profile.profile_picture.url }}" alt="Profile Picture" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #ccc;">
                     {% else %}
-                        <div style="font-size: 12px; color: #6c757d;">Delivered</div>
+                        <div style="width: 32px; height: 32px; border-radius: 4px; background-color: rgb(156, 163, 175); display: flex; align-items: center; justify-content: center; border: 1px solid #ccc;">
+                            <i class="fas fa-user" style="font-size: 16px; color: white;"></i>
+                        </div>
                     {% endif %}
-                {% endif %}
-                {% if msg.sender == request.user %}
-                    <form action="/pin/{{ msg.id }}/" method="post" style="display:inline;">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-sm" style="margin-left: 8px; background-color: #ffc107; color: black; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
-                        {% if msg.pinned %}Unpin{% else %}Pin{% endif %}
-                      </button>
-                    </form>
-                    <form action="/delete/{{ msg.id }}/" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
-                    </form>
-                {% endif %}
+                </div>
+                <div style="{% if msg.sender == request.user %}text-align: right;{% else %}text-align: left;{% endif %}">
+                    <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
+                    <small data-timestamp="{{ msg.timestamp|date:'c' }}"></small>
+                    {% if msg.sender == request.user %}
+                        {% if msg.seen %}
+                            <div style="font-size: 12px; color: #6c757d;">Seen</div>
+                        {% else %}
+                            <div style="font-size: 12px; color: #6c757d;">Delivered</div>
+                        {% endif %}
+                    {% endif %}
+                    {% if msg.sender == request.user %}
+                        <form action="/pin/{{ msg.id }}/" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm" style="margin-left: 8px; background-color: #ffc107; color: black; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                                {% if msg.pinned %}Unpin{% else %}Pin{% endif %}
+                            </button>
+                        </form>
+                        <form action="/delete/{{ msg.id }}/" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+                        </form>
+                    {% endif %}
+                </div>
             </div>
         {% endfor %}
         </div>
@@ -287,23 +298,32 @@ textarea#message-content {
 
 
   $('#chat-log').append(`
-    <div style="margin: 10px 0; text-align: right;">
-      <strong>{{ request.user.username }}</strong>: ${content}<br>
-      <small>${formattedDate}</small>
-      <div style="font-size: 12px; color: #6c757d;">Delivered</div>
-<form action="/pin/${messageId}/" method="post" style="display:inline;">
-                      {% csrf_token %}
-                      <button type="submit" class="btn btn-sm" style="margin-left: 8px; background-color: #ffc107; color: black; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
-                        {% if msg.pinned %}Unpin{% else %}Pin{% endif %}
-                      </button>
-                    </form>
-      <form action="/delete/${messageId}/" method="post" style="display:inline;">
-        <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-        <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
-      </form>
-    
-    
-      </div>
+    <div style="margin: 10px 0; display: flex; align-items: start; flex-direction: row-reverse; gap: 8px;">
+        <div style="width: 32px; height: 32px; flex-shrink: 0;">
+            {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #ccc;">
+            {% else %}
+                <div style="width: 32px; height: 32px; border-radius: 4px; background-color: rgb(156, 163, 175); display: flex; align-items: center; justify-content: center; border: 1px solid #ccc;">
+                    <i class="fas fa-user" style="font-size: 16px; color: white;"></i>
+                </div>
+            {% endif %}
+        </div>
+        <div style="text-align: right;">
+            <strong>{{ request.user.username }}</strong>: ${content}<br>
+            <small>${formattedDate}</small>
+            <div style="font-size: 12px; color: #6c757d;">Delivered</div>
+            <form action="/pin/${messageId}/" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm" style="margin-left: 8px; background-color: #ffc107; color: black; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+                    Pin
+                </button>
+            </form>
+            <form action="/delete/${messageId}/" method="post" style="display:inline;">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
+            </form>
+        </div>
+    </div>
   `);
 
       $('#chat-log').scrollTop($('#chat-log')[0].scrollHeight);
@@ -410,7 +430,7 @@ const toggle = document.getElementById("themeToggle");
         body: JSON.stringify({
           messages: [{
             role: 'user',
-            content: "You are a helpful assistant in a chat tool. Your job is to take user messages and either: 1. Refine them to sound clearer, more polite, or more professional (depending on user intent), or 2. Follow any direct instructions from the user. When refining speech: • Maintain the user’s original tone if specified (e.g., casual, professional, assertive). • Keep the message concise and respectful unless told otherwise. • Offer 1–2 improved versions if appropriate, with a short explanation (optional). When following an instruction: Interpret and execute tasks such as summarizing, rephrasing, translating, formatting, or expanding content. Always be helpful, respectful, and efficient. Do not provide your own speech in response, ONLY THE REFINED MESSAGE. Do not provide alternative options. The prompt is : " + content
+            content: "You are a helpful assistant in a chat tool. Your job is to take user messages and either: 1. Refine them to sound clearer, more polite, or more professional (depending on user intent), or 2. Follow any direct instructions from the user. When refining speech: Maintain the user's original tone if specified (e.g., casual, professional, assertive). Keep the message concise and respectful unless told otherwise. When following an instruction: Interpret and execute tasks such as summarizing, rephrasing, translating, formatting, or expanding content. Always be helpful, respectful, and efficient. Do not provide your own speech in response, ONLY THE REFINED MESSAGE. Do not provide alternative options. The prompt is : " + content
           }]
         })
       });
