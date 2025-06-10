@@ -91,7 +91,8 @@
                             <a href="{% url 'whiteboard' whiteboard.id %}">
                                 {{ whiteboard.title|default:"Untitled Whiteboard" }}
                             </a> 
-                            (Created on {{ whiteboard.created_at|date:"Y-m-d H:i" }}, updated on {{ whiteboard.updated_at|date:"Y-m-d H:i" }})
+                            (Created on <span class="local-time" data-utc="{{ whiteboard.created_at|date:'c' }}">{{ whiteboard.created_at|date:"Y-m-d H:i" }}</span>, 
+                            updated on <span class="local-time" data-utc="{{ whiteboard.updated_at|date:'c' }}">{{ whiteboard.updated_at|date:"Y-m-d H:i" }}</span>)
                         </span>
                         <form method="post" action="{% url 'delete_whiteboard' whiteboard.id %}" style="margin: 0;">
                             {% csrf_token %}
@@ -116,6 +117,20 @@
     </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Convert UTC times to local time
+        document.querySelectorAll('.local-time').forEach(function(element) {
+            const utcTime = element.getAttribute('data-utc');
+            const localTime = new Date(utcTime).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: false
+            });
+            element.textContent = localTime;
+        });
+
         const toggle = document.querySelector('.dropdown-toggle');
         const menu = document.querySelector('.dropdown-menu');
         toggle.addEventListener('click', function () {
@@ -124,20 +139,20 @@
     });
 
     const toggle = document.getElementById("themeToggle");
-        const root = document.documentElement;
+    const root = document.documentElement;
 
-        if (localStorage.getItem("theme") === "dark") {
+    if (localStorage.getItem("theme") === "dark") {
         root.classList.add("dark");
-        }
+    }
 
-        toggle.addEventListener("click", () => {
+    toggle.addEventListener("click", () => {
         root.classList.toggle("dark");
         if (root.classList.contains("dark")) {
             localStorage.setItem("theme", "dark");
         } else {
             localStorage.setItem("theme", "light");
         }
-        });
+    });
 </script>
 </body>
 </html>
