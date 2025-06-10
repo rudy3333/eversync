@@ -1,13 +1,22 @@
 import requests
 from django.http import HttpResponse
 import ipaddress
+import time
 
 class BlockTorMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.tor_ips = self.fetch_tor_exit_nodes()
+        self.tor_ips = set()
+        self.last_refresh = 0
+        self.refresh_interval = 600
+        self.fetch_tor_exit_nodes()  
 
     def __call__(self, request):
+        current_time = time.time()
+        if current_time - self.last_refresh > self.refresh_interval:
+            self.tor_ips = self.fetch_tor_exit_nodes()
+            self.last_refresh = current_time
+
         ip_list = self.get_client_ips(request)
         normalized_ips = [self.normalize_ip(ip) for ip in ip_list]
 
