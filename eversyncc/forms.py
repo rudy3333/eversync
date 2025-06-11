@@ -41,7 +41,7 @@ class DocumentForm(forms.ModelForm):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event 
-        fields = ['title', 'start_time', 'end_time', 'color']
+        fields = ['title', 'start_time', 'end_time', 'color', 'recurrence', 'recurrence_end']
 
 class NoteForm(forms.ModelForm):
     class Meta:

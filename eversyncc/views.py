@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.core.files import File
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from django.utils import timezone
 # Create your views here.
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
@@ -49,6 +50,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import selenium
 import pyclamd
+from datetime import datetime, timedelta
 
 def scan_file_with_clamav(file_path):
     try:
@@ -297,16 +299,49 @@ def calendar(request):
 @login_required
 def calendar_events(request):
     events = Event.objects.filter(user=request.user)
-    events_data = [
-        {
-            "id": event.id,
-            "title": event.title,
-            "start": event.start_time.isoformat(),
-            "end": event.end_time.isoformat(),
-            "color": event.color
-        }
-        for event in events
-    ]
+    events_data = []
+    
+    now = timezone.now()
+    one_year_from_now = now + timedelta(days=365)
+    
+    for event in events:
+        if event.recurrence == 'none':
+            events_data.append({
+                "id": event.id,
+                "title": event.title,
+                "start": event.start_time.isoformat(),
+                "end": event.end_time.isoformat(),
+                "color": event.color
+            })
+        else:
+            current_date = event.start_time
+            end_date = event.recurrence_end
+            if end_date:
+                end_date = timezone.make_aware(datetime.combine(end_date, datetime.min.time()))
+            else:
+                end_date = one_year_from_now
+            
+            while current_date <= end_date:
+                event_end = current_date + (event.end_time - event.start_time)
+                
+                events_data.append({
+                    "id": event.id,
+                    "title": event.title,
+                    "start": current_date.isoformat(),
+                    "end": event_end.isoformat(),
+                    "color": event.color
+                })
+                
+                if event.recurrence == 'daily':
+                    current_date += timedelta(days=1)
+                elif event.recurrence == 'weekly':
+                    current_date += timedelta(weeks=1)
+                elif event.recurrence == 'monthly':
+                    if current_date.month == 12:
+                        current_date = current_date.replace(year=current_date.year + 1, month=1)
+                    else:
+                        current_date = current_date.replace(month=current_date.month + 1)
+    
     return JsonResponse(events_data, safe=False)
 
 @email_verified_required

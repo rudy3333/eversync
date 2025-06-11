@@ -67,10 +67,24 @@
         <input type="datetime-local" id="start" required>
         <input type="datetime-local" id="end" required>
         <input type="color" id="color" required>
+        <div style="margin: 10px 0;">
+            <label for="recurrence">Recurrence:</label>
+            <select id="recurrence" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="none">None</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+        <div id="recurrence-end-container" style="display: none; margin: 10px 0;">
+            <label for="recurrence-end">End Date (Optional):</label>
+            <input type="date" id="recurrence-end">
+            <small style="display: block; color: #666; margin-top: 5px;">Leave empty for infinite recurrence</small>
+        </div>
         <button type="submit">Add Event</button>
-      </form>
+    </form>
 
-      <form id="import-form" style="text-align: center; margin-top: 20px;">
+    <form id="import-form" style="text-align: center; margin-top: 20px;">
         <h3>Import Events (.ics)</h3>
         <input type="file" id="ics-file" accept=".ics" required>
         <button type="submit">Import</button>
@@ -143,6 +157,11 @@
     </script>
 
 <script>
+    document.getElementById('recurrence').addEventListener('change', function(e) {
+        const endContainer = document.getElementById('recurrence-end-container');
+        endContainer.style.display = e.target.value === 'none' ? 'none' : 'block';
+    });
+
     document.getElementById('event-form').addEventListener('submit', function (e) {
         e.preventDefault();
 
@@ -150,6 +169,8 @@
         const start = document.getElementById('start').value;
         const end = document.getElementById('end').value;
         const color = document.getElementById('color').value;
+        const recurrence = document.getElementById('recurrence').value;
+        const recurrenceEnd = document.getElementById('recurrence-end').value || null;
         
         const startDate = new Date(start);
         const endDate = new Date(end);
@@ -157,18 +178,28 @@
         const startUTC = startDate.toISOString();
         const endUTC = endDate.toISOString();
         
+        const eventData = {
+            title: title,
+            start_time: startUTC,
+            end_time: endUTC,
+            color: color,
+            recurrence: recurrence,
+            recurrence_end: recurrenceEnd
+        };
+        
+        Object.keys(eventData).forEach(key => {
+            if (eventData[key] === null || eventData[key] === '') {
+                delete eventData[key];
+            }
+        });
+        
         fetch('/calendar_event_create/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-CSRFToken': getCookie('csrftoken'),
             },
-            body: new URLSearchParams({
-                title: title,
-                start_time: startUTC,
-                end_time: endUTC,
-                color: color,
-            })
+            body: new URLSearchParams(eventData)
         })
         .then(res => res.json())
         .then(data => {

@@ -36,12 +36,21 @@ class Document(models.Model):
         return self.title
 
 class Event(models.Model):
+    RECURRENCE_CHOICES = [
+        ('none', 'None'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+    ]
+    
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     color = models.TextField(default='#3788d8')
+    recurrence = models.CharField(max_length=10, choices=RECURRENCE_CHOICES, default='none')
+    recurrence_end = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.title
