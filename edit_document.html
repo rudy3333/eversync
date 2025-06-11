@@ -284,12 +284,21 @@
             });
 
             // Set initial content
-            quill.root.innerHTML = `{{ document.content|safe }}`;
+            try {
+                const content = JSON.parse('{{ document.content|escapejs }}');
+                quill.setContents(content);
+            } catch (e) {
+                console.error('Error loading content:', e);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = `{{ document.content|safe }}`;
+                const delta = quill.clipboard.convert(tempDiv.innerHTML);
+                quill.setContents(delta);
+            }
 
             // Handle form submission
             document.getElementById('document-form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                document.getElementById('document-content').value = quill.root.innerHTML;
+                document.getElementById('document-content').value = JSON.stringify(quill.getContents());
                 this.submit();
             });
         });

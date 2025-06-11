@@ -343,7 +343,7 @@
         
         function saveDocument() {
         const title = prompt("Enter document title:");
-        const content = quill.root.innerHTML;
+        const content = JSON.stringify(quill.getContents());
 
         fetch('/save-document/', {
             method: 'POST',

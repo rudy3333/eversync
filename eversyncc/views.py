@@ -623,12 +623,78 @@ def document_list(request):
     documents = RichDocument.objects.filter(owner=request.user)
     return render(request, 'document_list.html', {'documents': documents})
 
+def delta_to_html(delta_json):
+    try:
+        delta = json.loads(delta_json)
+        html = []
+        for op in delta.get('ops', []):
+            text = op.get('insert', '')
+            if isinstance(text, str):
+                # Handle newlines
+                if text == '\n':
+                    html.append('<br>')
+                    continue
+                    
+                attrs = op.get('attributes', {})
+                if attrs:
+                    # Handle font sizes
+                    if attrs.get('size') == 'huge':
+                        text = f'<h1>{text}</h1>'
+                    elif attrs.get('size') == 'large':
+                        text = f'<h2>{text}</h2>'
+                    elif attrs.get('size') == 'small':
+                        text = f'<small>{text}</small>'
+                    # Handle font family
+                    elif attrs.get('font') == 'monospace':
+                        text = f'<code>{text}</code>'
+                    # Handle text styles
+                    elif attrs.get('bold'):
+                        text = f'<strong>{text}</strong>'
+                    elif attrs.get('italic'):
+                        text = f'<em>{text}</em>'
+                    elif attrs.get('underline'):
+                        text = f'<u>{text}</u>'
+                    elif attrs.get('strike'):
+                        text = f'<s>{text}</s>'
+                    # Handle colors
+                    elif attrs.get('color'):
+                        text = f'<span style="color: {attrs["color"]}">{text}</span>'
+                    elif attrs.get('background'):
+                        text = f'<span style="background-color: {attrs["background"]}">{text}</span>'
+                    # Handle alignment
+                    elif attrs.get('align'):
+                        text = f'<div style="text-align: {attrs["align"]}">{text}</div>'
+                    # Handle links
+                    elif attrs.get('link'):
+                        text = f'<a href="{attrs["link"]}">{text}</a>'
+                    # Handle code blocks
+                    elif attrs.get('code'):
+                        text = f'<code>{text}</code>'
+                    # Handle blockquotes
+                    elif attrs.get('blockquote'):
+                        text = f'<blockquote>{text}</blockquote>'
+                    # Handle lists
+                    elif attrs.get('list') == 'ordered':
+                        text = f'<li>{text}</li>'
+                    elif attrs.get('list') == 'bullet':
+                        text = f'<li>{text}</li>'
+                    # Handle indentation
+                    elif attrs.get('indent'):
+                        text = f'<div style="margin-left: {attrs["indent"] * 2}em">{text}</div>'
+                html.append(text)
+            elif isinstance(text, dict):
+                if text.get('image'):
+                    html.append(f'<img src="{text["image"]}" alt="Image">')
+        return ''.join(html)
+    except:
+        return delta_json
 
 @email_verified_required
 @login_required
 def view_document(request, doc_id):
     document = get_object_or_404(RichDocument, id=doc_id, owner=request.user)
-    return render(request, 'view_document.html', {'document': document})
+    html_content = delta_to_html(document.content)
+    return render(request, 'view_document.html', {'document': document, 'html_content': html_content})
 
 @email_verified_required
 @login_required

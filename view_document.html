@@ -38,14 +38,68 @@
                 width: 90vw;
                 padding: 20px;
             }
-            .divider {
+        .divider {
             border-top: 1px solid #dadde1;
             margin: 20px 0;
-}
+        }
+        }
+
+        .content {
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .content h1 {
+            font-size: 2.5em;
+            margin: 0.5em 0;
+        }
+
+        .content h2 {
+            font-size: 2em;
+            margin: 0.5em 0;
+        }
+
+        .content small {
+            font-size: 0.8em;
+        }
+
+        .content code {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+
+        .content blockquote {
+            border-left: 4px solid #ccc;
+            margin: 1em 0;
+            padding-left: 1em;
+            color: #666;
+        }
+
+        .content ul, .content ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+
+        .content li {
+            margin: 0.5em 0;
+        }
+
+        :root.dark .welcome-box {
+            background-color: #242526;
+            color: #e4e6eb;
+        }
+
+        :root.dark .content code {
+            background-color: #3a3b3c;
+        }
+
+        :root.dark .content blockquote {
+            border-left-color: #3a3b3c;
+            color: #b0b3b8;
         }
     </style>
-</head>
-    
 </head>
 <body>
     <div class="header">
@@ -58,18 +112,15 @@
                         Welcome, {{ user.username }} <i class="fas fa-caret-down"></i>
                     </button>
                     <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
-                        
                         <form action="{% url 'manage' %}" method="post" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Manage Account</button>
                         </form>
-                        
                         <form action="{% url 'logoutz' %}" method="post" style="margin: 0;">
                             {% csrf_token %}
                             <button type="submit" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Log Out</button>
                         </form>
                         <button id="themeToggle" class="logout-button" style="background-color: transparent; color: white; border: none; cursor: pointer;">Toggle Dark Mode</button>
-
                     </div>
                 </div>
             </div>
@@ -82,36 +133,36 @@
             <p><em>Last edited: {{ document.updated_at|date:"F j, Y, g:i a" }}</em></p>
             <div class="divider"></div>
             <div class="content">
-                {{ document.content|safe }}
+                {{ html_content|safe }}
             </div>
             <div class="divider"></div>
-
             <p><a href="{% url 'document_list' %}">← Back to documents</a></p>
+        </div>
     </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggle = document.querySelector('.dropdown-toggle');
-        const menu = document.querySelector('.dropdown-menu');
-        toggle.addEventListener('click', function () {
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggle = document.querySelector('.dropdown-toggle');
+            const menu = document.querySelector('.dropdown-menu');
+            toggle.addEventListener('click', function () {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
         });
-    });
 
-    const toggle = document.getElementById("themeToggle");
+        const toggle = document.getElementById("themeToggle");
         const root = document.documentElement;
 
         if (localStorage.getItem("theme") === "dark") {
-        root.classList.add("dark");
+            root.classList.add("dark");
         }
 
         toggle.addEventListener("click", () => {
-        root.classList.toggle("dark");
-        if (root.classList.contains("dark")) {
-            localStorage.setItem("theme", "dark");
-        } else {
-            localStorage.setItem("theme", "light");
-        }
+            root.classList.toggle("dark");
+            if (root.classList.contains("dark")) {
+                localStorage.setItem("theme", "dark");
+            } else {
+                localStorage.setItem("theme", "light");
+            }
         });
-</script>
+    </script>
 </body>
 </html>
