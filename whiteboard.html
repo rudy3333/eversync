@@ -94,6 +94,23 @@
         <div class="welcome-box">
             <div style="text-align: center; margin-bottom: 10px;">
                 <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                  <div class="tool-group" style="display: flex; gap: 8px; align-items: center; background: #f0f0f0; padding: 8px; border-radius: 8px;">
+                    <button id="brush-tool" class="tool-btn active" style="padding: 8px; background: #4B0082; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                      ✏️ Brush
+                    </button>
+                    <button id="rectangle-tool" class="tool-btn" style="padding: 8px; background: #666; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                      ⬜ Rectangle
+                    </button>
+                    <button id="circle-tool" class="tool-btn" style="padding: 8px; background: #666; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                      ⭕ Circle
+                    </button>
+                    <button id="line-tool" class="tool-btn" style="padding: 8px; background: #666; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                      📏 Line
+                    </button>
+                    <input type="color" id="color-picker" value="#4B0082" style="width: 40px; height: 40px; padding: 0; border: none; border-radius: 4px; cursor: pointer;">
+                    <input type="range" id="brush-size" min="1" max="20" value="2" style="width: 100px;">
+                    <span id="brush-size-value">2px</span>
+                  </div>
                   <button id="delete-toggle" style="padding: 6px 12px; background-color: #800080; color: white; border: none; border-radius: 4px; cursor: pointer;">
                     ✖️ Toggle Delete Mode
                   </button>
@@ -129,6 +146,43 @@
 
                 let undoStack = [];
                 let redoStack = [];
+                let currentStroke = [];
+
+                let currentTool = 'brush';
+                let currentColor = '#4B0082';
+                let currentBrushSize = 2;
+                let isDrawing = false;
+                let startX, startY;
+                let tempShape = null;
+                let deleteMode = false;
+
+                const toolButtons = document.querySelectorAll('.tool-btn');
+                const colorPicker = document.getElementById('color-picker');
+                const brushSize = document.getElementById('brush-size');
+                const brushSizeValue = document.getElementById('brush-size-value');
+                const deleteButton = document.getElementById('delete-toggle');
+
+                toolButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        toolButtons.forEach(b => b.style.background = '#666');
+                        btn.style.background = '#4B0082';
+                        currentTool = btn.id.replace('-tool', '');
+                    });
+                });
+
+                deleteButton.addEventListener('click', () => {
+                    deleteMode = !deleteMode;
+                    deleteButton.textContent = deleteMode ? '✅ Delete Mode ON' : '✖️ Toggle Delete Mode';
+                });
+
+                colorPicker.addEventListener('change', (e) => {
+                    currentColor = e.target.value;
+                });
+
+                brushSize.addEventListener('input', (e) => {
+                    currentBrushSize = e.target.value;
+                    brushSizeValue.textContent = `${currentBrushSize}px`;
+                });
 
                 function debouncedSave() {
                     if (saveTimeout) {
@@ -158,25 +212,25 @@
                         if (data.error) {
                             alert('Image upload failed: ' + data.error);
                         } else {
-                            const imageObj = {
-                                img: new Image(),
-                                x: 100,
-                                y: 100,
-                                width: 200,
-                                height: 200,
-                                id: data.image_id,
-                            };
-                            imageObj.img.onload = () => {
+                            const img = new Image();
+                            img.onload = () => {
+                                imagesOnCanvas.push({
+                                    img: img,
+                                    x: 100,
+                                    y: 100,
+                                    width: 200,
+                                    height: 200,
+                                    id: data.image_id
+                                });
                                 redrawCanvas();
                                 saveImagesToServer();
                             };
-                            imageObj.img.src = data.image_url;
-                            imagesOnCanvas.push(imageObj);
+                            img.src = data.image_url;
                         }
                     })
                     .catch(err => alert('Upload error: ' + err));
                 });
-                    document.getElementById('export-png').addEventListener('click', function() {
+                document.getElementById('export-png').addEventListener('click', function() {
                     const canvas = document.getElementById('whiteboard');
                     if (!canvas) {
                         alert('Canvas not found!');
@@ -253,22 +307,6 @@
                 const canvas = document.getElementById('whiteboard');
                 const ctx = canvas.getContext('2d');
             
-                // Function to draw a stroke (array of points)
-                function drawStroke(points) {
-                    if (points.length < 2) return;  // Need at least 2 points to draw a line
-            
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#4B0082';  // purple-ish
-                    ctx.lineCap = 'round';
-            
-                    ctx.beginPath();
-                    ctx.moveTo(points[0].x, points[0].y);
-                    for (let i = 1; i < points.length; i++) {
-                        ctx.lineTo(points[i].x, points[i].y);
-                    }
-                    ctx.stroke();
-                }
-
                 function loadSavedImages() {
                     savedImages.forEach(imgData => {
                         const img = new Image();
@@ -286,30 +324,141 @@
                         img.src = imgData.url;
                     });
                 }
-            
-                // Draw all saved strokes when the page loads
-                savedStrokes.forEach(drawStroke);
-                loadSavedImages();
-            
-                let drawing = false;
-                let currentStroke = [];
-            
-                let deleteMode = false;
-                const deleteButton = document.getElementById('delete-toggle');
-                deleteButton.addEventListener('click', () => {
-                    deleteMode = !deleteMode;
-                    deleteButton.textContent = deleteMode ? '✅ Delete Mode ON' : '✖️ Toggle Delete Mode';
-                });
+
+                function initializeCanvas() {
+                    savedStrokes.forEach(stroke => {
+                        if (stroke[0] && stroke[0].type) {
+                            drawShape(stroke[0]);
+                        } else {
+                            drawStroke(stroke);
+                        }
+                    });
+
+                    loadSavedImages();
+                }
+
+                initializeCanvas();
+
+                function drawShape(shape) {
+                    if (!shape) return;
+                    
+                    ctx.beginPath();
+                    ctx.strokeStyle = shape.color || currentColor;
+                    ctx.lineWidth = shape.size || currentBrushSize;
+                    
+                    switch(shape.type) {
+                        case 'rectangle':
+                            ctx.rect(shape.x, shape.y, shape.width, shape.height);
+                            break;
+                        case 'circle':
+                            const radius = Math.sqrt(Math.pow(shape.width, 2) + Math.pow(shape.height, 2));
+                            ctx.arc(shape.x + shape.width/2, shape.y + shape.height/2, radius/2, 0, Math.PI * 2);
+                            break;
+                        case 'line':
+                            ctx.moveTo(shape.x, shape.y);
+                            ctx.lineTo(shape.x + shape.width, shape.y + shape.height);
+                            break;
+                    }
+                    
+                    ctx.stroke();
+                }
+
+                function drawStroke(points) {
+                    if (!points || points.length < 2) return;
+
+                    ctx.lineWidth = points[0].size || currentBrushSize;
+                    ctx.strokeStyle = points[0].color || currentColor;
+                    ctx.lineCap = 'round';
+
+                    ctx.beginPath();
+                    ctx.moveTo(points[0].x, points[0].y);
+                    for (let i = 1; i < points.length; i++) {
+                        ctx.lineTo(points[i].x, points[i].y);
+                    }
+                    ctx.stroke();
+                }
+
+                function isPointNearStroke(point, stroke) {
+                    if (!stroke || stroke.length < 2) return false;
+                    
+                    for (let i = 1; i < stroke.length; i++) {
+                        const start = stroke[i - 1];
+                        const end = stroke[i];
+                        
+                        const dx = end.x - start.x;
+                        const dy = end.y - start.y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (length === 0) continue;
+                        
+                        const t = Math.max(0, Math.min(1, (
+                            (point.x - start.x) * dx +
+                            (point.y - start.y) * dy
+                        ) / (length * length)));
+                        
+                        const closestX = start.x + t * dx;
+                        const closestY = start.y + t * dy;
+                        
+                        const distance = Math.sqrt(
+                            Math.pow(point.x - closestX, 2) +
+                            Math.pow(point.y - closestY, 2)
+                        );
+                        
+                        if (distance < 10) return true;
+                    }
+                    return false;
+                }
+
+                function isPointNearShape(point, shape) {
+                    if (!shape || !shape.type) return false;
+                    
+                    switch(shape.type) {
+                        case 'rectangle':
+                            return point.x >= shape.x && 
+                                   point.x <= shape.x + shape.width &&
+                                   point.y >= shape.y && 
+                                   point.y <= shape.y + shape.height;
+                            
+                        case 'circle':
+                            const centerX = shape.x + shape.width/2;
+                            const centerY = shape.y + shape.height/2;
+                            const radius = Math.sqrt(Math.pow(shape.width, 2) + Math.pow(shape.height, 2)) / 2;
+                            const circleDistance = Math.sqrt(
+                                Math.pow(point.x - centerX, 2) +
+                                Math.pow(point.y - centerY, 2)
+                            );
+                            return circleDistance <= radius;
+                            
+                        case 'line':
+                            const dx = shape.width;
+                            const dy = shape.height;
+                            const length = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (length === 0) return false;
+                            
+                            const t = Math.max(0, Math.min(1, (
+                                (point.x - shape.x) * dx +
+                                (point.y - shape.y) * dy
+                            ) / (length * length)));
+                            
+                            const closestX = shape.x + t * dx;
+                            const closestY = shape.y + t * dy;
+                            
+                            const lineDistance = Math.sqrt(
+                                Math.pow(point.x - closestX, 2) +
+                                Math.pow(point.y - closestY, 2)
+                            );
+                            
+                            return lineDistance < 10;
+                    }
+                    return false;
+                }
+
                 canvas.addEventListener('mousedown', (e) => {
                     const x = e.offsetX;
                     const y = e.offsetY;
-                    
-                    if (draggingImage) {
-                        draggingImage.x = x - dragOffsetX;
-                        draggingImage.y = y - dragOffsetY;
-                        redrawCanvas(); // re-renders images and strokes
-                        return;
-                    }
+                    const point = { x, y };
+
                     if (deleteMode) {
                         for (let i = imagesOnCanvas.length - 1; i >= 0; i--) {
                             const img = imagesOnCanvas[i];
@@ -324,18 +473,28 @@
                             }
                         }
                         
-                        for (let i = 0; i < savedStrokes.length; i++) {
+                        for (let i = savedStrokes.length - 1; i >= 0; i--) {
                             const stroke = savedStrokes[i];
-                            for (const point of stroke.points || stroke) {
-                                const dx = point.x - x;
-                                const dy = point.y - y;
-                                const dist = Math.sqrt(dx * dx + dy * dy);
-                                if (dist < 10) {
+                            
+                            if (stroke[0] && stroke[0].type) {
+                                if (isPointNearShape(point, stroke[0])) {
+                                    deleteStrokeFromServer(i);
+                                    return;
+                                }
+                            } else {
+                                if (isPointNearStroke(point, stroke)) {
                                     deleteStrokeFromServer(i);
                                     return;
                                 }
                             }
                         }
+                        return;
+                    }
+
+                    if (draggingImage) {
+                        draggingImage.x = x - dragOffsetX;
+                        draggingImage.y = y - dragOffsetY;
+                        redrawCanvas();
                         return;
                     }
 
@@ -363,107 +522,79 @@
                         }
                     }
 
-                    drawing = true;
-                    currentStroke = [{ x, y }];
-                    });
-            function deleteStrokeFromServer(index) {
-                fetch(`/whiteboard/{{ whiteboard.id }}/delete-stroke/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    },
-                    body: JSON.stringify({ index }),
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        savedStrokes.splice(index, 1);
-                        imagesOnCanvas.length = 0;
-                        redrawCanvas();
+                    isDrawing = true;
+                    startX = x;
+                    startY = y;
+
+                    if (currentTool === 'brush') {
+                        currentStroke = [{
+                            x: startX,
+                            y: startY,
+                            color: currentColor,
+                            size: currentBrushSize
+                        }];
                     } else {
-                        console.error('Delete stroke error:', data.error);
+                        tempShape = {
+                            type: currentTool,
+                            x: startX,
+                            y: startY,
+                            width: 0,
+                            height: 0,
+                            color: currentColor,
+                            size: currentBrushSize
+                        };
                     }
-                })
-                .catch(err => console.error('Fetch error:', err));
-            }
+                });
 
-            function deleteImageFromServer(imageId) {
-                fetch(`/whiteboard/{{ whiteboard.id }}/delete-image/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    },
-                    body: JSON.stringify({ image_id: imageId }),
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        console.log('Image deleted successfully');
-                    } else {
-                        console.error('Delete image error:', data.error);
-                    }
-                })
-                .catch(err => console.error('Fetch error:', err));
-            }
+                canvas.addEventListener('mousemove', (e) => {
+                    const x = e.offsetX;
+                    const y = e.offsetY;
 
-            function redrawCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw images
-            for (const imgObj of imagesOnCanvas) {
-                ctx.drawImage(imgObj.img, imgObj.x, imgObj.y, imgObj.width, imgObj.height);
-                // Draw resize handle
-                ctx.fillStyle = '#800080';
-                ctx.fillRect(
-                    imgObj.x + imgObj.width - resizeMargin,
-                    imgObj.y + imgObj.height - resizeMargin,
-                    resizeMargin,
-                    resizeMargin
-                );
-            }
-
-            // Draw strokes
-            savedStrokes.forEach(drawStroke);
-            }
-            canvas.addEventListener('mousemove', (e) => {
-                const x = e.offsetX;
-                const y = e.offsetY;
-
-                if (draggingImage) {
-                    draggingImage.x = x - dragOffsetX;
-                    draggingImage.y = y - dragOffsetY;
-                    redrawCanvas();
-                    debouncedSave();
-                    return;
-                }
-
-                if (scalingImage) {
-                    const newWidth = x - scalingImage.x;
-                    const newHeight = y - scalingImage.y;
-                    if (newWidth > 10 && newHeight > 10) {
-                        scalingImage.width = newWidth;
-                        scalingImage.height = newHeight;
+                    if (draggingImage) {
+                        draggingImage.x = x - dragOffsetX;
+                        draggingImage.y = y - dragOffsetY;
                         redrawCanvas();
-                        debouncedSave(); 
+                        debouncedSave();
+                        return;
                     }
-                    return;
-                }
-                if (!drawing) return;
 
-                const point = { x, y };
-                currentStroke.push(point);
+                    if (scalingImage) {
+                        const newWidth = x - scalingImage.x;
+                        const newHeight = y - scalingImage.y;
+                        if (newWidth > 10 && newHeight > 10) {
+                            scalingImage.width = newWidth;
+                            scalingImage.height = newHeight;
+                            redrawCanvas();
+                            debouncedSave(); 
+                        }
+                        return;
+                    }
 
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#4B0082';  // purple-ish
-                ctx.lineCap = 'round';
+                    if (!isDrawing) return;
 
-                ctx.beginPath();
-                const prevPoint = currentStroke[currentStroke.length - 2];
-                ctx.moveTo(prevPoint.x, prevPoint.y);
-                ctx.lineTo(point.x, point.y);
-                ctx.stroke();
+                    if (currentTool === 'brush') {
+                        const point = {
+                            x: x,
+                            y: y,
+                            color: currentColor,
+                            size: currentBrushSize
+                        };
+                        currentStroke.push(point);
+                        
+                        ctx.beginPath();
+                        ctx.strokeStyle = currentColor;
+                        ctx.lineWidth = currentBrushSize;
+                        ctx.lineCap = 'round';
+                        
+                        const prevPoint = currentStroke[currentStroke.length - 2];
+                        ctx.moveTo(prevPoint.x, prevPoint.y);
+                        ctx.lineTo(point.x, point.y);
+                        ctx.stroke();
+                    } else if (tempShape) {
+                        tempShape.width = x - startX;
+                        tempShape.height = y - startY;
+                        redrawCanvas();
+                    }
                 });
             
                 canvas.addEventListener('mouseup', () => {
@@ -473,9 +604,15 @@
                     draggingImage = null;
                     scalingImage = null;
 
-                    if (!drawing) return;
-                    drawing = false;
-                    saveStrokeToServer(currentStroke);
+                    if (!isDrawing) return;
+                    isDrawing = false;
+
+                    if (currentTool === 'brush') {
+                        saveStrokeToServer(currentStroke);
+                    } else if (tempShape) {
+                        saveShapeToServer(tempShape);
+                        tempShape = null;
+                    }
                 });
 
                 canvas.addEventListener('mouseleave', () => {
@@ -485,14 +622,21 @@
                     draggingImage = null;
                     scalingImage = null;
 
-                    if (drawing) {
-                        drawing = false;
-                        saveStrokeToServer(currentStroke);
+                    if (isDrawing) {
+                        isDrawing = false;
+                        if (currentTool === 'brush') {
+                            saveStrokeToServer(currentStroke);
+                        } else if (tempShape) {
+                            saveShapeToServer(tempShape);
+                            tempShape = null;
+                        }
                     }
                 });
 
             
                 function saveStrokeToServer(stroke) {
+                    if (!stroke || stroke.length < 2) return;
+
                     undoStack.push([...savedStrokes]);
                     redoStack = [];
 
@@ -515,34 +659,148 @@
                     })
                     .catch(err => console.error('Fetch error:', err));
                 }
-            // Save images metadata to server
-            function saveImagesToServer() {
-                const imagesData = imagesOnCanvas.map(imgObj => ({
-                    id: imgObj.id || null,
-                    x: imgObj.x,
-                    y: imgObj.y,
-                    width: imgObj.width,
-                    height: imgObj.height,
-                }));
 
-                fetch(`/whiteboard/{{ whiteboard.id }}/save-images/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                    },
-                    body: JSON.stringify({ images: imagesData }),
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error('Save images error:', data.error);
-                    } else {
-                        console.log('Images saved!');
+                function saveShapeToServer(shape) {
+                    undoStack.push([...savedStrokes]);
+                    redoStack = [];
+
+                    fetch(`/whiteboard/{{ whiteboard.id }}/save-stroke/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ 
+                            stroke: [{
+                                type: shape.type,
+                                x: shape.x,
+                                y: shape.y,
+                                width: shape.width,
+                                height: shape.height,
+                                color: shape.color,
+                                size: shape.size
+                            }]
+                        }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Save shape error:', data.error);
+                        } else {
+                            console.log('Shape saved!');
+                            savedStrokes.push([{
+                                type: shape.type,
+                                x: shape.x,
+                                y: shape.y,
+                                width: shape.width,
+                                height: shape.height,
+                                color: shape.color,
+                                size: shape.size
+                            }]);
+                        }
+                    })
+                    .catch(err => console.error('Fetch error:', err));
+                }
+
+                function deleteStrokeFromServer(index) {
+                    fetch(`/whiteboard/{{ whiteboard.id }}/delete-stroke/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ index }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            savedStrokes.splice(index, 1);
+                            imagesOnCanvas.length = 0;
+                            redrawCanvas();
+                        } else {
+                            console.error('Delete stroke error:', data.error);
+                        }
+                    })
+                    .catch(err => console.error('Fetch error:', err));
+                }
+
+                function deleteImageFromServer(imageId) {
+                    fetch(`/whiteboard/{{ whiteboard.id }}/delete-image/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ image_id: imageId }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Image deleted successfully');
+                        } else {
+                            console.error('Delete image error:', data.error);
+                        }
+                    })
+                    .catch(err => console.error('Fetch error:', err));
+                }
+
+                function redrawCanvas() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw images
+                    for (const imgObj of imagesOnCanvas) {
+                        ctx.drawImage(imgObj.img, imgObj.x, imgObj.y, imgObj.width, imgObj.height);
+                        ctx.fillStyle = '#800080';
+                        ctx.fillRect(
+                            imgObj.x + imgObj.width - resizeMargin,
+                            imgObj.y + imgObj.height - resizeMargin,
+                            resizeMargin,
+                            resizeMargin
+                        );
                     }
-                })
-                .catch(err => console.error('Fetch error:', err));
-            }
+
+                    // Draw strokes and shapes
+                    savedStrokes.forEach(stroke => {
+                        if (stroke[0] && stroke[0].type) {
+                            drawShape(stroke[0]);
+                        } else {
+                            drawStroke(stroke);
+                        }
+                    });
+
+                    // Draw temporary shape
+                    if (tempShape) {
+                        drawShape(tempShape);
+                    }
+                }
+
+                function saveImagesToServer() {
+                    const imagesData = imagesOnCanvas.map(imgObj => ({
+                        id: imgObj.id || null,
+                        x: imgObj.x,
+                        y: imgObj.y,
+                        width: imgObj.width,
+                        height: imgObj.height,
+                    }));
+
+                    fetch(`/whiteboard/{{ whiteboard.id }}/save-images/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+                        body: JSON.stringify({ images: imagesData }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error('Save images error:', data.error);
+                        } else {
+                            console.log('Images saved!');
+                        }
+                    })
+                    .catch(err => console.error('Fetch error:', err));
+                }
             </script>
 
         </div>

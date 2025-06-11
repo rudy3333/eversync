@@ -843,17 +843,17 @@ def save_stroke(request, whiteboard_id):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            stroke_points = data.get('stroke') 
+            stroke_data = data.get('stroke')
             
-            if not stroke_points:
+            if not stroke_data:
                 return JsonResponse({'error': 'No stroke data provided'}, status=400)
             
             whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
 
-            Stroke.objects.create(
+            stroke = Stroke.objects.create(
                 whiteboard=whiteboard,
                 user=request.user,
-                data=stroke_points
+                data=stroke_data
             )
             whiteboard.save()
             return JsonResponse({'status': 'success'})
