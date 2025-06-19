@@ -48,12 +48,23 @@ RUN apt-get update && \
         libxtst6 \
         lsb-release \
         xdg-utils \
+        clamav \
+        clamav-daemon \
     && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /var/run/clamav && \
+    chown clamav:clamav /var/run/clamav
+
+RUN freshclam
+
+RUN sed -i 's/^Example/#Example/' /etc/clamav/clamd.conf && \
+    echo "TCPSocket 3310" >> /etc/clamav/clamd.conf && \
+    echo "TCPAddr 0.0.0.0" >> /etc/clamav/clamd.conf
 
 COPY . /code
 
 RUN python manage.py collectstatic --noinput
 
-EXPOSE 8000
+EXPOSE 8000 3310
 
-CMD ["gunicorn","--bind",":8000","--workers","2","eversync.wsgi"]
+CMD sh -c "clamd & gunicorn --bind :8000 --workers 2 eversync.wsgi"
