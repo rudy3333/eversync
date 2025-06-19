@@ -27,3 +27,4 @@ google-auth
 selenium
 pyclamd
 ipaddress
+Pillow

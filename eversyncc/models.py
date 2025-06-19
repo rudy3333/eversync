@@ -9,8 +9,9 @@ class UserNotifs(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     device_token = models.CharField(blank=True, null=True)
 
-    def __str__(self):
-        return f"{self.user.username}'s notif token: {self.device_token[:8]}..."
+def __str__(self):
+    token = self.device_token[:8] if self.device_token else "None"
+    return f"{self.user.username}'s notif token: {token}..."
 
 class UserStorage(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
