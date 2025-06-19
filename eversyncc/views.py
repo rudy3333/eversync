@@ -436,7 +436,8 @@ def add_embed(request):
             embed = Embed.objects.create(
                 url=url,
                 title=embed_info.get("title", "No title"),
-                embed_html=embed_info.get("html", "")
+                embed_html=embed_info.get("html", ""),
+                user=request.user
             )
             return redirect("embed_list")
         else:
@@ -447,7 +448,7 @@ def add_embed(request):
 @email_verified_required
 @login_required
 def embed_list(request):
-    embeds = Embed.objects.all()
+    embeds = Embed.objects.filter(user=request.user)
     return render(request, "embed_list.html", {"embeds": embeds})
 
 @email_verified_required
@@ -455,7 +456,7 @@ def embed_list(request):
 def delete_embed(request, id):
     if request.method == 'POST':
         try:
-            embed = Embed.objects.get(id=id)
+            embed = Embed.objects.get(id=id, user=request.user)
             try:
                 embed.delete()
                 return redirect('embed_list')
@@ -1220,11 +1221,6 @@ def save_web_archive(request):
                     "intl.accept_languages": "en,en_US",
                     "profile.default_content_setting_values.geolocation": 2, 
                 })
-                
-                user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-                chrome_options.add_argument(f"user-agent={user_agent}")
-                chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-
                 # Initialize Chrome driver
                 driver = webdriver.Chrome(options=chrome_options)
                 url = form.cleaned_data['url']
@@ -1232,25 +1228,23 @@ def save_web_archive(request):
                 
                 driver.get(url)
 
-                try:
-                    cookie_button = WebDriverWait(driver, 10).until(
-                        EC.element_to_be_clickable((
-                            By.XPATH,
-                            "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'accept') or " +
-                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'agree') or " +
-                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'allow')]"))
-                    )
-                    cookie_button.click()
-
-                    WebDriverWait(driver, 5).until_not(EC.presence_of_element_located((By.XPATH,
-                                            "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'accept') or " +
-                                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'agree') or " +
-                                            "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'allow')]"))
-                    )
-                except:
-                    print("No cookie banner found or clickable :3")
-
-                WebDriverWait(driver, 10).until(
+                # try:
+                #     cookie_button = WebDriverWait(driver, 5).until(
+                #         EC.element_to_be_clickable((
+                #             By.XPATH,
+                #             "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'accept') or " +
+                #             "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'agree') or " +
+                #             "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'allow')]"))
+                #     )
+                #     cookie_button.click()
+                #     WebDriverWait(driver, 5).until_not(EC.presence_of_element_located((By.XPATH,
+                #                                 "//button[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'accept') or " +
+                #                                 "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'agree') or " +
+                #                                 "contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'allow')]"))
+                #     )
+                # except:
+                #     print("No cookie banner found or clickable :3")
+                WebDriverWait(driver, 5).until(
                     lambda driver: driver.execute_script('return document.readyState') == 'complete'
                 )
 
