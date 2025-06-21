@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     {% load static %}
     <link rel="icon" href="{% static 'favicon.ico' %}">
-    <link rel="stylesheet" href="{% static 'index-style.css' %}" ">
+    <link rel="stylesheet" href="{% static 'index-style.css' %}">
     {% block scripts %}
         {% include "sentry_replay.html" %}
     {% endblock %}
@@ -46,6 +46,9 @@
   .welcome-text {
     display: none !important;
   }
+  .dropdown .dropdown-toggle .welcome-text {
+    display: none !important;
+  }
 }
 
     </style>
@@ -62,7 +65,7 @@
                    <!-- IVE BEEN TRYING TO HIDE THIS welcome text ON MOBILE FOR THE PAST FUCKING HOURRRR-->
                      <button class="dropdown-toggle" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
     <img src="{% if user.profile_image_url %}{{ user.profile_image_url }}{% else %}{% static 'default_pfp.png' %}{% endif %}" alt="Profile" class="profile-pic" style="width:32px; height:32px; border-radius:50%;">
-    <span class="welcome-text">Welcome, {{ user.username }}</span>
+    <div class="welcome-text">Welcome, {{ user.username }}</div>
     <i class="fas fa-caret-down"></i>
 </button>
                     <div class="dropdown-menu" style="display: none; position: absolute; right: 0; background-color: #333; border: 1px solid #444; border-radius: 4px; padding: 10px; width: 184px;">
