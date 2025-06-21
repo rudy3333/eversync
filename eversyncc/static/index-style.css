@@ -292,3 +292,9 @@ html.dark .dropdown-menu button {
 html.dark .dropdown-menu button:hover {
     background-color: #3a3b3c;
 }
+
+@media (max-width: 700px) {
+  .dropdown-toggle .welcome-text {
+    display: none !important;
+  }
+}
