@@ -78,6 +78,8 @@ urlpatterns = [
     path('web_archive/view/<int:archive_id>', views.view_web_archive, name='view_web_archive'),
     path('update_profile_picture/', views.update_profile_picture, name='update_profile_picture'),
     path('delete_profile_picture/', views.delete_profile_picture, name='delete_profile_picture'),
+    path('message/<int:message_id>/add_reaction/', views.add_reaction, name='add_reaction'),
+    path('message/<int:message_id>/remove_reaction/', views.remove_reaction, name='remove_reaction'),
 ]   
 
 if settings.DEBUG:

@@ -127,6 +127,28 @@ textarea#message-content {
 .dark #ai-assist-button i {
     color: #e4e6eb;
 }
+
+.reaction-bubble {
+    padding: 2px 6px;
+    border-radius: 12px;
+    background: #eee;
+    margin-right: 2px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    display: inline-block;
+    font-size: 16px;
+    transition: background 0.2s, border 0.2s;
+}
+.reaction-bubble.my-reaction {
+    background: #ffd966;
+    border: 1px solid #ffc107;
+}
+.add-reaction-row {
+    display: none;
+}
+.message-container:hover .add-reaction-row {
+    display: flex;
+}
     </style>
 </head>
     
@@ -171,7 +193,7 @@ textarea#message-content {
 
         <div id="chat-log" style="flex: 1; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
         {% for msg in messages %}
-            <div style="margin: 10px 0; display: flex; align-items: start; {% if msg.sender == request.user %}flex-direction: row-reverse;{% endif %} gap: 8px;">
+            <div class="message-container" style="margin: 10px 0; display: flex; align-items: start; {% if msg.sender == request.user %}flex-direction: row-reverse;{% endif %} gap: 8px;">
                 <div style="width: 32px; height: 32px; flex-shrink: 0;">
                     {% if msg.sender.profile.profile_picture %}
                         <img src="{{ msg.sender.profile.profile_picture.url }}" alt="Profile Picture" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #ccc;">
@@ -203,6 +225,22 @@ textarea#message-content {
                             <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
                         </form>
                     {% endif %}
+                    {% if msg.reactions.all %}
+                        {% with last_reaction=msg.reactions.all.last %}
+                            <div class="reactions-row" style="margin: 4px 0; display: flex; gap: 4px;">
+                                <span class="reaction-bubble{% if last_reaction.user == request.user %} my-reaction{% endif %}" data-message-id="{{ msg.id }}" data-reaction="{{ last_reaction.reaction_type }}">
+                                    {{ last_reaction.reaction_type }}
+                                </span>
+                            </div>
+                        {% endwith %}
+                    {% endif %}
+                    <div class="add-reaction-row" style="margin: 2px 0; gap: 4px;">
+                      <button type="button" class="add-reaction-btn" data-message-id="{{ msg.id }}" data-emoji="👍" style="background: none; border: none; cursor: pointer; font-size: 18px;">👍</button>
+                      <button type="button" class="add-reaction-btn" data-message-id="{{ msg.id }}" data-emoji="❤️" style="background: none; border: none; cursor: pointer; font-size: 18px;">❤️</button>
+                      <button type="button" class="add-reaction-btn" data-message-id="{{ msg.id }}" data-emoji="😂" style="background: none; border: none; cursor: pointer; font-size: 18px;">😂</button>
+                      <button type="button" class="add-reaction-btn" data-message-id="{{ msg.id }}" data-emoji="😮" style="background: none; border: none; cursor: pointer; font-size: 18px;">😮</button>
+                      <button type="button" class="add-reaction-btn" data-message-id="{{ msg.id }}" data-emoji="😢" style="background: none; border: none; cursor: pointer; font-size: 18px;">😢</button>
+                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -448,6 +486,31 @@ const toggle = document.getElementById("themeToggle");
       alert('Failed to get AI response. Please try again.');
     }
   });
+</script>
+<script>
+$(document).on('click', '.add-reaction-btn', function() {
+    var messageId = $(this).data('message-id');
+    var emoji = $(this).data('emoji');
+    var csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    $.post(`/message/${messageId}/add_reaction/`, {
+        reaction_type: emoji,
+        csrfmiddlewaretoken: csrfToken
+    }, function(response) {
+        location.reload(); // For now, reload to show updated reactions
+    });
+});
+
+$(document).on('click', '.reaction-bubble', function() {
+    var messageId = $(this).data('message-id');
+    var emoji = $(this).data('reaction');
+    var csrfToken = $('input[name="csrfmiddlewaretoken"]').val();
+    $.post(`/message/${messageId}/remove_reaction/`, {
+        reaction_type: emoji,
+        csrfmiddlewaretoken: csrfToken
+    }, function(response) {
+        location.reload();
+    });
+});
 </script>
 </body>
 </html>

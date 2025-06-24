@@ -12,7 +12,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from .forms import UsernameChangeForm, DocumentForm, EventForm, NoteForm, TaskForm
-from .models import Document, Event, Notes, Embed, Task, RichDocument, Message, WebArchive
+from .models import Document, Event, Notes, Embed, Task, RichDocument, Message, WebArchive, MessageReaction
 from django.contrib import messages
 from allauth.account.views import LoginView as AllauthLoginView
 import os
@@ -902,7 +902,7 @@ def chat_with_user(request, username):
     messages = Message.objects.filter(
         Q(sender=request.user, receiver=other_user) |
         Q(sender=other_user, receiver=request.user)
-    ).select_related('sender', 'receiver').order_by('timestamp')
+    ).select_related('sender', 'receiver').prefetch_related('reactions__user').order_by('timestamp')
     pinned_message = Message.objects.filter(pinned=True, sender=request.user).order_by('-timestamp').first()
     Message.objects.filter(sender=other_user, receiver=request.user, seen=False).update(seen=True, seen_at=now())
 
@@ -1370,4 +1370,40 @@ def reorder_embeds(request):
             return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+@email_verified_required
+@login_required
+def add_reaction(request, message_id):
+    if request.method == 'POST':
+        reaction_type = request.POST.get('reaction_type')
+        if not reaction_type:
+            return JsonResponse({'error': 'No reaction_type provided'}, status=400)
+        message = get_object_or_404(Message, id=message_id)
+        reaction, created = MessageReaction.objects.get_or_create(
+            message=message,
+            user=request.user,
+            reaction_type=reaction_type
+        )
+        return JsonResponse({'success': True, 'created': created})
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@email_verified_required
+@login_required
+def remove_reaction(request, message_id):
+    if request.method == 'POST':
+        reaction_type = request.POST.get('reaction_type')
+        if not reaction_type:
+            return JsonResponse({'error': 'No reaction_type provided'}, status=400)
+        message = get_object_or_404(Message, id=message_id)
+        try:
+            reaction = MessageReaction.objects.get(
+                message=message,
+                user=request.user,
+                reaction_type=reaction_type
+            )
+            reaction.delete()
+            return JsonResponse({'success': True})
+        except MessageReaction.DoesNotExist:
+            return JsonResponse({'error': 'Reaction not found'}, status=404)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
 
