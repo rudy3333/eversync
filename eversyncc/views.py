@@ -52,6 +52,20 @@ import selenium
 import pyclamd
 from datetime import datetime, timedelta
 
+# Constants
+FORBIDDEN_EXTENSIONS = ['.html', '.htm', '.php', '.exe', '.js', '.sh', '.bat']
+SELENIUM_CHROME_ARGS = [
+    '--headless=new',
+    '--no-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--lang=en-US',
+]
+SELENIUM_CHROME_PREFS = {
+    'intl.accept_languages': 'en,en_US',
+    'profile.default_content_setting_values.geolocation': 2,
+}
+
 def scan_file_with_clamav(file_path):
     try:
         cd = pyclamd.ClamdNetworkSocket(host='127.0.0.1', port=3310)
@@ -176,8 +190,7 @@ def upload_file(request):
             file_size = document.file.size
 
 
-            forbidden_extensions=['.html','.htm','.php','.exe','.js','.sh','.bat']
-            if ext in forbidden_extensions:
+            if ext in FORBIDDEN_EXTENSIONS:
                 request.session.flush()
                 logout(request)
                 return HttpResponse("<html><body><script>alert('Uploading possibly malicious files is forbidden. You have been logged out.'); location.reload();</script></body></html>")
@@ -1212,15 +1225,9 @@ def save_web_archive(request):
             try:
                 # Set up Chrome options
                 chrome_options = Options()
-                chrome_options.add_argument('--headless=new')
-                chrome_options.add_argument('--no-sandbox')
-                chrome_options.add_argument('--disable-dev-shm-usage')
-                chrome_options.add_argument('--disable-gpu')
-                chrome_options.add_argument("--lang=en-US") 
-                chrome_options.add_experimental_option("prefs", {
-                    "intl.accept_languages": "en,en_US",
-                    "profile.default_content_setting_values.geolocation": 2, 
-                })
+                for arg in SELENIUM_CHROME_ARGS:
+                    chrome_options.add_argument(arg)
+                chrome_options.add_experimental_option("prefs", SELENIUM_CHROME_PREFS)
                 # Initialize Chrome driver
                 driver = webdriver.Chrome(options=chrome_options)
                 url = form.cleaned_data['url']
