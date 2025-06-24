@@ -28,6 +28,7 @@ urlpatterns = [
     path('add_embed/', add_embed, name="add_embed"),
     path('embed_list/', embed_list, name="embed_list"),
     path('delete_embed/<int:id>/', delete_embed, name="delete_embed"),
+    path('reorder_embeds/', views.reorder_embeds, name='reorder_embeds'),
     path('meeting', meeting,  name="meeting"),
     path('weather_api/<str:location>', weather_api, name="weather_api"),
     path('weather/<str:location>/', weather_view, name="weather_view"),

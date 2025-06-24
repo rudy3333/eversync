@@ -77,10 +77,6 @@
   background-color: #37a045 !important;
 }
 
-.dark button[type="submit"] {
-  background-color: #b13c33 !important;
-}
-
 .dark .header {
   background-color: #242526 !important;
 }
@@ -102,6 +98,19 @@
 .dark body {
   background-color: #18191a;
   color: #e4e6eb;
+}
+
+.delete-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dark .delete-button {
+  background-color: #b13c33 !important;
 }
 </style>
 </head>
@@ -140,21 +149,20 @@
     </div>
 
 
-<div class="embed-grid">
+<div class="embed-grid" id="embedGrid">
     {% for embed in embeds %}
-        <div class="embed-card">
+        <div class="embed-card" data-id="{{ embed.id }}">
             <h3>{{ embed.title }}</h3>
             <form action="{% url 'delete_embed' embed.id %}" method="post" style="margin-bottom: 10px;">
                 {% csrf_token %}
-                <button type="submit" style="background-color: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
-                    Delete
-                </button>
+                <button type="submit" class="delete-button">Delete</button>
             </form>
             <div>{{ embed.embed_html|safe }}</div>
         </div>
     {% endfor %}
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toggle = document.querySelector('.dropdown-toggle');
@@ -162,24 +170,37 @@
         toggle.addEventListener('click', function () {
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         });
-    });
 
-    const toggle = document.getElementById("themeToggle");
+        const toggleTheme = document.getElementById("themeToggle");
         const root = document.documentElement;
-
         if (localStorage.getItem("theme") === "dark") {
-        root.classList.add("dark");
+            root.classList.add("dark");
         }
-
-        toggle.addEventListener("click", () => {
-        root.classList.toggle("dark");
-        if (root.classList.contains("dark")) {
-            localStorage.setItem("theme", "dark");
-        } else {
-            localStorage.setItem("theme", "light");
-        }
+        toggleTheme.addEventListener("click", () => {
+            root.classList.toggle("dark");
+            if (root.classList.contains("dark")) {
+                localStorage.setItem("theme", "dark");
+            } else {
+                localStorage.setItem("theme", "light");
+            }
         });
-        
+
+        const grid = document.getElementById('embedGrid');
+        Sortable.create(grid, {
+            animation: 150,
+            onEnd: function () {
+                const ids = Array.from(grid.children).map(card => card.getAttribute('data-id'));
+                fetch("{% url 'reorder_embeds' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ embed_ids: ids })
+                });
+            }
+        });
+    });
 </script>
 </body>
 </html>

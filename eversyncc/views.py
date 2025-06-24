@@ -448,7 +448,7 @@ def add_embed(request):
 @email_verified_required
 @login_required
 def embed_list(request):
-    embeds = Embed.objects.filter(user=request.user)
+    embeds = Embed.objects.filter(user=request.user).order_by('order', 'added_at')
     return render(request, "embed_list.html", {"embeds": embeds})
 
 @email_verified_required
@@ -1352,4 +1352,22 @@ def delete_profile_picture(request):
         else:
             messages.error(request, "No profile picture to delete.")
     return redirect('manage')
+
+@email_verified_required
+@login_required
+def reorder_embeds(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            embed_ids = data.get('embed_ids', [])
+            for idx, embed_id in enumerate(embed_ids):
+                try:
+                    embed = Embed.objects.get(id=embed_id, user=request.user)
+                    embed.order = idx
+                    embed.save()
+                except Embed.DoesNotExist:
+                    continue
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
 

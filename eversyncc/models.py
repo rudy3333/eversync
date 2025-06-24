@@ -72,6 +72,7 @@ class Embed(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True) 
     embed_html = models.TextField()
     added_at = models.DateField(auto_now_add=True)
+    order = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title
