@@ -118,21 +118,32 @@
           return cookie.substring(name.length, cookie.length);
         }
       }
-      return "";
+      return null;
     }
 
     let recognition;
     let userManuallyStopped = false;
+    let errorCount = 0;
+    const MAX_ERRORS = 3;
 
+    function updateVoiceStatus(message) {
+      const statusElement = document.getElementById('voiceStatus');
+      if (statusElement) {
+        statusElement.textContent = message;
+      }
+    }
 
     function startVoiceRecognition() {
       userManuallyStopped = false;
+      errorCount = 0;
+      
       if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
         alert("Your browser does not support speech recognition.");
         return;
       }
 
       document.getElementById('voiceModal').style.display = 'block';
+      updateVoiceStatus('Initializing microphone...');
 
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
@@ -140,47 +151,124 @@
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
-      let finalTranscript = '';
 
+      recognition.onstart = function() {
+        updateVoiceStatus('Listening for speech...');
+      };
 
       recognition.onresult = function(event) {
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + ' ';
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript + ' ';
+          }
         }
-      }
-      if (finalTranscript) {
-        document.getElementById('content').value += finalTranscript;
-      }
-    };
-
-      
+        if (finalTranscript) {
+          document.getElementById('content').value += finalTranscript;
+          updateVoiceStatus('Text added! Continue speaking...');
+        }
+      };
 
       recognition.onerror = function(event) {
-    console.warn("Speech recognition error:", event.error);
-    if (!userManuallyStopped && event.error === "no-speech") {
-      setTimeout(() => recognition.start(), 500); // retry after brief pause
-    } else {
-      closeVoiceModal();
-    }
-  };
+        console.warn("Speech recognition error:", event.error);
+        errorCount++;
+        
+        // Handle different types of errors
+        switch(event.error) {
+          case 'no-speech':
+            updateVoiceStatus('No speech detected. Retrying...');
+            // Only retry for no-speech if we haven't exceeded max errors
+            if (errorCount < MAX_ERRORS && !userManuallyStopped) {
+              setTimeout(() => {
+                if (!userManuallyStopped) {
+                  try {
+                    recognition.start();
+                  } catch (e) {
+                    console.error("Failed to restart recognition:", e);
+                    closeVoiceModal();
+                  }
+                }
+              }, 1000);
+            } else {
+              updateVoiceStatus('Too many errors. Stopping...');
+              setTimeout(closeVoiceModal, 1000);
+            }
+            break;
+            
+          case 'audio-capture':
+          case 'aborted':
+          case 'network':
+          case 'not-allowed':
+          case 'service-not-allowed':
+            // These are critical errors - don't retry
+            console.error("Critical speech recognition error:", event.error);
+            updateVoiceStatus('Microphone access denied or unavailable.');
+            setTimeout(closeVoiceModal, 2000);
+            break;
+            
+          default:
+            updateVoiceStatus(`Error: ${event.error}. Retrying...`);
+            // For other errors, retry a limited number of times
+            if (errorCount < MAX_ERRORS && !userManuallyStopped) {
+              setTimeout(() => {
+                if (!userManuallyStopped) {
+                  try {
+                    recognition.start();
+                  } catch (e) {
+                    console.error("Failed to restart recognition:", e);
+                    closeVoiceModal();
+                  }
+                }
+              }, 2000);
+            } else {
+              updateVoiceStatus('Too many errors. Stopping...');
+              setTimeout(closeVoiceModal, 1000);
+            }
+        }
+      };
 
-  recognition.onend = function() {
-    if (!userManuallyStopped) {
-      console.log("Recognition ended. Restarting...");
-      recognition.start(); // Keep listening forever
-    }
-  };
+      recognition.onend = function() {
+        // Only restart if user hasn't manually stopped and we haven't exceeded error limit
+        if (!userManuallyStopped && errorCount < MAX_ERRORS) {
+          console.log("Recognition ended. Restarting...");
+          updateVoiceStatus('Restarting recognition...');
+          setTimeout(() => {
+            if (!userManuallyStopped) {
+              try {
+                recognition.start();
+              } catch (e) {
+                console.error("Failed to restart recognition:", e);
+                closeVoiceModal();
+              }
+            }
+          }, 500);
+        } else {
+          console.log("Recognition ended permanently");
+          updateVoiceStatus('Voice recognition stopped.');
+          setTimeout(closeVoiceModal, 1000);
+        }
+      };
 
-  recognition.start();
-}
+      try {
+        recognition.start();
+      } catch (e) {
+        console.error("Failed to start recognition:", e);
+        updateVoiceStatus('Failed to start recognition.');
+        setTimeout(closeVoiceModal, 1000);
+      }
+    }
     
     
     function stopVoiceRecognition() {
       if (recognition) {
         userManuallyStopped = true;
-        recognition.stop();
+        errorCount = MAX_ERRORS; // Prevent any further restarts
+        try {
+          recognition.stop();
+        } catch (e) {
+          console.warn("Error stopping recognition:", e);
+        }
+        recognition = null; // Clear the reference
         closeVoiceModal();
       }
     }
@@ -437,8 +525,10 @@ const toggle = document.getElementById("themeToggle");
 </body>
   <div id="voiceModal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
     <div style="background-color: var(--modal-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--modal-border); width: 300px; text-align: center; border-radius: 10px; color: var(--text-color);">
-      <h3>Speak now...</h3>
-      <button onclick="stopVoiceRecognition()">❌ Cancel</button>
+      <h3>🎤 Voice Recognition Active</h3>
+      <p id="voiceStatus" style="margin: 10px 0; font-size: 14px;">Listening for speech...</p>
+      <p style="font-size: 12px; color: #666; margin: 10px 0;">Speak clearly into your microphone</p>
+      <button onclick="stopVoiceRecognition()" style="background-color: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">❌ Stop Recording</button>
     </div>
   </div>
 </html> 
