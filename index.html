@@ -112,9 +112,19 @@
                 });
             
                 async function fetchAffirmation() {
-                    const res = await fetch("/api/affirmation/");
-                    const data = await res.json();
-                    document.getElementById("affirmation-box").innerText = data.affirmation;
+                    try {
+                        const res = await fetch("/api/affirmation/");
+                        if (!res.ok) throw new Error("Network response was not ok");
+                        const data = await res.json();
+                        const box = document.getElementById("affirmation-box");
+                        if (box) {
+                            if (typeof data.affirmation === "string" && data.affirmation.trim()) {
+                                box.innerText = data.affirmation;
+                            } else {
+                            }
+                        }
+                    } catch (e) {
+                    }
                 }
             
                 async function checkUnseenMessages() {
