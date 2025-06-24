@@ -1341,3 +1341,15 @@ def update_profile_picture(request):
             messages.error(request, "No image file provided.")
     return redirect('manage')
 
+@login_required
+def delete_profile_picture(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        if profile.profile_picture:
+            profile.profile_picture.delete()
+            profile.save()
+            messages.success(request, "Profile picture deleted successfully!")
+        else:
+            messages.error(request, "No profile picture to delete.")
+    return redirect('manage')
+
