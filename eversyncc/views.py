@@ -51,6 +51,7 @@ from selenium.webdriver.common.by import By
 import selenium
 import pyclamd
 from datetime import datetime, timedelta
+from django_ratelimit.decorators import ratelimit
 
 # Constants
 FORBIDDEN_EXTENSIONS = ['.html', '.htm', '.php', '.exe', '.js', '.sh', '.bat']
@@ -373,6 +374,7 @@ def calendar_event_create(request):
 
 @email_verified_required
 @login_required
+@ratelimit(key='user', rate='10/m', block=True)
 def note_add(request):
     if request.method == 'POST':
         form = NoteForm(request.POST)
@@ -587,6 +589,7 @@ def note_delete(request, note_id):
 
 @email_verified_required
 @login_required
+@ratelimit(key='user', rate='10/m', block=True)
 def add_task(request):
     if request.method == 'POST':
         form = TaskForm(request.POST)
@@ -777,6 +780,7 @@ def get_document(request, id=None):
     
 @email_verified_required
 @login_required
+@ratelimit(key='user', rate='10/m', block=True)
 def send_message(request):
     users = User.objects.exclude(id=request.user.id)
     if request.method == 'POST':
@@ -1111,6 +1115,7 @@ def login_redirect(request):
 
 @email_verified_required
 @login_required
+@ratelimit(key='user', rate='20/m', block=True)
 def pin_message(request, message_id):
     msg = get_object_or_404(Message, id=message_id)
     
@@ -1137,6 +1142,7 @@ def save_images(request, whiteboard_id):
 
 @email_verified_required
 @login_required
+@ratelimit(key='user', rate='20/m', block=True)
 def upload_image(request, whiteboard_id):
     if request.method == 'POST':
         try:
@@ -1217,6 +1223,7 @@ def update_device_token(request):
     
 @email_verified_required
 @login_required
+@ratelimit(key='user', rate='3/m', block=True)
 def save_web_archive(request):
     if request.method == 'POST':
         form = WebArchiveForm(request.POST)
@@ -1380,6 +1387,7 @@ def reorder_embeds(request):
 
 @email_verified_required
 @login_required
+@ratelimit(key='user', rate='20/m', block=True)
 def add_reaction(request, message_id):
     if request.method == 'POST':
         reaction_type = request.POST.get('reaction_type')

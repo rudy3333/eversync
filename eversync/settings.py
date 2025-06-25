@@ -71,6 +71,18 @@ WEBPUSH_SETTINGS = {
     "VAPID_ADMIN_EMAIL": "mmax3163@gmail.com"
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-default',
+    },
+    'cache-for-ratelimiting': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-ratelimit',
+    },
+}
+
+RATELIMIT_USE_CACHE = 'cache-for-ratelimiting'
 
 MIDDLEWARE = [
     'eversyncc.middleware.tor_blocker.BlockTorMiddleware',
