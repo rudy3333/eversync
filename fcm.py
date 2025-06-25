@@ -9,15 +9,15 @@ def send_push_notification(token, title, body, data=None):
         settings.FCM_SERVICE_ACCOUNT,
         scopes=["https://www.googleapis.com/auth/firebase.messaging"]
     )
-
     creds.refresh(Request()) 
 
     headers = {
         "Authorization": f"Bearer {creds.token}",
-        "Content-Type": "application/json; UTF-8",
+        "Content-Type": "application/json",
     }
 
     url = f"https://fcm.googleapis.com/v1/projects/{creds.project_id}/messages:send"
+    data = {k: str(v) for k, v in (data or {}).items()}
 
     message = {
         "message": {
@@ -26,9 +26,13 @@ def send_push_notification(token, title, body, data=None):
                 "title": title,
                 "body": body,
             },
-            "data": data or {}
+            "data": data
         }
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(message))
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as e:
+        return {"error": str(e), "response": response.text}
     return response.json()
