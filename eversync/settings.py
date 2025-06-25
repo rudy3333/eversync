@@ -32,6 +32,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 FCM_SERVICE_ACCOUNT = str(BASE_DIR / "fcm_secret.json")
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# probably will get rid of this soon but since no one uses this besides HC'ers im fine
 DEBUG = True
 
 
@@ -65,11 +66,6 @@ RECAPTCHA_PUBLIC_KEY = os.getenv('RECAPTCHA_PUBLIC_KEY')
 RECAPTCHA_PRIVATE_KEY = os.getenv('RECAPTCHA_PRIVATE_KEY')
 RECAPTCHA_USE_SSL = True
 
-WEBPUSH_SETTINGS = {
-    "VAPID_PUBLIC_KEY": "BArtoQuGwO4z_wyCZJ6cZpkCJVuEHt-YeiHtocH6cTmPNUHL8657te2gXhEiXjjfNMy0igo1PxrSGFokdOokzfA",
-    "VAPID_PRIVATE_KEY": "6L3Sgw-co-X2kuKTIkZAMxXYuhi0F3dcCFwE6VdknOI",
-    "VAPID_ADMIN_EMAIL": "mmax3163@gmail.com"
-}
 
 CACHES = {
     'default': {
@@ -191,7 +187,7 @@ LOGIN_URL = '/accounts/login/'
 # Registration settings
 ACCOUNT_ACTIVATION_DAYS = 7  # One-week activation window
 REGISTRATION_OPEN = True
-REGISTRATION_SALT = 'registration' 
+REGISTRATION_SALT = os.getenv('REGISTRATION_SALT', 'registration')
 
 MEDIA_URL = '/files/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'files')

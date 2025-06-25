@@ -60,6 +60,7 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your_email@example.com
 EMAIL_HOST_PASSWORD=your_email_password
 DEFAULT_FROM_EMAIL=webmaster@localhost
+REGISTRATION_SALT=randomstring
 ```
 
 - For push notifications, place your Firebase service account JSON as `fcm_secret.json` in the project root.
