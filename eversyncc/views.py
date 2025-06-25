@@ -52,6 +52,7 @@ import selenium
 import pyclamd
 from datetime import datetime, timedelta
 from django_ratelimit.decorators import ratelimit
+import re
 
 # Constants
 FORBIDDEN_EXTENSIONS = ['.html', '.htm', '.php', '.exe', '.js', '.sh', '.bat']
@@ -66,6 +67,8 @@ SELENIUM_CHROME_PREFS = {
     'intl.accept_languages': 'en,en_US',
     'profile.default_content_setting_values.geolocation': 2,
 }
+
+MAX_FILE_SIZE = 20 * 1024 * 1024
 
 def scan_file_with_clamav(file_path):
     try:
@@ -186,16 +189,20 @@ def upload_file(request):
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             document = form.save(commit=False)
-            filename = document.file.name
+            filename = re.sub(r'[^A-Za-z0-9._-]', '_', filename)            
             ext = os.path.splitext(filename)[1].lower()
             file_size = document.file.size
-
 
             if ext in FORBIDDEN_EXTENSIONS:
                 request.session.flush()
                 logout(request)
                 return HttpResponse("<html><body><script>alert('Uploading possibly malicious files is forbidden. You have been logged out.'); location.reload();</script></body></html>")
-            
+
+            if file_size > MAX_FILE_SIZE:
+                return HttpResponse(
+                    "<html><body><script>alert('Upload blocked: File size exceeds 20 MB limit.'); window.history.back();</script></body></html>"
+                )
+
             with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                 for chunk in document.file.chunks():
                     temp_file.write(chunk)
@@ -224,14 +231,15 @@ def upload_file(request):
                     window.history.back();
                 </script></body></html>
                 """)
-        
+
             user_storage = request.user.userstorage
             if user_storage.used_storage + file_size > user_storage.storage_limit:
-              return HttpResponse(
+                return HttpResponse(
                     "<html><body><script>alert('Upload blocked: Storage limit exceeded. Please delete files.'); window.history.back();</script></body></html>"
                 )
-            
+
             document.user = request.user
+            document.file.name = filename  # Use sanitized filename
             document.save()
             user_storage.used_storage += document.size
             user_storage.save()
