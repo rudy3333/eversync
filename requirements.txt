@@ -29,3 +29,5 @@ pyclamd
 ipaddress
 Pillow
 django-ratelimit
+python-magic
+bleach

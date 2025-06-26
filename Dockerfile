@@ -50,6 +50,9 @@ RUN apt-get update && \
         xdg-utils \
         clamav \
         clamav-daemon \
+        libmagic1 \
+        file \
+        python3-magic \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /var/run/clamav && \

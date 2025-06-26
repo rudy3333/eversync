@@ -53,6 +53,8 @@ import pyclamd
 from datetime import datetime, timedelta
 from django_ratelimit.decorators import ratelimit
 import re
+import magic
+import bleach
 
 # Constants
 FORBIDDEN_EXTENSIONS = ['.html', '.htm', '.php', '.exe', '.js', '.sh', '.bat']
@@ -189,9 +191,17 @@ def upload_file(request):
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             document = form.save(commit=False)
-            filename = re.sub(r'[^A-Za-z0-9._-]', '_', filename)            
+            filename = re.sub(r'[^A-Za-z0-9._-]', '_', document.file.name)
             ext = os.path.splitext(filename)[1].lower()
             file_size = document.file.size
+
+            mime = magic.from_buffer(document.file.read(2048), mime=True)
+            document.file.seek(0)
+            allowed_mimes = ['application/pdf', 'image/png', 'image/jpeg', 'text/plain']
+            if mime not in allowed_mimes:
+                return HttpResponse(
+                    "<html><body><script>alert('Upload blocked: File type not allowed.'); window.history.back();</script></body></html>"
+                )
 
             if ext in FORBIDDEN_EXTENSIONS:
                 request.session.flush()
@@ -745,7 +755,8 @@ def delta_to_html(delta_json):
             elif isinstance(text, dict):
                 if text.get('image'):
                     html.append(f'<img src="{text["image"]}" alt="Image">')
-        return ''.join(html)
+        safe_html = bleach.clean(''.join(html), tags=['h1', 'h2', 'small', 'code', 'strong', 'em', 'u', 's', 'span', 'div', 'a', 'blockquote', 'li', 'img', 'br'], attributes={'span': ['style', 'color', 'background-color'], 'div': ['style'], 'a': ['href'], 'img': ['src', 'alt']}, strip=True)
+        return safe_html
     except:
         return delta_json
 
@@ -781,7 +792,7 @@ def edit_document(request, doc_id):
 @login_required
 def get_document(request, id=None):
     try:
-        doc = RichDocument.objects.get(pk=id)
+        doc = RichDocument.objects.get(pk=id, owner=request.user)
         return JsonResponse({"title": doc.title, "content": doc.content})
     except RichDocument.DoesNotExist:
         return JsonResponse({"error": "Not found"}, status=404)
@@ -794,7 +805,10 @@ def send_message(request):
     if request.method == 'POST':
         reciever_username = request.POST.get('receiver')
         content =  request.POST.get('content')
-        receiver = User.objects.get(username=reciever_username)
+        try:
+            receiver = User.objects.get(username=reciever_username)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "error", "error": "Receiver not found"}, status=404)
         message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
         try:
             user_notifs = UserNotifs.objects.get(user=receiver)
@@ -1008,7 +1022,7 @@ def delete_stroke(request, whiteboard_id):
             data = json.loads(request.body)
             index = data.get('index')
 
-            whiteboard = Whiteboard.objects.get(id=whiteboard_id)
+            whiteboard = Whiteboard.objects.get(id=whiteboard_id, owner=request.user)
             strokes = Stroke.objects.filter(whiteboard=whiteboard).order_by('created_at')
 
             stroke_to_delete = strokes[index]
@@ -1418,6 +1432,8 @@ def remove_reaction(request, message_id):
         if not reaction_type:
             return JsonResponse({'error': 'No reaction_type provided'}, status=400)
         message = get_object_or_404(Message, id=message_id)
+        if not (message.sender == request.user or message.receiver == request.user):
+            return JsonResponse({'error': 'Permission denied'}, status=403)
         try:
             reaction = MessageReaction.objects.get(
                 message=message,
