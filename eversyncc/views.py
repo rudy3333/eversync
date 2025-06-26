@@ -316,15 +316,12 @@ def delete_file(request, file_id):
 @login_required
 def calendar_event_delete(request, event_id):
     if request.method == 'POST':
+        event = get_object_or_404(Event, id=event_id, user=request.user)
         try:
-            event = Event.objects.get(id=event_id)
-            try:
-                event.delete()
-                return JsonResponse({'messsage': 'Success.'})
-            except:
-                return JsonResponse({'error': 'Error.'}, status=404)
-        except:
-            return JsonResponse({'error': 'Error.'}, status=404)
+            event.delete()
+            return JsonResponse({'message': 'Success.'})
+        except Exception:
+            return JsonResponse({'error': 'Error.'}, status=500)
 
 
 
@@ -503,15 +500,13 @@ def embed_list(request):
 @login_required
 def delete_embed(request, id):
     if request.method == 'POST':
+        embed = get_object_or_404(Embed, id=id, user=request.user)
         try:
-            embed = Embed.objects.get(id=id, user=request.user)
-            try:
-                embed.delete()
-                return redirect('embed_list')
-            except:
-                return JsonResponse({'error': 'Error.'}, status=404)
-        except:
+            embed.delete()
+            return redirect('embed_list')
+        except Exception:
             return JsonResponse({'error': 'Error.'}, status=404)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
         
 @email_verified_required
 @login_required
@@ -806,12 +801,9 @@ def edit_document(request, doc_id):
 @email_verified_required
 @login_required
 def get_document(request, id=None):
-    try:
-        doc = RichDocument.objects.get(pk=id, owner=request.user)
-        return JsonResponse({"title": doc.title, "content": doc.content})
-    except RichDocument.DoesNotExist:
-        return JsonResponse({"error": "Not found"}, status=404)
-    
+    doc = get_object_or_404(RichDocument, pk=id, owner=request.user)
+    return JsonResponse({"title": doc.title, "content": doc.content})
+
 @email_verified_required
 @login_required
 @ratelimit(key='user', rate='10/m', block=True)
@@ -952,7 +944,9 @@ def get_thumbnail(request):
 @email_verified_required
 @login_required
 def chat_with_user(request, username):
-    other_user = User.objects.get(username=username)
+    if username == request.user.username:
+        return redirect('chat_page')
+    other_user = get_object_or_404(User, username=username)
     messages = Message.objects.filter(
         Q(sender=request.user, receiver=other_user) |
         Q(sender=other_user, receiver=request.user)
@@ -1355,12 +1349,11 @@ def web_archive(request):
 @login_required
 def delete_web_archive(request, archive_id):
     if request.method == 'POST':
+        archive = get_object_or_404(WebArchive, id=archive_id, user=request.user)
         try:
-            archive = get_object_or_404(WebArchive, id=archive_id, user=request.user)
-            
             if archive.screenshot:
                 try:
-                    archive.screenshot.delete(save=False)
+                    archive.screenshot.delete()
                 except:
                     pass 
             
