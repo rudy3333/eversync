@@ -149,6 +149,18 @@ textarea#message-content {
 .message-container:hover .add-reaction-row {
     display: flex;
 }
+.message-content-wrap.align-right {
+    text-align: right;
+}
+.message-content-wrap.align-left {
+    text-align: left;
+}
+.dark .edit-message-textarea,
+.edit-message-textarea.dark-textarea {
+    background-color: #2a2b2d;
+    color: #e4e6eb;
+    border: 1px solid #555;
+}
     </style>
 </head>
     
@@ -193,7 +205,7 @@ textarea#message-content {
 
         <div id="chat-log" style="flex: 1; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
         {% for msg in messages %}
-            <div class="message-container" style="margin: 10px 0; display: flex; align-items: start; {% if msg.sender == request.user %}flex-direction: row-reverse;{% endif %} gap: 8px;">
+            <div class="message-container" style="margin: 10px 0; display: flex; align-items: start; {% if msg.sender == request.user %}flex-direction: row-reverse;{% endif %} gap: 8px;" data-message-id="{{ msg.id }}">
                 <div style="width: 32px; height: 32px; flex-shrink: 0;">
                     {% if msg.sender.profile.profile_picture %}
                         <img src="{{ msg.sender.profile.profile_picture.url }}" alt="Profile Picture" style="width: 32px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #ccc;">
@@ -203,17 +215,19 @@ textarea#message-content {
                         </div>
                     {% endif %}
                 </div>
-                <div style="{% if msg.sender == request.user %}text-align: right;{% else %}text-align: left;{% endif %}">
-                    <strong>{{ msg.sender.username }}</strong>: {{ msg.content }}<br>
+                <div class="message-content-wrap {% if msg.sender == request.user %}align-right{% else %}align-left{% endif %}">
+                    <strong>{{ msg.sender.username }}</strong>: 
+                    <span class="message-content" id="message-content-{{ msg.id }}">{{ msg.content }}</span>
+                    <form class="edit-message-form" data-message-id="{{ msg.id }}" style="display:none; margin-top:5px;">
+                        {% csrf_token %}
+                        <textarea class="edit-message-textarea" rows="2" style="width:90%;">{{ msg.content }}</textarea>
+                        <button type="submit" class="btn btn-primary btn-sm" style="margin-right:5px;">Save</button>
+                        <button type="button" class="cancel-edit-btn btn btn-secondary btn-sm">Cancel</button>
+                    </form>
+                    <br>
                     <small data-timestamp="{{ msg.timestamp|date:'c' }}"></small>
                     {% if msg.sender == request.user %}
-                        {% if msg.seen %}
-                            <div style="font-size: 12px; color: #6c757d;">Seen</div>
-                        {% else %}
-                            <div style="font-size: 12px; color: #6c757d;">Delivered</div>
-                        {% endif %}
-                    {% endif %}
-                    {% if msg.sender == request.user %}
+                        <div style="font-size: 12px; color: #6c757d;">{% if msg.seen %}Seen{% else %}Delivered{% endif %}</div>
                         <form action="/pin/{{ msg.id }}/" method="post" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm" style="margin-left: 8px; background-color: #ffc107; color: black; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
@@ -224,6 +238,7 @@ textarea#message-content {
                             {% csrf_token %}
                             <button type="submit" class="btn btn-danger btn-sm" style="margin-top:5px; background-color: #dc3545; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Delete</button>
                         </form>
+                        <button type="button" class="edit-message-btn btn btn-sm" style="margin-top:5px; background-color: #007bff; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Edit</button>
                     {% endif %}
                     {% if msg.reactions.all %}
                         {% with last_reaction=msg.reactions.all.last %}
@@ -510,6 +525,78 @@ $(document).on('click', '.reaction-bubble', function() {
     }, function(response) {
         location.reload();
     });
+});
+</script>
+<script>
+// Message editing logic
+$(document).on('click', '.edit-message-btn', function() {
+    var container = $(this).closest('.message-content-wrap');
+    container.find('.message-content').hide();
+    container.find('.edit-message-form').show();
+    container.find('.edit-message-textarea').focus();
+    // Dark mode for textarea
+    if (document.documentElement.classList.contains('dark')) {
+        container.find('.edit-message-textarea').addClass('dark-textarea');
+    } else {
+        container.find('.edit-message-textarea').removeClass('dark-textarea');
+    }
+});
+
+$(document).on('click', '.cancel-edit-btn', function() {
+    var container = $(this).closest('.message-content-wrap');
+    container.find('.edit-message-form').hide();
+    container.find('.message-content').show();
+});
+
+$(document).on('submit', '.edit-message-form', function(e) {
+    e.preventDefault();
+    var form = $(this);
+    var messageId = form.data('message-id');
+    var newContent = form.find('.edit-message-textarea').val().trim();
+    var csrfToken = form.find('input[name="csrfmiddlewaretoken"]').val();
+    if (!newContent) {
+        alert('Message cannot be empty.');
+        return;
+    }
+    $.post(`/message/${messageId}/edit/`, {
+        content: newContent,
+        csrfmiddlewaretoken: csrfToken
+    }, function(response) {
+        if (response.success) {
+            form.hide();
+            var contentSpan = form.closest('.message-content-wrap').find('.message-content');
+            contentSpan.text(response.content);
+            contentSpan.show();
+        }
+    }).fail(function(xhr) {
+        alert('Error: ' + (xhr.responseJSON?.error || 'Could not edit message.'));
+    });
+});
+
+// Dark mode toggle for edit textareas
+function updateEditTextareasDarkMode() {
+    if (document.documentElement.classList.contains("dark")) {
+        $(".edit-message-textarea").addClass("dark-textarea");
+    } else {
+        $(".edit-message-textarea").removeClass("dark-textarea");
+    }
+}
+
+document.getElementById("themeToggle").addEventListener("click", () => {
+    document.documentElement.classList.toggle("dark");
+    if (document.documentElement.classList.contains("dark")) {
+        localStorage.setItem("theme", "dark");
+    } else {
+        localStorage.setItem("theme", "light");
+    }
+    updateEditTextareasDarkMode();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    if (localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark");
+    }
+    updateEditTextareasDarkMode();
 });
 </script>
 </body>

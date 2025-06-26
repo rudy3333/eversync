@@ -80,6 +80,7 @@ urlpatterns = [
     path('delete_profile_picture/', views.delete_profile_picture, name='delete_profile_picture'),
     path('message/<int:message_id>/add_reaction/', views.add_reaction, name='add_reaction'),
     path('message/<int:message_id>/remove_reaction/', views.remove_reaction, name='remove_reaction'),
+    path('message/<int:message_id>/edit/', views.edit_message, name='edit_message'),
 ]   
 
 if settings.DEBUG:

@@ -1454,3 +1454,16 @@ def remove_reaction(request, message_id):
             return JsonResponse({'error': 'Reaction not found'}, status=404)
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+@email_verified_required
+@login_required
+def edit_message(request, message_id):
+    if request.method == "POST":
+        message = get_object_or_404(Message, id=message_id, sender=request.user)
+        new_content = request.POST.get("content", "").strip()
+        if not new_content:
+            return JsonResponse({"error": "Content cannot be empty."}, status=400)
+        message.content = new_content
+        message.save()
+        return JsonResponse({"success": True, "content": message.content})
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
