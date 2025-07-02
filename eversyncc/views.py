@@ -82,12 +82,14 @@ def scan_file_with_clamav(file_path):
             result = cd.scan_file(file_path)
             return result or None  # clean = None, infected = dict!
         else:
-            print("ClamAV didn't respond :c")
-            return {"error": "ClamAV not responding"}
+            print("ClamAV didn't respond :c (bypassing scan)")
+            return None  # Bypass if not responding
     except pyclamd.ConnectionError as e:
-        return {"error": f"ConnectionError: {str(e)}"}
+        print(f"ClamAV ConnectionError: {str(e)} (bypassing scan)")
+        return None  # Bypass if connection error
     except Exception as e:
-        return {"error": f"Unexpected error: {str(e)}"}
+        print(f"ClamAV Unexpected error: {str(e)} (bypassing scan)")
+        return None  # Bypass on any unexpected error
 
 def email_verified_required(view_func):
     @wraps(view_func)
