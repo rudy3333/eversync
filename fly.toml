@@ -20,8 +20,8 @@ url_prefix = "/static/"
 
 [[vm]]
 cpu_kind = "shared"
-cpus = 2
-memory = "4gb"
+cpus = 1
+memory = "2gb"
 
 [[mounts]]
 source = "eversync"
