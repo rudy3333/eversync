@@ -1,4 +1,4 @@
-![Neighborhood Badge](https://images.fillout.com/orgid-81/flowpublicid-2d6RsxRU3ius/widgetid-gHXJ/wLL8YM3u5TEHNwmmey7cHo/summer25.png?a=4hit9PajYRUKJJYwW78gvU)
+[![Athena Award Badge](https://img.shields.io/endpoint?url=https%3A%2F%2Faward.athena.hackclub.com%2Fapi%2Fbadge)](https://award.athena.hackclub.com?utm_source=readme)
 # Eversync – Notes, Office Suite & Calendar
 
 ![Banner](https://raw.githubusercontent.com/rudy3333/eversync/refs/heads/master/eversyncc/static/banner.png)
